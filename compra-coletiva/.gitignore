@@ -1,0 +1,40 @@
+# Python
+*.pyc
+__pycache__/
+*.pyd
+*.pyo
+
+# Virtual environment
+env/
+venv/
+.venv/
+/htmlcov/
+.tox/
+.pytest_cache/
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+*.kpf
+.project
+.settings/
+.buildpath
+.cproject
+
+# Django specific
+*.log
+*.pot
+*.mo
+*.po
+local_settings.py
+
+
+# Media and static files (if generated locally during development)
+/media/
+/static/
+
+# Environment variables
+.env

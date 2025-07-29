@@ -1,0 +1,56 @@
+{# compras/templates/compras/meus_cupons.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <h1 class="my-4 text-center">{{ titulo_pagina }}</h1>
+
+    {% if cupons %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for cupom in cupons %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">{{ cupom.oferta.titulo }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">Vendido por: {{ cupom.oferta.vendedor.nome_empresa }}</small>
+                            </p>
+                            <p class="card-text">
+                                Preço Pago: <strong>R$ {{ cupom.compra.valor_total|floatformat:2 }}</strong>
+                            </p>
+                            <p class="card-text"><strong>Código do Cupom:</strong> <span class="badge bg-info text-dark fs-6">{{ cupom.codigo }}</span></p>
+                            <p class="card-text"><strong>Gerado em:</strong> {{ cupom.data_geracao|date:"d/m/Y H:i" }}</p>
+                            <p class="card-text"><strong>Válido até:</strong> {{ cupom.valido_ate|date:"d/m/Y H:i" }}</p>
+                            
+                            <p class="card-text"><strong>Status:</strong> 
+                                {% if cupom.status == 'disponivel' and cupom.esta_valido %}
+                                    <span class="badge bg-success">Disponível</span>
+                                {% elif cupom.status == 'resgatado' %}
+                                    <span class="badge bg-warning text-dark">Resgatado em {{ cupom.data_resgate|date:"d/m/Y H:i" }}</span>
+                                {% elif cupom.status == 'expirado' or not cupom.esta_valido %}
+                                    <span class="badge bg-danger">Expirado</span>
+                                {% elif cupom.status == 'cancelado' %}
+                                    <span class="badge bg-secondary">{{ cupom.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ cupom.get_status_display }}</span>
+                                {% endif %}
+                            </p>
+                            
+                            <hr>
+                            <a href="{% url 'ofertas:detalhe_oferta' slug_oferta=cupom.oferta.slug %}" class="btn btn-outline-primary btn-sm mt-2 me-2">Ver Detalhes da Oferta</a>
+                            
+                            {# Opcional: QR Code para resgate (precisaria de uma biblioteca de QR Code) #}
+                            {# <a href="#" class="btn btn-outline-info btn-sm mt-2">Exibir QR Code</a> #}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            Você ainda não possui nenhum cupom de produtos por unidade.
+            <a href="{% url 'ofertas:lista_ofertas' %}" class="alert-link">Confira nossas ofertas!</a>
+        </div>
+    {% endif %}
+{% endblock conteudo %}

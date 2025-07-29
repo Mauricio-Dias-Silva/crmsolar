@@ -1,0 +1,87 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME} # Nome do banco de dados (do .env)
+      POSTGRES_USER: ${DB_USER} # Usuário do banco de dados (do .env)
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Senha do banco de dados (do .env)
+    ports:
+      - "5432:5432" # Mapeia a porta do PostgreSQL para sua máquina local
+    healthcheck: # Verifica se o banco de dados está pronto
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379" # Mapeia a porta do Redis
+
+  app:
+    build: . # Constrói a imagem a partir do Dockerfile na pasta atual
+    command: python manage.py runserver 0.0.0.0:8000 # Comando para rodar o servidor Django
+    volumes:
+      - .:/app # Monta o diretório atual do projeto dentro do contêiner (para desenvolvimento)
+    ports:
+      - "8000:8000" # Mapeia a porta do Django
+    environment: # Variáveis de ambiente para o app Django
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE} # Ex: projeto_compra_coletiva.settings
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      MERCADO_PAGO_PUBLIC_KEY: ${MERCADO_PAGO_PUBLIC_KEY}
+      MERCADO_PAGO_ACCESS_TOKEN: ${MERCADO_PAGO_ACCESS_TOKEN}
+      SECRET_KEY: ${SECRET_KEY} # Sua SECRET_KEY do Django (CRÍTICO EM PRODUÇÃO!)
+      DEBUG: ${DJANGO_DEBUG} # Ex: True ou False
+      CELERY_BROKER_URL: redis://redis:6379/0 # Conecta-se ao serviço 'redis'
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      # ... Outras variáveis que você possa ter no settings.py
+    depends_on:
+      db:
+        condition: service_healthy # Espera o banco de dados estar saudável
+      redis:
+        condition: service_started # Espera o Redis estar pronto
+
+  celery_worker:
+    build: .
+    command: celery -A projeto_compra_coletiva worker -l info # Comando para o Celery Worker
+    volumes:
+      - .:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      MERCADO_PAGO_PUBLIC_KEY: ${MERCADO_PAGO_PUBLIC_KEY}
+      MERCADO_PAGO_ACCESS_TOKEN: ${MERCADO_PAGO_ACCESS_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DJANGO_DEBUG}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      app:
+        condition: service_started # Depende do app principal (para settings)
+
+  celery_beat:
+    build: .
+    command: celery -A projeto_compra_coletiva beat -l info --pidfile=/tmp/celerybeat.pid # Comando para o Celery Beat
+    volumes:
+      - .:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      MERCADO_PAGO_PUBLIC_KEY: ${MERCADO_PAGO_PUBLIC_KEY}
+      MERCADO_PAGO_ACCESS_TOKEN: ${MERCADO_PAGO_ACCESS_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DJANGO_DEBUG}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      app:
+        condition: service_started
+
+volumes:
+  pgdata: # Volume para persistência dos dados do PostgreSQL

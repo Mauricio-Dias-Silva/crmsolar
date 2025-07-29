@@ -1,0 +1,21 @@
+# .dockerignore
+
+# Ignora o ambiente virtual
+venv/
+.venv/
+
+# Ignora pastas e arquivos específicos do Django
+*.pyc
+*.sqlite3
+__pycache__/
+.pytest_cache/
+media/ # Se você estiver usando S3/Cloudinary em produção, não precisará disso no container
+static_prod/ # Pasta de coleta de estáticos em produção
+
+# Ignora arquivos de controle de versão e temporários
+.git/
+.gitignore
+.DS_Store
+.vscode/ # Ignora configurações do VS Code
+*.env
+.env

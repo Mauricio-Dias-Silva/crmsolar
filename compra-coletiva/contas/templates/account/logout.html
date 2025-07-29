@@ -1,0 +1,25 @@
+{# contas/templates/account/logout.html #}
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block titulo_pagina %}{% trans "Sair" %}{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-md-6 text-center mt-5">
+    <div class="alert alert-info" role="alert">
+      <h4 class="alert-heading">{% trans "Sair" %}</h4>
+      <p>{% trans "Tem certeza de que deseja sair?" %}</p>
+    </div>
+    <form method="post" action="{% url 'account_logout' %}">
+      {% csrf_token %}
+      {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+      {% endif %}
+      <button type="submit" class="btn btn-danger btn-lg me-2">{% trans "Sair" %}</button>
+      <a href="{% url 'ofertas:lista_ofertas' %}" class="btn btn-secondary btn-lg">{% trans "Cancelar" %}</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

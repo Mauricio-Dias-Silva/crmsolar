@@ -1,0 +1,117 @@
+{# pedidos_coletivos/templates/pedidos_coletivos/fazer_pedido_coletivo.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white text-center">
+                    <h3 class="mb-0">Fazer Pedido Coletivo</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead text-center">Você está fazendo um pedido para a oferta coletiva:</p>
+
+                    <div class="d-flex align-items-center mb-4 p-3 border rounded bg-light">
+                        {# Lógica para exibir imagem ou placeholder (CORRIGIDO AQUI!) #}
+                        {% if oferta.imagem_principal %}
+                            <img src="{{ oferta.imagem_principal.url }}" alt="{{ oferta.titulo }}" class="img-fluid me-3" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                        {% else %}
+                            <img src="https://via.placeholder.com/100x100?text=Sem+Imagem" alt="Sem Imagem" class="img-fluid me-3" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                        {% endif %}
+                        <div>
+                            <h4>{{ oferta.titulo }}</h4>
+                            <p class="mb-0 text-muted">Vendido por: {{ oferta.vendedor.nome_empresa }}</p>
+                            <p class="mb-0">
+                                <span class="text-decoration-line-through text-muted me-2">R$ {{ oferta.preco_original|floatformat:2 }}</span>
+                                <span class="fs-5 fw-bold text-success">R$ {{ oferta.preco_desconto|floatformat:2 }}</span>
+                                <span class="badge bg-warning text-dark ms-2">{{ oferta.percentual_desconto }} OFF</span>
+                            </p>
+                            <p class="mb-0 text-info">
+                                Mínimo para Ativação: <strong>{{ oferta.quantidade_minima_ativacao }}</strong> cupons
+                            </p>
+                            <p class="mb-0 text-primary">
+                                Já Vendidos: <strong>{{ oferta.quantidade_vendida }}</strong> cupons
+                            </p>
+                            <p class="mb-0 text-danger">
+                                Prazo Final: <strong>{{ oferta.data_termino|date:"d/m/Y H:i" }}</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="text-center">Seu pedido será processado e o valor será pago ao Mercado Pago, mas o cupom só será gerado se a quantidade mínima de {{ oferta.quantidade_minima_ativacao }} cupons for atingida até o prazo final. Caso contrário, o valor será revertido em crédito para você usar no site.</p>
+
+                    <form method="post" action="{% url 'pedidos_coletivos:fazer_pedido_coletivo' slug_oferta=oferta.slug %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_quantidade" class="form-label">Quantidade de Cupons:</label>
+                            <input type="number" id="id_quantidade" name="quantidade" class="form-control" value="1" min="1" required onchange="calcularValor()">
+                        </div>
+
+                        {# Campo para usar crédito #}
+                        {% if saldo_disponivel > 0 %}
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="usar_credito" name="usar_credito" onchange="calcularValor()">
+                            <label class="form-check-label" for="usar_credito">
+                                Usar meu crédito (Saldo: R$ {{ saldo_disponivel|floatformat:2 }})
+                            </label>
+                            <small class="form-text text-muted">Seu crédito será aplicado para reduzir o valor a pagar.</small>
+                        </div>
+                        {% endif %}
+
+                        <h4 class="text-end">Total do Pedido: <span id="valor_total_pedido">R$ {{ oferta.preco_desconto|floatformat:2 }}</span></h4>
+                        <h4 class="text-end">Total a Pagar Agora: <span id="valor_final">R$ {{ oferta.preco_desconto|floatformat:2 }}</span></h4>
+                        <p class="text-center text-muted small">
+                            Você será redirecionado para o Mercado Pago para pagar <span id="valor_mp_display">R$ {{ oferta.preco_desconto|floatformat:2 }}</span>
+                        </p>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">Fazer Pedido Coletivo</button>
+                            <a href="{% url 'ofertas:detalhe_oferta' slug_oferta=oferta.slug %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block extras_js %}
+    <script>
+        function calcularValor() {
+            const quantidadeInput = document.getElementById('id_quantidade');
+            const usarCreditoCheckbox = document.getElementById('usar_credito');
+            const precoUnitario = parseFloat("{{ oferta.preco_desconto|floatformat:2 }}"); // Usa o preco_desconto da oferta
+            const saldoDisponivel = parseFloat("{{ saldo_disponivel|floatformat:2 }}");
+            
+            const quantidade = parseInt(quantidadeInput.value);
+            const valorTotalPedido = precoUnitario * quantidade;
+
+            let valorFinal = valorTotalPedido;
+            let valorMP = valorTotalPedido;
+
+            if (usarCreditoCheckbox && usarCreditoCheckbox.checked) {
+                if (saldoDisponivel >= valorTotalPedido) {
+                    valorFinal = 0.00;
+                    valorMP = 0.00;
+                } else {
+                    valorFinal = valorTotalPedido - saldoDisponivel;
+                    valorMP = valorTotalPedido - saldoDisponivel;
+                }
+            }
+
+            document.getElementById('valor_total_pedido').innerText = `R$ ${valorTotalPedido.toFixed(2).replace('.', ',')}`;
+            document.getElementById('valor_final').innerText = `R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('valor_mp_display').innerText = `R$ ${valorMP.toFixed(2).replace('.', ',')}`;
+
+            const submitButton = document.querySelector('button[type="submit"]');
+            if (valorMP <= 0.00) {
+                submitButton.innerText = "Finalizar Pedido (com crédito)";
+            } else {
+                submitButton.innerText = "Fazer Pedido Coletivo";
+            }
+        }
+        document.addEventListener('DOMContentLoaded', calcularValor);
+    </script>
+    {% endblock extras_js %}
+{% endblock conteudo %}

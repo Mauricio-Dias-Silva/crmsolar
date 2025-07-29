@@ -1,0 +1,90 @@
+{# contas/templates/account/login.html #}
+{% extends "base.html" %}
+
+{% load i18n %} {# Para usar tags de internacionalização do Django/allauth #}
+{% load account socialaccount %} {# Para tags específicas do allauth #}
+
+{% block titulo_pagina %}{% trans "Entrar" %}{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm mt-5">
+      <div class="card-header bg-primary text-white text-center">
+        <h3 class="mb-0">{% trans "Entrar" %}</h3>
+      </div>
+      <div class="card-body">
+        <p class="text-center">{% trans "Se você ainda não tem uma conta, por favor" %} <a href="{% url 'account_signup' %}">{% trans "registre-se" %}</a>.</p>
+
+        <form class="login" method="POST" action="{% url 'account_login' %}">
+          {% csrf_token %}
+          
+          {# Renderiza os campos do formulário manualmente para aplicar estilos Bootstrap #}
+          {% for field in form %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+              {{ field|add_class:"form-control" }} {# <--- ADICIONADO AQUI: |add_class:"form-control" #}
+              {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+
+          {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                  {% for error in form.non_field_errors %}
+                      <p class="mb-0">{{ error }}</p>
+                  {% endfor %}
+              </div>
+          {% endif %}
+
+          <button class="btn btn-primary btn-lg w-100 mt-3" type="submit">{% trans "Entrar" %}</button>
+        </form>
+        
+        <p class="text-center mt-3">
+            <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Esqueceu a senha?" %}</a>
+        </p>
+
+        {% get_providers as socialaccount_providers %}
+        {% if socialaccount_providers %}
+        <hr>
+        <div class="socialaccount_ballot text-center">
+          <p>{% trans "Ou entre com uma conta social:" %}</p>
+          <ul class="socialaccount_providers list-unstyled">
+            {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+          </ul>
+        </div>
+        {% include "socialaccount/snippets/login_extra.html" %}
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extras_css %}
+<style>
+    /* Estilos para o formulário */
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock extras_css %}

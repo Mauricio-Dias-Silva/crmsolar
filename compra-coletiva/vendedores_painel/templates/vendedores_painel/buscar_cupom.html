@@ -1,0 +1,30 @@
+{# vendedores_painel/templates/vendedores_painel/buscar_cupom.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Buscar Cupom para Resgate</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-center">Insira o código do cupom que deseja resgatar:</p>
+                    <form method="post" action="{% url 'vendedores_painel:buscar_cupom' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_codigo_cupom" class="form-label">Código do Cupom:</label>
+                            <input type="text" name="codigo_cupom" id="id_codigo_cupom" class="form-control form-control-lg" placeholder="Ex: A1B2C3D4E5F6" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Buscar Cupom</button>
+                            <a href="{% url 'vendedores_painel:listar_cupons' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock conteudo %}

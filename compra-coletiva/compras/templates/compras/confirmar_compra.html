@@ -1,0 +1,95 @@
+{# compras/templates/compras/confirmar_compra.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h3 class="mb-0">Confirmar Compra</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead text-center">Você está prestes a comprar:</p>
+                    
+                    <div class="d-flex align-items-center mb-4 p-3 border rounded bg-light">
+                        <img src="{{ oferta.imagem_principal.url }}" alt="{{ oferta.titulo }}" class="img-fluid me-3" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <h4>{{ oferta.titulo }}</h4>
+                            <p class="mb-0 text-muted">Vendido por: {{ oferta.vendedor.nome_empresa }}</p>
+                            <p class="mb-0">
+                                <span class="text-decoration-line-through text-muted me-2">R$ {{ oferta.preco_original|floatformat:2 }}</span>
+                                <span class="fs-5 fw-bold text-success">R$ {{ oferta.preco_desconto|floatformat:2 }}</span>
+                                <span class="badge bg-warning text-dark ms-2">{{ oferta.percentual_desconto }} OFF</span>
+                            </p>
+                            <p class="mb-0">Preço da Unidade: <strong>R$ {{ oferta.preco_desconto|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'compras:comprar_oferta' slug_oferta=oferta.slug %}">
+                        {% csrf_token %}
+                        
+                        {# Campo para usar crédito #}
+                        {% if saldo_disponivel > 0 %}
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="usar_credito" name="usar_credito" onchange="calcularValor()">
+                            <label class="form-check-label" for="usar_credito">
+                                Usar meu crédito (Saldo: R$ {{ saldo_disponivel|floatformat:2 }})
+                            </label>
+                            <small class="form-text text-muted">Seu crédito será aplicado para reduzir o valor a pagar.</small>
+                        </div>
+                        {% endif %}
+
+                        <h4 class="text-end">Total a Pagar: <span id="valor_final">R$ {{ valor_total_compra|floatformat:2 }}</span></h4>
+                        <p class="text-center text-muted small">
+                            Você será redirecionado para o Mercado Pago para pagar <span id="valor_mp_display">R$ {{ valor_total_compra|floatformat:2 }}</span>
+                        </p>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">Ir para Pagamento</button>
+                            <a href="{% url 'ofertas:detalhe_oferta' slug_oferta=oferta.slug %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block extras_js %}
+    <script>
+        function calcularValor() {
+            const usarCreditoCheckbox = document.getElementById('usar_credito');
+            const valorOriginal = parseFloat("{{ valor_total_compra|floatformat:2 }}");
+            const saldoDisponivel = parseFloat("{{ saldo_disponivel|floatformat:2 }}");
+            let valorFinal = valorOriginal;
+            let valorMP = valorOriginal;
+
+            if (usarCreditoCheckbox && usarCreditoCheckbox.checked) {
+                if (saldoDisponivel >= valorOriginal) {
+                    valorFinal = 0.00; // Todo pago com crédito
+                    valorMP = 0.00;
+                } else {
+                    valorFinal = valorOriginal - saldoDisponivel; // Crédito parcial
+                    valorMP = valorOriginal - saldoDisponivel;
+                }
+            }
+
+            document.getElementById('valor_final').innerText = `R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('valor_mp_display').innerText = `R$ ${valorMP.toFixed(2).replace('.', ',')}`;
+            
+            // Desabilita o botão se o valor a pagar no MP for zero (tudo pago com crédito)
+            const submitButton = document.querySelector('button[type="submit"]');
+            if (valorMP <= 0.00) { // Usar <= 0.00 para tratar float inaccuracies
+                submitButton.innerText = "Finalizar Compra (com crédito)";
+                // Não desabilitar se o pagamento for via crédito, apenas mudar o texto.
+                // O servidor irá tratar a lógica de aprovação direta.
+            } else {
+                submitButton.innerText = "Ir para Pagamento";
+            }
+        }
+        // Chamada inicial para exibir os valores corretos ao carregar a página
+        document.addEventListener('DOMContentLoaded', calcularValor);
+    </script>
+    {% endblock extras_js %}
+{% endblock conteudo %}

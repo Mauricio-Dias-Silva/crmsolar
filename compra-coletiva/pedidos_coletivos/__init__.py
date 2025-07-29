@@ -1,0 +1,1 @@
+default_app_config = 'pedidos_coletivos.apps.PedidosColetivosConfig'

@@ -1,0 +1,224 @@
+{# ofertas/templates/ofertas/detalhe_oferta.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <a href="{% url 'ofertas:lista_ofertas' %}" class="btn btn-outline-secondary mb-4">&larr; Voltar para as ofertas</a>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-5">
+                    {# Lógica para exibir imagem ou placeholder #}
+                    {% if oferta.imagem_principal %}
+                        <img src="{{ oferta.imagem_principal.url }}" class="img-fluid rounded" alt="{{ oferta.titulo }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/400x300?text=Sem+Imagem" class="img-fluid rounded" alt="Sem Imagem">
+                    {% endif %}
+                </div>
+                <div class="col-md-7">
+                    <h1 class="card-title text-primary">{{ oferta.titulo }}</h1>
+                    <p class="card-text text-muted">Vendido por: <strong>{{ oferta.vendedor.nome_empresa }}</strong></p>
+                    <p class="card-text text-muted">Categoria: <strong>{{ oferta.categoria.nome }}</strong></p>
+                    
+                    {# Exibição da Média de Avaliações #}
+                    {% if media_avaliacoes %}
+                        <p class="card-text">
+                            Avaliação Média: <strong>{{ media_avaliacoes }} / 5</strong>
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= media_avaliacoes %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% elif forloop.counter0 < media_avaliacoes and forloop.counter > media_avaliacoes %}
+                                        <i class="bi bi-star-half"></i>
+                                    {% else %}
+                                        <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            ({{ avaliacoes.count }} avaliações)
+                        </p>
+                    {% else %}
+                        <p class="card-text">Esta oferta ainda não possui avaliações.</p>
+                    {% endif %}
+
+                    <h2 class="mt-4">
+                        <span class="text-decoration-line-through text-muted me-3 fs-5">R$ {{ oferta.preco_original|floatformat:2 }}</span>
+                        <span class="fs-5 fw-bold text-success">R$ {{ oferta.preco_desconto|floatformat:2 }}</span>
+                        <span class="badge bg-warning text-dark ms-3">{{ oferta.percentual_desconto }} OFF</span>
+                    </h2>
+                    
+                    <p class="card-text mt-3">Válido até: <strong>{{ oferta.data_termino|date:"d/m/Y H:i" }}</strong></p>
+                    <p class="card-text">Tipo de Oferta: <strong>{{ oferta.get_tipo_oferta_display }}</strong></p>
+                    <p class="card-text">
+                        Cupons vendidos: <strong>{{ oferta.quantidade_vendida }}</strong>
+                        {% if oferta.tipo_oferta == 'lote' %}
+                            de {{ oferta.quantidade_minima_ativacao }} para ativar o lote
+                        {% else %}
+                            {% if oferta.quantidade_maxima_cupons %}
+                                de {{ oferta.quantidade_maxima_cupons }} disponíveis
+                            {% else %}
+                                (sem limite de quantidade)
+                            {% endif %}
+                        {% endif %}
+                    </p>
+
+                    {# Contador Regressivo GRANDE na Detalhes da Oferta #}
+                    <h4 class="text-danger fw-bold mt-3" 
+                        data-countdown="{{ oferta.data_termino|date:'Y/m/d H:i:s' }}"
+                        id="countdown-detalhe-{{ oferta.id }}">
+                        Carregando tempo...
+                    </h4>
+
+                    {# Lógica do botão Comprar Agora #}
+                    {% if oferta.esta_disponivel_para_compra %}
+                        {% if oferta.tipo_oferta == 'lote' %}
+                            <span class="badge bg-info fs-6 mb-3">Compre e Ajude a Ativar o Lote!</span>
+                            <a href="{% url 'pedidos_coletivos:fazer_pedido_coletivo' slug_oferta=oferta.slug %}" class="btn btn-success btn-lg w-100">Fazer Pedido Coletivo!</a>
+                        {% else %}
+                            <span class="badge bg-success fs-6 mb-3">Oferta Disponível!</span>
+                            <form method="post" action="{% url 'compras:comprar_oferta' slug_oferta=oferta.slug %}" class="d-grid gap-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-lg">Comprar Agora!</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        {% if oferta.status == 'falha_lote' %}
+                            <span class="badge bg-danger fs-6 mb-3">Lote Não Atingido! Compra Cancelada.</span>
+                        {% elif oferta.esta_expirada %}
+                            <span class="badge bg-danger fs-6 mb-3">Esta oferta expirou.</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark fs-6 mb-3">Cupons esgotados!</span>
+                        {% endif %}
+                        <button class="btn btn-secondary btn-lg w-100" disabled>Indisponível</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h3 class="card-title text-primary">Detalhes da Oferta</h3>
+            <p class="card-text">{{ oferta.descricao_detalhada|linebreaksbr }}</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-4 mb-4">
+        <div class="card-body">
+            <h3 class="card-title text-primary">Sobre o Vendedor: {{ oferta.vendedor.nome_empresa }}</h3>
+            <div class="row align-items-center">
+                {% if oferta.vendedor.logo %}
+                    <div class="col-auto">
+                        <img src="{{ oferta.vendedor.logo.url }}" alt="Logo {{ oferta.vendedor.nome_empresa }}" class="img-fluid rounded" style="max-width: 120px; height: auto;">
+                    </div>
+                {% else %}
+                    <div class="col-auto">
+                        <img src="https://via.placeholder.com/120x120?text=Sem+Logo" class="img-fluid rounded" alt="Sem Logo" style="max-width: 120px; height: auto;">
+                    </div>
+                {% endif %}
+                <div class="col">
+                    <p class="card-text">{{ oferta.vendedor.descricao|default:"Nenhuma descrição disponível." }}</p>
+                    <p class="card-text"><small class="text-muted">Contato: {{ oferta.vendedor.email_contato }} / {{ oferta.vendedor.telefone|default:"N/A" }}</small></p>
+                    <p class="card-text"><small class="text-muted">Endereço: {{ oferta.vendedor.endereco }}</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Seção de Avaliações e Comentários #}
+    <div class="card shadow-sm mt-4 mb-4">
+        <div class="card-body">
+            <h3 class="card-title text-primary">Avaliações dos Clientes</h3>
+
+            {# Formulário de Avaliação #}
+            {% if user.is_authenticated %}
+                <div class="mb-4 p-3 border rounded bg-light">
+                    <h4>{% if avaliacao_existente %}Sua Avaliação (Editar){% else %}Deixe sua Avaliação{% endif %}</h4>
+                    <form method="post" action="{% url 'ofertas:detalhe_oferta' slug_oferta=oferta.slug %}">
+                        {% csrf_token %}
+                        {% for field in form_avaliacao %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-success">Enviar Avaliação</button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                    <a href="{% url 'account_login' %}" class="alert-link">Faça login</a> para deixar sua avaliação.
+                </div>
+            {% endif %}
+
+            {# Lista de Avaliações #}
+            {% if avaliacoes %}
+                <hr>
+                <h5>Todas as Avaliações ({{ avaliacoes.count }})</h5>
+                <ul class="list-group list-group-flush">
+                    {% for avaliacao in avaliacoes %}
+                        <li class="list-group-item">
+                            <p class="mb-1">
+                                <strong>{{ avaliacao.usuario.username }}</strong> em {{ avaliacao.data_avaliacao|date:"d/m/Y H:i" }} - 
+                                <span class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= avaliacao.nota %}
+                                            <i class="bi bi-star-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                            </p>
+                            {% if avaliacao.comentario %}
+                                <p class="mb-0">{{ avaliacao.comentario }}</p>
+                            {% else %}
+                                <p class="mb-0 text-muted">Sem comentário.</p>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-secondary text-center" role="alert">
+                    Seja o primeiro a avaliar esta oferta!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock conteudo %}
+
+{% block extras_js %}
+<script>
+    function updateCountdown() {
+        document.querySelectorAll('[data-countdown]').forEach(function(element) {
+            const endDateString = element.getAttribute('data-countdown');
+            const endTime = new Date(endDateString.replace(/-/g, '/')).getTime(); // Ajusta formato para compatibilidade
+            const now = new Date().getTime();
+            const distance = endTime - now;
+
+            if (distance < 0) {
+                element.innerHTML = "Oferta Expirada!";
+                element.classList.remove('text-danger');
+                element.classList.add('text-muted');
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            element.innerHTML = `Faltam: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+        });
+    }
+
+    setInterval(updateCountdown, 1000);
+    document.addEventListener('DOMContentLoaded', updateCountdown);
+</script>
+{% endblock extras_js %}

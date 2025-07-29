@@ -1,0 +1,81 @@
+{# vendedores_painel/templates/vendedores_painel/listar_cupons.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <h1 class="my-4 text-center">{{ titulo_pagina }}</h1>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="{% url 'vendedores_painel:dashboard' %}" class="list-group-item list-group-item-action">
+                    Visão Geral
+                </a>
+                <a href="{% url 'vendedores_painel:criar_oferta' %}" class="list-group-item list-group-item-action">Criar Nova Oferta</a> 
+                <a href="{% url 'vendedores_painel:listar_cupons' %}" class="list-group-item list-group-item-action active" aria-current="true">Gerenciar Cupons</a>
+                <a href="#" class="list-group-item list-group-item-action disabled">Relatórios (Em breve)</a>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Cupons de Suas Ofertas</h4>
+                    <a href="{% url 'vendedores_painel:buscar_cupom' %}" class="btn btn-warning btn-sm">Buscar Cupom para Resgate</a> {# Botão para buscar cupom #}
+                </div>
+                <div class="card-body">
+                    {% if cupons %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Oferta</th>
+                                        <th>Comprador</th>
+                                        <th>Gerado Em</th>
+                                        <th>Válido Até</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cupom in cupons %}
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">{{ cupom.codigo }}</span></td>
+                                            <td><a href="{% url 'ofertas:detalhe_oferta' slug_oferta=cupom.oferta.slug %}" class="text-decoration-none">{{ cupom.oferta.titulo }}</a></td>
+                                            <td>{{ cupom.usuario.username }}</td>
+                                            <td>{{ cupom.data_geracao|date:"d/m/Y H:i" }}</td>
+                                            <td>{{ cupom.valido_ate|date:"d/m/Y H:i" }}</td>
+                                            <td>
+                                                {% if cupom.status == 'disponivel' and cupom.esta_valido %}
+                                                    <span class="badge bg-success">Disponível</span>
+                                                {% elif cupom.status == 'resgatado' %}
+                                                    <span class="badge bg-warning text-dark">Resgatado</span>
+                                                {% elif cupom.status == 'expirado' or not cupom.esta_valido %}
+                                                    <span class="badge bg-danger">Expirado</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ cupom.get_status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if cupom.esta_valido %}
+                                                    <a href="{% url 'vendedores_painel:resgatar_cupom' codigo_cupom=cupom.codigo %}" class="btn btn-success btn-sm" title="Marcar como Resgatado"><i class="bi bi-check-circle"></i> Resgatar</a>
+                                                {% else %}
+                                                    <button class="btn btn-secondary btn-sm" disabled><i class="bi bi-x-circle"></i> Indisponível</button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center" role="alert">
+                            Nenhum cupom gerado para suas ofertas ainda.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock conteudo %}

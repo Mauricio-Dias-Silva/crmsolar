@@ -1,0 +1,58 @@
+{# vendedores_painel/templates/vendedores_painel/confirmar_resgate_cupom.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h3 class="mb-0">Confirmar Resgate de Cupom</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead text-center">Você está prestes a resgatar o cupom:</p>
+                    
+                    <div class="d-flex align-items-center mb-4 p-3 border rounded bg-light">
+                        <img src="{{ cupom.oferta.imagem_principal.url }}" alt="{{ cupom.oferta.titulo }}" class="img-fluid me-3" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <h4>{{ cupom.oferta.titulo }}</h4>
+                            <p class="mb-0 text-muted">Comprador: <strong>{{ cupom.usuario.username }}</strong></p>
+                            <p class="mb-0"><strong>Código:</strong> <span class="badge bg-info text-dark fs-6">{{ cupom.codigo }}</span></p>
+                            <p class="mb-0"><strong>Válido até:</strong> {{ cupom.valido_ate|date:"d/m/Y H:i" }}</p>
+                            <p class="mb-0"><strong>Status Atual:</strong> 
+                                {% if cupom.status == 'disponivel' and cupom.esta_valido %}
+                                    <span class="badge bg-success">Disponível</span>
+                                {% elif cupom.status == 'resgatado' %}
+                                    <span class="badge bg-warning text-dark">Resgatado</span>
+                                {% elif cupom.status == 'expirado' or not cupom.esta_valido %}
+                                    <span class="badge bg-danger">Expirado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ cupom.get_status_display }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if cupom.esta_valido %}
+                        <p class="text-center text-danger small">Atenção: Esta ação marcará o cupom como "Resgatado" e não poderá ser desfeita.</p>
+                        <form method="post" action="{% url 'vendedores_painel:resgatar_cupom' codigo_cupom=cupom.codigo %}">
+                            {% csrf_token %}
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">Confirmar Resgate</button>
+                                <a href="{% url 'vendedores_painel:listar_cupons' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-danger text-center" role="alert">
+                            Este cupom não pode ser resgatado pois está {{ cupom.get_status_display|lower }}.
+                        </div>
+                        <div class="text-center">
+                            <a href="{% url 'vendedores_painel:listar_cupons' %}" class="btn btn-primary btn-lg">Voltar para a Lista de Cupons</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock conteudo %}

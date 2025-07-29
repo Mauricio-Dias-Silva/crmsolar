@@ -1,0 +1,54 @@
+{# vendedores_painel/templates/vendedores_painel/criar_editar_oferta.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <a href="{% url 'vendedores_painel:dashboard' %}" class="btn btn-outline-secondary mb-4">&larr; Voltar para o Painel</a>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">{{ titulo_pagina }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data"> {# IMPORTANTE: enctype para upload de arquivos #}
+                        {% csrf_token %}
+                        
+                        {# Renderiza os campos do formulário #}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {% if field.field.widget.input_type == 'file' and field.value %}
+                                    <p class="mb-1"><small class="text-muted">Arquivo atual: <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a></small></p>
+                                {% endif %}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        {# Erros que não estão ligados a um campo específico (ex: validação no clean() do form) #}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg mt-3">Salvar Oferta</button>
+                            <a href="{% url 'vendedores_painel:dashboard' %}" class="btn btn-outline-danger btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock conteudo %}

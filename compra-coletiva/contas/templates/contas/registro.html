@@ -1,0 +1,70 @@
+{# contas/templates/contas/registro.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm mt-5">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Criar Nova Conta</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %} {# Token de segurança obrigatório no Django para formulários POST #}
+                        
+                        {# Renderiza os campos do formulário #}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        {# Erros que não estão ligados a um campo específico (ex: senhas não batem) #}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 mt-3">Registrar</button>
+                    </form>
+                    <p class="text-center mt-3">Já tem uma conta? <a href="{% url 'login' %}">Faça login aqui</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock conteudo %}
+
+{% block extras_css %}
+<style>
+    /* Estilos para o formulário */
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock extras_css %}
