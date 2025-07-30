@@ -17,7 +17,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG= True
 
 # ALLOWED_HOSTS para Docker e Produção
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', 'www.varejounido.com.br', 'varejounido.com.br'] # <--- Adicione seus domínios reais aqui
 # Em produção, adicione seus domínios reais aqui (ex: 'nomedoseusite.com')
 
 # --- Aplicativos instalados ---
@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
 
     # django-allauth
     'django.contrib.sites', # Necessário para allauth
@@ -77,8 +78,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # Processador de contexto para carregar categorias globalmente na navbar
                 'ofertas.context_processors.categorias_globais',
+                'contas.context_processors.notificacoes_nao_lidas_globais'
             ],
         },
     },

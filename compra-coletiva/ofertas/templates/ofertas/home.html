@@ -4,23 +4,70 @@
 {% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
 
 {% block conteudo %}
-    <div class="p-5 mb-4 bg-light rounded-3 text-center">
+    {# Carrossel de Banners (NOVO) - Perfeito para propaganda de fornecedores ou grandes ofertas #}
+    {% if banners %}
+    <div id="carouselExampleIndicators" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            {% for banner in banners %}
+                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ forloop.counter0 }}" 
+                        class="{% if forloop.first %}active{% endif %}" aria-current="true" 
+                        aria-label="Slide {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+        <div class="carousel-inner rounded shadow-sm">
+            {% for banner in banners %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    {% if banner.url_destino %}
+                        <a href="{{ banner.url_destino }}" target="_blank">
+                            {# Lógica para exibir imagem ou placeholder #}
+                            {% if banner.imagem %}
+                                <img src="{{ banner.imagem.url }}" class="d-block w-100" alt="{{ banner.titulo }}">
+                            {% else %}
+                                <img src="https://via.placeholder.com/1200x400?text=Banner+Sem+Imagem" class="d-block w-100" alt="Sem Imagem">
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        {% if banner.imagem %}
+                            <img src="{{ banner.imagem.url }}" class="d-block w-100" alt="{{ banner.titulo }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/1200x400?text=Banner+Sem+Imagem" class="d-block w-100" alt="Sem Imagem">
+                        {% endif %}
+                    {% endif %}
+                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                        <h5>{{ banner.titulo }}</h5>
+                        {# <p>Slogan ou descrição curta do banner.</p> #}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+    {% else %}
+    {# Jumbotron padrão se não houver banners (revisado para ser mais genérico) #}
+    <div class="p-5 mb-4 bg-light rounded-3 text-center"> 
         <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold">Bem-vindo ao Nosso Site de Ofertas!</h1>
-            <p class="col-md-8 fs-4 mx-auto">Encontre as melhores ofertas e descontos incríveis.</p>
+            <h1 class="display-5 fw-bold">{{ titulo_pagina }}</h1>
+            <p class="col-md-8 fs-4 mx-auto">Sua melhor plataforma de compras online, com ofertas diárias e economia coletiva!</p>
             <hr class="my-4">
-            <p>Explore nossas ofertas em destaque ou navegue por todas as categorias.</p>
-            <a class="btn btn-primary btn-lg" href="{% url 'ofertas:lista_ofertas' %}" role="button">Ver Todas as Ofertas</a>
+            <a class="btn btn-primary btn-lg" href="{% url 'ofertas:lista_ofertas' %}" role="button">Descubra Nossas Ofertas</a>
         </div>
     </div>
+    {% endif %}
 
-    {% if ofertas_destaque %}
-        <h2 class="text-center mb-4">Ofertas em Destaque</h2>
+    {# Seção 1: Ofertas Imperdíveis (Varejo Normal - Unidade) #}
+    <h2 class="text-center my-5">🛒 Ofertas Imperdíveis do VarejoUnido 🛒</h2>
+    {% if ofertas_destaque %} {# ofertas_destaque já são do tipo 'unidade' #}
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
             {% for oferta in ofertas_destaque %}
                 <div class="col">
                     <div class="card h-100 shadow-sm">
-                        {# Lógica para exibir imagem ou placeholder #}
                         {% if oferta.imagem_principal %}
                             <img src="{{ oferta.imagem_principal.url }}" class="card-img-top" alt="{{ oferta.titulo }}" style="height: 200px; object-fit: cover;">
                         {% else %}
@@ -35,46 +82,7 @@
                                     <span class="fs-5 fw-bold text-success">R$ {{ oferta.preco_desconto|floatformat:2 }}</span>
                                 </p>
                                 <span class="badge bg-warning text-dark mb-2">{{ oferta.percentual_desconto }} OFF</span>
-                                <span class="badge bg-info ms-2">{{ oferta.get_tipo_oferta_display }}</span> 
-                                
-                                {# Contador Regressivo #}
-                                <p class="card-text text-danger fw-bold mt-2" 
-                                   data-countdown="{{ oferta.data_termino|date:'Y/m/d H:i:s' }}"
-                                   id="countdown-{{ oferta.id }}">
-                                   Carregando tempo...
-                                </p>
-
-                                <a href="{% url 'ofertas:detalhe_oferta' slug_oferta=oferta.slug %}" class="btn btn-primary btn-sm d-block">Ver Oferta</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <h2 class="text-center mb-4">Outras Ofertas Ativas</h2>
-    {% if ofertas %}
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            {% for oferta in ofertas %}
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        {# Lógica para exibir imagem ou placeholder #}
-                        {% if oferta.imagem_principal %}
-                            <img src="{{ oferta.imagem_principal.url }}" class="card-img-top" alt="{{ oferta.titulo }}" style="height: 200px; object-fit: cover;">
-                        {% else %}
-                            <img src="https://via.placeholder.com/300x200?text=Sem+Imagem" class="card-img-top" alt="Sem Imagem" style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ oferta.titulo }}</h5>
-                            <p class="card-text text-muted">{{ oferta.descricao_detalhada|truncatechars:70 }}</p>
-                            <div class="mt-auto">
-                                <p class="mb-1">
-                                    <span class="text-decoration-line-through text-muted me-2">R$ {{ oferta.preco_original|floatformat:2 }}</span>
-                                    <span class="fs-5 fw-bold text-success">R$ {{ oferta.preco_desconto|floatformat:2 }}</span>
-                                </p>
-                                <span class="badge bg-warning text-dark mb-2">{{ oferta.percentual_desconto }} OFF</span>
-                                <span class="badge bg-info ms-2">{{ oferta.get_tipo_oferta_display }}</span> 
+                                <span class="badge bg-primary ms-2">{{ oferta.get_tipo_oferta_display }}</span> 
 
                                 {# Contador Regressivo #}
                                 <p class="card-text text-danger fw-bold mt-2" 
@@ -90,42 +98,64 @@
                 </div>
             {% endfor %}
         </div>
-
-        {# Controles de Paginação para a seção "Outras Ofertas Ativas" #}
-        <nav aria-label="Navegação de Páginas" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if ofertas.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page=1">Primeira</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.previous_page_number }}">Anterior</a></li>
-                {% endif %}
-
-                {% for i in ofertas.paginator.page_range %}
-                    {% if ofertas.number == i %}
-                        <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
-                    {% else %}
-                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if ofertas.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.next_page_number }}">Próxima</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.paginator.num_pages }}">Última</a></li>
-                {% endif %}
-            </ul>
-        </nav>
+        <div class="text-center mb-5">
+            <a href="{% url 'ofertas:lista_ofertas' %}" class="btn btn-outline-primary btn-lg">Ver Todas as Ofertas de Varejo</a>
+        </div>
     {% else %}
-        <div class="alert alert-info text-center" role="alert">
-            Nenhuma outra oferta ativa encontrada no momento.
+        <div class="alert alert-info text-center my-5" role="alert">
+            Nenhuma oferta imperdível do varejo normal encontrada no momento.
+            <a href="{% url 'ofertas:lista_ofertas' %}" class="alert-link">Explore todas as opções!</a>
         </div>
     {% endif %}
+
+    {# Seção 2: Chamada para a Compra Coletiva #}
+    <div class="p-5 mb-4 bg-primary text-white rounded-3 text-center shadow-lg">
+        <div class="container-fluid py-5">
+            <h2 class="display-5 fw-bold">🤝 Compre Junto e Economize Muito Mais! 🤝</h2>
+            <p class="col-md-8 fs-4 mx-auto">Alcance descontos ainda maiores ao comprar em grupo. Sua economia é nossa força!</p>
+            <hr class="my-4 border-light">
+            <p>Descubra produtos e serviços com preços inacreditáveis que só a força da coletividade pode trazer.</p>
+            <a class="btn btn-warning btn-lg" href="{% url 'ofertas:compre_junto' %}" role="button">Ver Ofertas Coletivas Agora!</a>
+        </div>
+    </div>
+
+    {# Seção 3: Fornecedores e Parceiros Destacados (Monetização por Publicidade) #}
+    <h2 class="text-center my-5">🤝 Nossos Parceiros em Destaque 🤝</h2>
+    <div class="row row-cols-2 row-cols-md-4 g-4 justify-content-center mb-5">
+        {% for vendedor in vendedores_destaque %} {# NOVO: Passar vendedores_destaque para o contexto da home view #}
+            <div class="col text-center">
+                <div class="card h-100 p-3 shadow-sm d-flex align-items-center justify-content-center">
+                    {% if vendedor.logo %}
+                        <img src="{{ vendedor.logo.url }}" class="img-fluid" alt="Logo {{ vendedor.nome_empresa }}" style="max-height: 80px; width: auto;">
+                    {% else %}
+                        <img src="https://via.placeholder.com/80x80?text={{ vendedor.nome_empresa|first }}" class="img-fluid rounded-circle" alt="Sem Logo" style="max-height: 80px; width: 80px; object-fit: cover;">
+                    {% endif %}
+                    <p class="card-text mt-2 mb-0 fw-bold">{{ vendedor.nome_empresa }}</p>
+                    <a href="{% url 'ofertas:lista_ofertas' %}?q={{ vendedor.nome_empresa }}" class="btn btn-link btn-sm mt-1">Ver Ofertas</a>
+                </div>
+            </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-secondary text-center" role="alert">
+                Em breve, mais parceiros incríveis por aqui!
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    {# Controles de Paginação (Removido da home para simplificar, a home foca nos destaques e chamada) #}
+    {# As ofertas normais que não são destaque já são paginadas em 'ofertas:lista_ofertas' #}
+
 {% endblock conteudo %}
 
+{# JavaScript para o Contador Regressivo é o mesmo, pode ser no extras_js do base.html ou aqui #}
 {% block extras_js %}
 <script>
     function updateCountdown() {
         document.querySelectorAll('[data-countdown]').forEach(function(element) {
             const endDateString = element.getAttribute('data-countdown');
-            const endTime = new Date(endDateString.replace(/-/g, '/')).getTime(); // Ajusta formato para compatibilidade
+            const endTime = new Date(endDateString.replace(/-/g, '/')).getTime();
             const now = new Date().getTime();
             const distance = endTime - now;
 

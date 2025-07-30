@@ -1,0 +1,159 @@
+{# ofertas/templates/ofertas/lista_ofertas_coletivas.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <h1 class="my-4 text-center text-primary">
+        {% if categoria_selecionada %}
+            Ofertas Coletivas em {{ categoria_selecionada.nome }}
+        {% elif query_busca %}
+            Resultados da Busca de Coletivas para "{{ query_busca }}"
+        {% else %}
+            Compre Junto: Ofertas Coletivas!
+        {% endif %}
+    </h1>
+
+    <div class="alert alert-info text-center mb-4" role="alert">
+        🤝 **Compre Junto!** Ofertas incríveis que só se concretizam se o grupo atingir a quantidade mínima. Sua economia é nossa força!
+    </div>
+
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-7">
+            {# Formulário de Busca - Ação para a URL 'compre_junto' #}
+            <form method="GET" action="{% url 'ofertas:compre_junto' %}" class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Buscar ofertas coletivas..." aria-label="Search" name="q" value="{{ query_busca|default:'' }}">
+                <button class="btn btn-outline-success" type="submit">Buscar</button>
+                {# Mantém os parâmetros de categoria, ordenação E apenas_lote ao buscar #}
+                {% if categoria_selecionada %}<input type="hidden" name="categoria" value="{{ categoria_selecionada.slug }}">{% endif %}
+                {% if ordenar_por_selecionado %}<input type="hidden" name="ordenar_por" value="{{ ordenar_por_selecionado }}">{% endif %}
+                <input type="hidden" name="apenas_lote" value="true"> {# Mantém o flag de apenas_lote #}
+            </form>
+        </div>
+        <div class="col-md-5">
+            {# Dropdown de Ordenação #}
+            <div class="d-flex justify-content-end">
+                <div class="dropdown me-2">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownOrdenar" data-bs-toggle="dropdown" aria-expanded="false">
+                        Ordenar por:
+                        {% if ordenar_por_selecionado == 'recentes' %} Mais Recentes
+                        {% elif ordenar_por_selecionado == 'antigas' %} Mais Antigas
+                        {% elif ordenar_por_selecionado == 'menor_preco' %} Menor Preço
+                        {% elif ordenar_por_selecionado == 'maior_preco' %} Maior Preço
+                        {% elif ordenar_por_selecionado == 'mais_vendidos' %} Mais Vendidos
+                        {% else %} Padrão
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownOrdenar">
+                        {# Links de ordenação que preservam busca, categoria E apenas_lote #}
+                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'recentes' %}active{% endif %}" href="{% url 'ofertas:compre_junto' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=recentes{% if apenas_lote %}&apenas_lote=true{% endif %}">Mais Recentes</a></li>
+                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'antigas' %}active{% endif %}" href="{% url 'ofertas:compre_junto' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=antigas{% if apenas_lote %}&apenas_lote=true{% endif %}">Mais Antigas</a></li>
+                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'menor_preco' %}active{% endif %}" href="{% url 'ofertas:compre_junto' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=menor_preco{% if apenas_lote %}&apenas_lote=true{% endif %}">Menor Preço</a></li>
+                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'maior_preco' %}active{% endif %}" href="{% url 'ofertas:compre_junto' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=maior_preco{% if apenas_lote %}&apenas_lote=true{% endif %}">Maior Preço</a></li>
+                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'mais_vendidos' %}active{% endif %}" href="{% url 'ofertas:compre_junto' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=mais_vendidos{% if apenas_lote %}&apenas_lote=true{% endif %}">Mais Vendidos</a></li>
+                    </ul>
+                </div>
+                {% if query_busca or categoria_selecionada or ordenar_por_selecionado != '-data_inicio' or apenas_lote %}
+                <a href="{% url 'ofertas:compre_junto' %}" class="btn btn-outline-danger">Limpar Filtros</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# CORREÇÃO AQUI: Garanta que o div.row está dentro do {% if ofertas %} e envolve os cols #}
+    {% if ofertas %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"> {# <--- ESTA LINHA É CRUCIAL #}
+            {% for oferta in ofertas %}
+                <div class="col"> {# <--- CADA CARD DEVE ESTAR EM UM 'col' #}
+                    <div class="card h-100 shadow-sm">
+                        {% if oferta.imagem_principal %}
+                            <img src="{{ oferta.imagem_principal.url }}" class="card-img-top" alt="{{ oferta.titulo }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x200?text=Sem+Imagem" class="card-img-top" alt="Sem Imagem" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ oferta.titulo }}</h5>
+                            <p class="card-text text-muted">{{ oferta.descricao_detalhada|truncatechars:70 }}</p>
+                            <div class="mt-auto">
+                                <p class="mb-1">
+                                    <span class="text-decoration-line-through text-muted me-2">R$ {{ oferta.preco_original|floatformat:2 }}</span>
+                                    <span class="fs-5 fw-bold text-success">R$ {{ oferta.preco_desconto|floatformat:2 }}</span>
+                                </p>
+                                <span class="badge bg-warning text-dark mb-2">{{ oferta.percentual_desconto }} OFF</span>
+                                <span class="badge bg-primary ms-2">{{ oferta.get_tipo_oferta_display }}</span> {# Já será 'lote' #}
+
+                                {# Contador Regressivo #}
+                                <p class="card-text text-danger fw-bold mt-2" 
+                                   data-countdown="{{ oferta.data_termino|date:'Y/m/d H:i:s' }}"
+                                   id="countdown-{{ oferta.id }}">
+                                   Carregando tempo...
+                                </p>
+
+                                <a href="{% url 'ofertas:detalhe_oferta' slug_oferta=oferta.slug %}" class="btn btn-primary btn-sm d-block">Ver Oferta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Controles de Paginação #}
+        <nav aria-label="Navegação de Páginas" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if ofertas.has_previous %}
+                    <li class="page-item"><a class="page-link" href="{% url 'ofertas:compre_junto' %}?page=1{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Primeira</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'ofertas:compre_junto' %}?page={{ ofertas.previous_page_number }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Anterior</a></li>
+                {% endif %}
+
+                {% for i in ofertas.paginator.page_range %}
+                    {% if ofertas.number == i %}
+                        <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="{% url 'ofertas:compre_junto' %}?page={{ i }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if ofertas.has_next %}
+                    <li class="page-item"><a class="page-link" href="{% url 'ofertas:compre_junto' %}?page={{ ofertas.next_page_number }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Próxima</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'ofertas:compre_junto' %}?page={{ ofertas.paginator.num_pages }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Última</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            Nenhuma oferta coletiva encontrada com os critérios de busca/filtro.
+            <a href="{% url 'ofertas:compre_junto' %}" class="alert-link">Limpar Filtros</a>
+        </div>
+    {% endif %}
+    {% comment %} O JavaScript para o Contador Regressivo é o mesmo, estará no extras_js do base.html ou aqui no final, como já está. {% endcomment %}
+    {% block extras_js %}
+    <script>
+        function updateCountdown() {
+            document.querySelectorAll('[data-countdown]').forEach(function(element) {
+                const endDateString = element.getAttribute('data-countdown');
+                const endTime = new Date(endDateString.replace(/-/g, '/')).getTime(); // Ajusta formato para compatibilidade
+                const now = new Date().getTime();
+                const distance = endTime - now;
+
+                if (distance < 0) {
+                    element.innerHTML = "Oferta Expirada!";
+                    element.classList.remove('text-danger');
+                    element.classList.add('text-muted');
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                element.innerHTML = `Faltam: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            });
+        }
+
+        setInterval(updateCountdown, 1000);
+        document.addEventListener('DOMContentLoaded', updateCountdown);
+    </script>
+    {% endblock extras_js %}
+{% endblock conteudo %}

@@ -1,47 +1,33 @@
-
-# ofertas/views.py (apenas o trecho da função detalhe_oferta)
+# ofertas/views.py
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, Avg # Importe Avg para calcular a média das notas
+from django.db.models import Q, Avg
 from django.utils import timezone
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
-from django.contrib import messages # Para mensagens de sucesso/erro
-from django.contrib.auth.decorators import login_required # Para exigir login ao avaliar
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
-from .models import Oferta, Categoria, Avaliacao # Importe Avaliacao
-from .forms import AvaliacaoForm # Importe AvaliacaoForm
-from compras.models import Cupom 
+from .models import Oferta, Categoria, Avaliacao, Banner, Vendedor
+from .forms import AvaliacaoForm
+from compras.models import Cupom
 
 
-# ... (lista_ofertas - permanece a mesma) ...
 
-def lista_ofertas(request, slug_categoria=None):
-    # 1. Filtro base de ofertas: ativas, publicadas e não expiradas
-    ofertas_base = Oferta.objects.filter(
-        publicada=True,
-        status__in=['ativa', 'sucesso'],
-        data_termino__gte=timezone.now()
-    )
-
-    # 2. Lógica de Filtro por Categoria
-    categoria_selecionada = None
-    if slug_categoria:
-        categoria_selecionada = get_object_or_404(Categoria, slug=slug_categoria)
-        ofertas_base = ofertas_base.filter(categoria=categoria_selecionada)
-
-    # 3. Lógica de Busca por termo (query parameter 'q')
+# --- FUNÇÃO AUXILIAR: PARA REDUZIR DUPLICAÇÃO DE CÓDIGO ---
+def _get_ofertas_filtradas_paginadas(request, ofertas_queryset, categoria_selecionada, apenas_lote_flag):
+    """
+    Função auxiliar para aplicar busca, ordenação e paginação.
+    Retorna as ofertas paginadas e os parâmetros de filtro/ordenação.
+    """
     query = request.GET.get('q')
     if query:
-        ofertas_base = ofertas_base.filter(
+        ofertas_queryset = ofertas_queryset.filter(
             Q(titulo__icontains=query) |
             Q(descricao_detalhada__icontains=query) |
             Q(vendedor__nome_empresa__icontains=query)
         )
 
-    # 4. Lógica de Ordenação (query parameter 'ordenar_por')
-    # O padrão é '-data_inicio' (mais recentes)
     ordenar_por = request.GET.get('ordenar_por', '-data_inicio')
-
     opcoes_ordenacao = {
         'recentes': '-data_inicio',
         'antigas': 'data_inicio',
@@ -49,90 +35,145 @@ def lista_ofertas(request, slug_categoria=None):
         'maior_preco': '-preco_desconto',
         'mais_vendidos': '-quantidade_vendida',
     }
-
     if ordenar_por in opcoes_ordenacao:
-        ofertas_base = ofertas_base.order_by(opcoes_ordenacao[ordenar_por])
+        ofertas_queryset = ofertas_queryset.order_by(opcoes_ordenacao[ordenar_por])
     else:
-        # Se o parâmetro for inválido, volta para a ordenação padrão
         ordenar_por = '-data_inicio'
-        ofertas_base = ofertas_base.order_by(ordenar_por)
+        ofertas_queryset = ofertas_queryset.order_by(ordenar_por)
 
-
-    # 5. Lógica para a Página Inicial (home.html) vs. Listas de Categoria/Busca
-    if not slug_categoria and not query: # Se não há categoria ou busca, é a página inicial pura
-        ofertas_destaque = Oferta.objects.filter(
-            publicada=True,
-            status__in=['ativa', 'sucesso'],
-            data_termino__gte=timezone.now(),
-            destaque=True
-        ).order_by('-data_inicio')[:4] # Limita a 4 ofertas em destaque
-
-        # Exclui ofertas em destaque da lista principal para não duplicar na home
-        ofertas_ativas_paginadas = ofertas_base.exclude(destaque=True)
-        template_name = 'ofertas/home.html'
-        titulo_pagina = 'Bem-vindo ao Nosso Site de Ofertas!'
-    else: # Para listas filtradas/buscadas ou categorias específicas
-        ofertas_destaque = None # Não exibe destaques nessas páginas
-        ofertas_ativas_paginadas = ofertas_base # Usa a lista base para paginação
-        template_name = 'ofertas/lista_ofertas.html'
-        titulo_pagina = 'Todas as Ofertas'
-        if categoria_selecionada:
-            titulo_pagina = f'Ofertas em {categoria_selecionada.nome}'
-        elif query:
-            titulo_pagina = f'Resultados da Busca para "{query}"'
-
-
-    # 6. Paginação (Aplicada à lista de ofertas ativas/paginadas)
-    items_por_pagina = 9 # Define quantos itens aparecerão por página
-    paginator = Paginator(ofertas_ativas_paginadas, items_por_pagina)
-    page_number = request.GET.get('page') # Pega o número da página da URL (ex: ?page=2)
+    items_por_pagina = 9
+    paginator = Paginator(ofertas_queryset, items_por_pagina)
+    page_number = request.GET.get('page')
 
     try:
         ofertas_paginadas = paginator.page(page_number)
     except PageNotAnInteger:
-        # Se o parâmetro de página não for um inteiro, entrega a primeira página.
         ofertas_paginadas = paginator.page(1)
     except EmptyPage:
-        # Se a página estiver fora do intervalo (ex: 9999), entrega a última página de resultados.
         ofertas_paginadas = paginator.page(paginator.num_pages)
 
+    return ofertas_paginadas, query, ordenar_por
 
-    # 7. Contexto e Renderização
-    categorias = Categoria.objects.all().order_by('nome') # Todas as categorias para o menu
+
+# --- NOVA VIEW PARA 'COMPRE JUNTO!' ---
+def compre_junto_view(request, slug_categoria=None):
+    ofertas_base = Oferta.objects.filter(
+        publicada=True,
+        status__in=['ativa', 'sucesso'],
+        data_termino__gte=timezone.now(),
+        vendedor__status_aprovacao='aprovado', # Filtro do vendedor
+        tipo_oferta='lote' # <--- CORREÇÃO AQUI: DENTRO DO .filter()
+    )
+
+    categoria_selecionada = None
+    if slug_categoria:
+        categoria_selecionada = get_object_or_404(Categoria, slug=slug_categoria)
+        ofertas_base = ofertas_base.filter(categoria=categoria_selecionada)
+
+    ofertas_paginadas, query, ordenar_por = _get_ofertas_filtradas_paginadas(
+        request, ofertas_base, categoria_selecionada, True # Passa True para apenas_lote_flag
+    )
+
+    categorias = Categoria.objects.all().order_by('nome')
 
     contexto = {
-        'ofertas': ofertas_paginadas, # Agora passamos as ofertas já paginadas
-        'ofertas_destaque': ofertas_destaque, # Apenas para home.html
+        'ofertas': ofertas_paginadas,
         'categorias': categorias,
         'categoria_selecionada': categoria_selecionada,
         'query_busca': query,
-        'ordenar_por_selecionado': ordenar_por, # Passa o critério de ordenação selecionado
-        'titulo_pagina': titulo_pagina,
+        'ordenar_por_selecionado': ordenar_por,
+        'titulo_pagina': 'Compre Junto: Ofertas Coletivas!',
+        'apenas_lote': True,
     }
-    return render(request, template_name, contexto)
+    return render(request, 'ofertas/lista_ofertas_coletivas.html', contexto)
 
 
+# --- VIEW ORIGINAL 'lista_ofertas' (SIMPLIFICADA) ---
+def lista_ofertas(request, slug_categoria=None):
+    ofertas_base = Oferta.objects.filter(
+        publicada=True,
+        status__in=['ativa', 'sucesso'],
+        data_termino__gte=timezone.now(),
+        tipo_oferta='unidade', # <--- CORREÇÃO AQUI: DENTRO DO .filter()
+        vendedor__status_aprovacao='aprovado' # <--- FILTRO DO VENDEDOR APROVADO AQUI
+    )
 
-@login_required # Garante que apenas usuários logados possam acessar esta view
+    categoria_selecionada = None
+    if slug_categoria:
+        categoria_selecionada = get_object_or_404(Categoria, slug=slug_categoria)
+        ofertas_base = ofertas_base.filter(categoria=categoria_selecionada)
+
+    ofertas_paginadas, query, ordenar_por = _get_ofertas_filtradas_paginadas(
+        request, ofertas_base, categoria_selecionada, False
+    )
+
+    # Lógica FINAL para renderizar a HOMEPAGE ou a LISTA GERAL
+    if not slug_categoria and not query:
+        ofertas_destaque = Oferta.objects.filter(
+            publicada=True,
+            status__in=['ativa', 'sucesso'],
+            data_termino__gte=timezone.now(),
+            destaque=True,
+            tipo_oferta='unidade',
+            vendedor__status_aprovacao='aprovado' # <--- FILTRO DO VENDEDOR APROVADO AQUI
+        ).order_by('-data_inicio')[:4]
+
+        ofertas_ativas_paginadas = ofertas_base.exclude(destaque=True)
+        template_para_renderizar = 'ofertas/home.html'
+        titulo_pagina_final = 'Bem-vindo ao VarejoUnido!'
+        
+        banners = Banner.objects.filter(ativo=True).order_by('ordem')
+        vendedores_destaque = Vendedor.objects.filter(ativo=True).order_by('?')[:4]
+    else:
+        ofertas_destaque = None
+        ofertas_paginadas_home = None # Não usado
+        template_para_renderizar = 'ofertas/lista_ofertas.html'
+        banners = None
+        vendedores_destaque = None
+        titulo_pagina_final = 'Todas as Ofertas'
+        if categoria_selecionada:
+            titulo_pagina_final = f'Ofertas em {categoria_selecionada.nome}'
+        elif query:
+            titulo_pagina_final = f'Resultados da Busca para "{query}"'
+
+
+    categorias = Categoria.objects.all().order_by('nome')
+
+    contexto = {
+        'ofertas': ofertas_paginadas if template_para_renderizar != 'ofertas/home.html' else ofertas_paginadas, # Usar ofertas_paginadas para ambas as branches da home
+        'ofertas_destaque': ofertas_destaque,
+        'categorias': categorias,
+        'categoria_selecionada': categoria_selecionada,
+        'query_busca': query,
+        'ordenar_por_selecionado': ordenar_por,
+        'titulo_pagina': titulo_pagina_final,
+        'apenas_lote': False, # Sempre False para esta view
+        'banners': banners,
+        'vendedores_destaque': vendedores_destaque,
+    }
+    return render(request, template_para_renderizar, contexto)
+
+
+# ofertas/views.py (apenas a função detalhe_oferta)
+
+# ... (imports existentes) ...
+
+@login_required 
 def detalhe_oferta(request, slug_oferta):
     oferta = get_object_or_404(Oferta, slug=slug_oferta)
     
-    # Obter todas as avaliações para esta oferta
     avaliacoes = Avaliacao.objects.filter(oferta=oferta).order_by('-data_avaliacao')
     
-    # Calcular a média das notas (se houver avaliações)
     media_avaliacoes = avaliacoes.aggregate(Avg('nota'))['nota__avg']
     if media_avaliacoes:
-        media_avaliacoes = round(media_avaliacoes, 1) # Arredonda para uma casa decimal
+        media_avaliacoes = round(media_avaliacoes, 1)
     
-    # Verificar se o usuário logado já avaliou esta oferta
     avaliacao_existente = None
     if request.user.is_authenticated:
         avaliacao_existente = Avaliacao.objects.filter(oferta=oferta, usuario=request.user).first()
     
-    # Lógica para o formulário de avaliação
     if request.method == 'POST':
-        if not request.user.is_authenticated: # Dupla checagem, já que a view é @login_required
+        if not request.user.is_authenticated:
             messages.error(request, "Você precisa estar logado para enviar uma avaliação.")
             return redirect('account_login')
         
@@ -152,10 +193,8 @@ def detalhe_oferta(request, slug_oferta):
         else:
             messages.error(request, "Por favor, corrija os erros na sua avaliação.")
     else:
-        # Se for GET, inicializa o formulário. Se já avaliou, pré-preenche com a avaliação existente.
         form_avaliacao = AvaliacaoForm(instance=avaliacao_existente)
 
-    # Lógica para cupons (já existente)
     cupom_usuario = None
     if request.user.is_authenticated:
         cupom_usuario = Cupom.objects.filter(
@@ -170,7 +209,14 @@ def detalhe_oferta(request, slug_oferta):
         'avaliacoes': avaliacoes,
         'media_avaliacoes': media_avaliacoes,
         'form_avaliacao': form_avaliacao,
-        'avaliacao_existente': avaliacao_existente, # Para controle no template
-        'titulo_pagina': oferta.titulo,
+        'avaliacao_existente': avaliacao_existente,
+        'titulo_pagina': oferta.titulo, # Mantém o título da aba do navegador
+        # --- NOVAS VARIÁVEIS PARA SEO ---
+        'seo_description': oferta.descricao_detalhada[:160], # Pega os primeiros 160 caracteres
+        'seo_keywords': f"{oferta.titulo}, {oferta.categoria.nome}, {oferta.vendedor.nome_empresa}, varejounido, oferta, desconto",
+        'og_title': oferta.titulo,
+        'og_description': oferta.descricao_detalhada[:160],
+        'og_image': oferta.imagem_principal.url if oferta.imagem_principal else '', # URL da imagem da oferta
+        'og_type': 'product', # Ou 'website'
     }
     return render(request, 'ofertas/detalhe_oferta.html', contexto)

@@ -1,58 +1,90 @@
-# contas/models.py
+# contas/models.py (adicione no final do arquivo)
+
+from django.db import models, transaction
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.db import models
-from ofertas.models import Vendedor # Adicione esta linha
+
+from ofertas.models import Vendedor 
 
 
 class Usuario(AbstractUser):
-    # Seus campos personalizados, se houver, como telefone, endereço, etc.
-    # Exemplo:
-    # telefone = models.CharField(max_length=15, blank=True, null=True)
-
-    # Adicione estes campos com 'related_name' para resolver o conflito
-    # Importante: O related_name deve ser único para este modelo
-    groups = models.ManyToManyField(
-        Group, # Use o modelo Group importado
-        verbose_name=('groups'),
-        blank=True,
-        help_text=(
-            'The groups this user belongs to. A user will get all permissions '
-            'granted to each of their their groups.'
-        ),
-        related_name="contas_usuario_set", # <-- Nome único para o related_name de groups
-        related_query_name="contas_usuario",
-    )
-    user_permissions = models.ManyToManyField(
-        Permission, # Use o modelo Permission importado
-        verbose_name=('user permissions'),
-        blank=True,
-        help_text=('Specific permissions for this user.'),
-        related_name="contas_usuario_permissions", # <-- Nome único para o related_name de user_permissions
-        related_query_name="contas_usuario_permission",
-    )
-    
-    # Campo adicionado para relacionar o Usuário a um Vendedor
-    vendedor = models.ForeignKey(
+    # ... (Seu código existente do modelo Usuario) ...
+    # Garanta que o OneToOneField para Vendedor está aqui
+    vendedor = models.OneToOneField(
         Vendedor, 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 
-        related_name='usuarios_associados',
+        related_name='usuario_associado',
         verbose_name="Vendedor Associado"
     )
+    # E que os ManyToManyFields para Group e Permission estão aqui
+    groups = models.ManyToManyField(
+        Group, 
+        verbose_name=('groups'),
+        blank=True,
+        help_text=('The groups this user belongs to. A user will get all permissions '
+                   'granted to each of their their groups.'),
+        related_name="contas_usuario_set", 
+        related_query_name="contas_usuario",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission, 
+        verbose_name=('user permissions'),
+        blank=True,
+        help_text=('Specific permissions for this user.'),
+        related_name="contas_usuario_permissions", 
+        related_query_name="contas_usuario_permission",
+    )
 
-    # A CLASSE META DEVE ESTAR DENTRO DA CLASSE USUARIO E CORRETAMENTE INDENTADA
-    class Meta(AbstractUser.Meta): # É uma boa prática herdar de AbstractUser.Meta para manter padrões
+    class Meta(AbstractUser.Meta): 
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
-        # ordering = ['username'] # Exemplo: você pode adicionar ordenação padrão aqui
 
-    # O MÉTODO __str__ DEVE ESTAR DENTRO DA CLASSE USUARIO E CORRETAMENTE INDENTADO
     def __str__(self):
-        # O AbstractUser já tem um campo 'username', que é uma boa escolha aqui.
         return self.username 
     
-    # A PROPRIEDADE DEVE ESTAR DENTRO DA CLASSE USUARIO E CORRETAMENTE INDENTADA
     @property
     def eh_vendedor_ou_associado(self):
-        return self.vendedor is not None
+        return self.vendedor is not None and self.vendedor.status_aprovacao == 'aprovado'
+
+
+class Notificacao(models.Model):
+    TIPOS_NOTIFICACAO = [
+        ('sistema', 'Sistema'),
+        ('compra', 'Compra'),
+        ('lote', 'Lote'),
+        ('vendedor', 'Vendedor'),
+        ('cupom', 'Cupom'),
+    ]
+
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='notificacoes', verbose_name="Usuário")
+    titulo = models.CharField(max_length=255, verbose_name="Título")
+    mensagem = models.TextField(verbose_name="Mensagem")
+    tipo = models.CharField(max_length=20, choices=TIPOS_NOTIFICACAO, default='sistema', verbose_name="Tipo")
+    lida = models.BooleanField(default=False, verbose_name="Lida")
+    data_criacao = models.DateTimeField(auto_now_add=True, verbose_name="Data de Criação")
+    url_destino = models.URLField(max_length=200, blank=True, null=True, verbose_name="URL de Destino")
+
+    class Meta:
+        verbose_name = "Notificação"
+        verbose_name_plural = "Notificações"
+        ordering = ['-data_criacao']
+
+    def __str__(self):
+        return f"Notificação para {self.usuario.username}: {self.titulo[:50]}..."
+    
+
+# contas/models.py (adicione no final do arquivo, após o modelo Notificacao)
+
+
+
+def criar_notificacao(usuario, titulo, mensagem, tipo='sistema', url_destino=None):
+    """Cria e salva uma nova notificação para um usuário."""
+    with transaction.atomic():
+        Notificacao.objects.create(
+            usuario=usuario,
+            titulo=titulo,
+            mensagem=mensagem,
+            tipo=tipo,
+            url_destino=url_destino
+        )

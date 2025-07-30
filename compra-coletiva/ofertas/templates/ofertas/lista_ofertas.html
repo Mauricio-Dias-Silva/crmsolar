@@ -9,6 +9,8 @@
             Ofertas em {{ categoria_selecionada.nome }}
         {% elif query_busca %}
             Resultados da Busca para "{{ query_busca }}"
+        {% elif apenas_lote %} {# NOVO: Título para a página 'Compre Junto!' #}
+            Compre Junto: Ofertas Coletivas!
         {% else %}
             Todas as Ofertas Ativas
         {% endif %}
@@ -17,12 +19,14 @@
     <div class="row mb-4 align-items-center">
         <div class="col-md-7">
             {# Formulário de Busca #}
-            <form method="GET" action="{% url 'ofertas:lista_ofertas' %}" class="d-flex">
+            <form method="GET" action="{% if apenas_lote %}{% url 'ofertas:compre_junto' %}{% else %}{% url 'ofertas:lista_ofertas' %}{% endif %}" class="d-flex"> {# ATUALIZADO AQUI #}
                 <input class="form-control me-2" type="search" placeholder="Buscar ofertas..." aria-label="Search" name="q" value="{{ query_busca|default:'' }}">
                 <button class="btn btn-outline-success" type="submit">Buscar</button>
-                {# Mantém os parâmetros de categoria e ordenação ao buscar #}
+                {# Mantém os parâmetros de categoria, ordenação E apenas_lote ao buscar #}
                 {% if categoria_selecionada %}<input type="hidden" name="categoria" value="{{ categoria_selecionada.slug }}">{% endif %}
                 {% if ordenar_por_selecionado %}<input type="hidden" name="ordenar_por" value="{{ ordenar_por_selecionado }}">{% endif %}
+                {# apenas_lote já está implícito na action do form se for compre_junto, mas mantido para clareza em outros casos #}
+                {% if apenas_lote %}<input type="hidden" name="apenas_lote" value="true">{% endif %}
             </form>
         </div>
         <div class="col-md-5">
@@ -40,16 +44,19 @@
                         {% endif %}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownOrdenar">
-                        {# Links de ordenação que preservam a busca e categoria #}
-                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'recentes' %}active{% endif %}" href="{% url 'ofertas:lista_ofertas' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=recentes">Mais Recentes</a></li>
-                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'antigas' %}active{% endif %}" href="{% url 'ofertas:lista_ofertas' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=antigas">Mais Antigas</a></li>
-                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'menor_preco' %}active{% endif %}" href="{% url 'ofertas:lista_ofertas' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=menor_preco">Menor Preço</a></li>
-                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'maior_preco' %}active{% endif %}" href="{% url 'ofertas:lista_ofertas' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=maior_preco">Maior Preço</a></li>
-                        <li><a class="dropdown-item {% if ordenar_por_selecionado == 'mais_vendidos' %}active{% endif %}" href="{% url 'ofertas:lista_ofertas' %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=mais_vendidos">Mais Vendidos</a></li>
+                        {# Links de ordenação que preservam busca, categoria E apenas_lote #}
+                        {# O URL base agora é dinâmico, usando a mesma lógica que o form de busca #}
+                        {% with base_url=ofertas.paginator.request.path %} {# Pega o caminho atual da URL para manter contexto #}
+                            <li><a class="dropdown-item {% if ordenar_por_selecionado == 'recentes' %}active{% endif %}" href="{% if apenas_lote %}{% url 'ofertas:compre_junto' %}{% else %}{% url 'ofertas:lista_ofertas' %}{% endif %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=recentes{% if apenas_lote %}&apenas_lote=true{% endif %}">Mais Recentes</a></li>
+                            <li><a class="dropdown-item {% if ordenar_por_selecionado == 'antigas' %}active{% endif %}" href="{% if apenas_lote %}{% url 'ofertas:compre_junto' %}{% else %}{% url 'ofertas:lista_ofertas' %}{% endif %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=antigas{% if apenas_lote %}&apenas_lote=true{% endif %}">Mais Antigas</a></li>
+                            <li><a class="dropdown-item {% if ordenar_por_selecionado == 'menor_preco' %}active{% endif %}" href="{% if apenas_lote %}{% url 'ofertas:compre_junto' %}{% else %}{% url 'ofertas:lista_ofertas' %}{% endif %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=menor_preco{% if apenas_lote %}&apenas_lote=true{% endif %}">Menor Preço</a></li>
+                            <li><a class="dropdown-item {% if ordenar_por_selecionado == 'maior_preco' %}active{% endif %}" href="{% if apenas_lote %}{% url 'ofertas:compre_junto' %}{% else %}{% url 'ofertas:lista_ofertas' %}{% endif %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=maior_preco{% if apenas_lote %}&apenas_lote=true{% endif %}">Maior Preço</a></li>
+                            <li><a class="dropdown-item {% if ordenar_por_selecionado == 'mais_vendidos' %}active{% endif %}" href="{% if apenas_lote %}{% url 'ofertas:compre_junto' %}{% else %}{% url 'ofertas:lista_ofertas' %}{% endif %}?{% if query_busca %}q={{ query_busca }}&{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}&{% endif %}ordenar_por=mais_vendidos{% if apenas_lote %}&apenas_lote=true{% endif %}">Mais Vendidos</a></li>
+                        {% endwith %}
                     </ul>
                 </div>
-                {% if query_busca or categoria_selecionada or ordenar_por_selecionado != '-data_inicio' %}
-                <a href="{% url 'ofertas:lista_ofertas' %}" class="btn btn-outline-danger">Limpar Filtros</a>
+                {% if query_busca or categoria_selecionada or ordenar_por_selecionado != '-data_inicio' or apenas_lote %}
+                <a href="{% url 'ofertas:lista_ofertas' %}{% if apenas_lote %}?apenas_lote=true{% endif %}" class="btn btn-outline-danger">Limpar Filtros</a> {# ATUALIZADO AQUI #}
                 {% endif %}
             </div>
         </div>
@@ -96,22 +103,21 @@
         <nav aria-label="Navegação de Páginas" class="mt-4">
             <ul class="pagination justify-content-center">
                 {% if ofertas.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page=1{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Primeira</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.previous_page_number }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Anterior</a></li>
+                    <li class="page-item"><a class="page-link" href="?page=1{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}{% if apenas_lote %}&apenas_lote=true{% endif %}">Primeira</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.previous_page_number }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}{% if apenas_lote %}&apenas_lote=true{% endif %}">Anterior</a></li>
                 {% endif %}
 
-                {# Exibe links para um range de páginas para melhor navegação #}
                 {% for i in ofertas.paginator.page_range %}
                     {% if ofertas.number == i %}
                         <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
                     {% else %}
-                        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">{{ i }}</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}{% if apenas_lote %}&apenas_lote=true{% endif %}">{{ i }}</a></li>
                     {% endif %}
                 {% endfor %}
 
                 {% if ofertas.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.next_page_number }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Próxima</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.paginator.num_pages }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}">Última</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.next_page_number }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}{% if apenas_lote %}&apenas_lote=true{% endif %}">Próxima</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ ofertas.paginator.num_pages }}{% if query_busca %}&q={{ query_busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}{% if ordenar_por_selecionado %}&ordenar_por={{ ordenar_por_selecionado }}{% endif %}{% if apenas_lote %}&apenas_lote=true{% endif %}">Última</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -119,7 +125,7 @@
     {% else %}
         <div class="alert alert-info text-center" role="alert">
             Nenhuma oferta encontrada com os critérios de busca/filtro.
-            <a href="{% url 'ofertas:lista_ofertas' %}" class="alert-link">Limpar Filtros</a>
+            <a href="{% url 'ofertas:lista_ofertas' %}{% if apenas_lote %}?apenas_lote=true{% endif %}" class="alert-link">Limpar Filtros</a> {# ATUALIZADO AQUI #}
         </div>
     {% endif %}
 {% endblock conteudo %}

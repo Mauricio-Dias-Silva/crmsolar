@@ -1,0 +1,36 @@
+{# contas/templates/contas/minhas_notificacoes.html #}
+{% extends 'base.html' %}
+
+{% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
+
+{% block conteudo %}
+    <h1 class="my-4 text-center">{{ titulo_pagina }}</h1>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Suas Mensagens</h4>
+        </div>
+        <div class="card-body">
+            {% if notificacoes %}
+                <ul class="list-group list-group-flush">
+                    {% for notificacao in notificacoes %}
+                        <li class="list-group-item {% if not notificacao.lida %}list-group-item-light fw-bold{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 text-{% if not notificacao.lida %}primary{% else %}secondary{% endif %}">{{ notificacao.titulo }}</h5>
+                                <small class="text-muted">{{ notificacao.data_criacao|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <p class="mb-1 text-{% if not notificacao.lida %}dark{% else %}muted{% endif %}">{{ notificacao.mensagem }}</p>
+                            {% if notificacao.url_destino %}
+                                <small><a href="{{ notificacao.url_destino }}" class="card-link">Ver detalhes <i class="bi bi-arrow-right"></i></a></small>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                    Você não possui nenhuma notificação no momento.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock conteudo %}

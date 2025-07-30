@@ -1,9 +1,38 @@
 # ofertas/forms.py
 
 from django import forms
-from .models import Oferta, Categoria, Vendedor
+from .models import Oferta, Categoria, Vendedor, Avaliacao 
 from django.utils import timezone
 from .models import Avaliacao
+
+
+
+class CadastroVendedorForm(forms.ModelForm):
+    class Meta:
+        model = Vendedor
+        fields = [
+            'nome_empresa', 'cnpj', 'email_contato', 'telefone',
+            'descricao', 'endereco', 'logo' # 'logo' é ImageField, precisa de upload
+        ]
+        widgets = {
+            'nome_empresa': forms.TextInput(attrs={'class': 'form-control'}),
+            'cnpj': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 00.000.000/0001-00'}),
+            'email_contato': forms.EmailInput(attrs={'class': 'form-control'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: (XX) XXXX-XXXX'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'endereco': forms.TextInput(attrs={'class': 'form-control'}),
+            'logo': forms.FileInput(attrs={'class': 'form-control'})
+        }
+        labels = {
+            'nome_empresa': 'Nome da Empresa',
+            'cnpj': 'CNPJ',
+            'email_contato': 'Email de Contato',
+            'telefone': 'Telefone (Opcional)',
+            'descricao': 'Descrição da Empresa (Opcional)',
+            'endereco': 'Endereço Completo da Empresa',
+            'logo': 'Logo da Empresa (Opcional)',
+        }
+
 
 class OfertaForm(forms.ModelForm):
     # Campos que o vendedor poderá editar diretamente

@@ -5,7 +5,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block titulo_pagina %}Meu Site de Compra Coletiva{% endblock titulo_pagina %}</title>
+    {# Título Dinâmico #}
+    <title>{% block seo_title %}{% block titulo_pagina %}VarejoUnido{% endblock titulo_pagina %}{% endblock seo_title %}</title>
+    
+    {# Metatag de Descrição Dinâmica #}
+    <meta name="description" content="{% block seo_description %}VarejoUnido: Sua plataforma de compras online com ofertas exclusivas e o poder da compra coletiva para você economizar muito mais!{% endblock seo_description %}">
+    
+    {# Metatag de Palavras-chave Dinâmica (ou padrão) #}
+    <meta name="keywords" content="{% block seo_keywords %}varejounido, compra coletiva, e-commerce, ofertas, descontos, promoções, loja online, varejo, marketplace{% endblock seo_keywords %}">
+    
+    {# Open Graph Tags (para compartilhamento em redes sociais como Facebook/WhatsApp) #}
+    <meta property="og:title" content="{% block og_title %}{% block titulo_pagina_og %}VarejoUnido{% endblock titulo_pagina_og %}{% endblock og_title %}" />
+    <meta property="og:description" content="{% block og_description %}VarejoUnido: Sua plataforma de compras online com ofertas exclusivas e o poder da compra coletiva para você economizar muito mais!{% endblock og_description %}" />
+    <meta property="og:image" content="{% block og_image %}{% static 'img/social_share_default.jpg' %}{% endblock og_image %}" /> {# Imagem padrão para compartilhamento #}
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock og_url %}" />
+    <meta property="og:type" content="{% block og_type %}website{% endblock og_type %}" />
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -17,37 +32,63 @@
         .content-wrapper {
             flex: 1;
         }
+        /* Estilos para o Footer */
         .footer {
-            background-color: #f8f9fa;
-            padding: 20px 0;
-            text-align: center;
+            background-color: #212529; 
+            color: #f8f9fa; 
+            padding: 40px 0;
+        }
+        .footer h5 {
+            color: #007bff; 
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .footer a {
+            color: #adb5bd; 
+            text-decoration: none;
+        }
+        .footer a:hover {
+            color: #007bff; 
+            text-decoration: underline;
+        }
+        .footer .social-icons a {
+            font-size: 1.5rem;
+            margin: 0 10px;
+            color: #adb5bd;
+        }
+        .footer .social-icons a:hover {
+            color: #007bff;
         }
     </style>
     {% block extras_css %}{% endblock extras_css %}
 </head>
 <body>
+    {# ... restante do base.html ... #}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'ofertas:lista_ofertas' %}">Compra Coletiva</a>
+            <a class="navbar-brand" href="{% url 'ofertas:lista_ofertas' %}">VarejoUnido</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'ofertas:lista_ofertas' %}">Home</a>
+                        <a class="nav-link {% if not apenas_lote and not categoria_selecionada and not query_busca %}active{% endif %}" aria-current="page" href="{% url 'ofertas:lista_ofertas' %}">Home</a> {# ATUALIZADO AQUI #}
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategorias" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Categorias
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategorias">
-                            <li><a class="dropdown-item" href="{% url 'ofertas:lista_ofertas' %}">Todas as Categorias</a></li>
+                            <li><a class="dropdown-item" href="{% url 'ofertas:lista_ofertas' %}">Todas as Categorias</a></li> {# ATUALIZADO AQUI #}
                             <li><hr class="dropdown-divider"></li>
                             {% for categoria in categorias %}
                                 <li><a class="dropdown-item" href="{% url 'ofertas:ofertas_por_categoria' slug_categoria=categoria.slug %}">{{ categoria.nome }}</a></li>
                             {% endfor %}
                         </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ofertas:compre_junto' %}">Compre Junto!</a>
                     </li>
                     {% if user.is_authenticated and user.eh_vendedor_ou_associado %}
                         <li class="nav-item">
@@ -70,6 +111,9 @@
                                 <li><a class="dropdown-item" href="{% url 'compras:meus_cupons' %}">Meus Cupons (Unidade)</a></li>
                                 <li><a class="dropdown-item" href="{% url 'pedidos_coletivos:meus_pedidos' %}">Meus Pedidos Coletivos</a></li>
                                 <li><a class="dropdown-item" href="{% url 'pedidos_coletivos:meu_credito' %}">Meu Crédito: R$ {{ user.credito_site.saldo|floatformat:2|default:"0.00" }}</a></li>
+                                {% if not user.vendedor %} {# Mostra este link apenas se o usuário NÃO for vendedor #}
+                                    <li><a class="dropdown-item" href="{% url 'contas:cadastro_vendedor' %}">Seja um Vendedor!</a></li>
+                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sair</a></li>
                             </ul>
@@ -100,9 +144,36 @@
         {% block conteudo %}{% endblock conteudo %}
     </div>
 
-    <footer class="footer mt-auto py-3 bg-light">
+
+    <footer class="footer mt-auto">
         <div class="container">
-            <span class="text-muted">&copy; 2024 Projeto Compra Coletiva. Todos os direitos reservados.</span>
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>Sobre o VarejoUnido</h5>
+                    <p class="text-muted">Sua plataforma completa de compras online, unindo as melhores ofertas do varejo tradicional com o poder da compra coletiva para você economizar como nunca!</p>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>Links Rápidos</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'ofertas:lista_ofertas' %}">Home</a></li>
+                        <li><a href="{% url 'ofertas:compre_junto' %}">Compre Junto!</a></li>
+                        <li><a href="{% url 'ofertas:lista_ofertas' %}">Todas as Ofertas</a></li>
+                        <li><a href="#">Contato</a></li>
+                        <li><a href="#">Termos de Uso</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Conecte-se</h5>
+                    <p class="text-muted">Siga-nos nas redes sociais para não perder nenhuma oferta!</p>
+                    <div class="social-icons">
+                        <a href="#" target="_blank" class="text-light me-2"><i class="bi bi-facebook"></i></a>
+                        <a href="#" target="_blank" class="text-light me-2"><i class="bi bi-instagram"></i></a>
+                        <a href="#" target="_blank" class="text-light me-2"><i class="bi bi-twitter"></i></a>
+                        <a href="#" target="_blank" class="text-light me-2"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">&copy; {% now "Y" %} VarejoUnido. Todos os direitos reservados.</p> {# Atualizado para ano dinâmico #}
+                </div>
+            </div>
         </div>
     </footer>
 

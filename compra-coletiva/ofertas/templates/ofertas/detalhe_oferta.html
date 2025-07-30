@@ -3,6 +3,17 @@
 
 {% block titulo_pagina %}{{ titulo_pagina }}{% endblock titulo_pagina %}
 
+{# --- BLOCOS DE SEO (NOVO) --- #}
+{% block seo_title %}{{ oferta.titulo }} | VarejoUnido{% endblock seo_title %}
+{% block seo_description %}{{ seo_description }}{% endblock seo_description %}
+{% block seo_keywords %}{{ seo_keywords }}{% endblock seo_keywords %}
+{% block og_title %}{{ og_title }}{% endblock og_title %}
+{% block og_description %}{{ og_description }}{% endblock og_description %}
+{% block og_image %}{% if og_image %}{{ og_image }}{% endif %}{% endblock og_image %}
+{% block og_url %}{{ request.build_absolute_uri }}{% endblock og_url %}
+{% block og_type %}product{% endblock og_type %}
+{# --- FIM BLOCOS DE SEO --- #}
+
 {% block conteudo %}
     <a href="{% url 'ofertas:lista_ofertas' %}" class="btn btn-outline-secondary mb-4">&larr; Voltar para as ofertas</a>
 
