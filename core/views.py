@@ -7,8 +7,8 @@ from django.template.loader import render_to_string # Para renderizar templates 
 from django.contrib import messages
 from django.db.models.functions import TruncMonth
 # Importações dos modelos e formulários do próprio app 'core'
-from .models import Processo, ArquivoAnexo
-from .forms import ProcessoForm, ArquivoAnexoForm
+from .models import Processo, ArquivoAnexo, Fornecedor 
+from .forms import ProcessoForm, ArquivoAnexoForm,FornecedorForm
 from django.db.models import Sum, Count, F, Func,Q
 # Importe os modelos necessários dos outros apps (agora que estão no mesmo projeto)
 from contratacoes.models import ETP, TR
@@ -16,18 +16,12 @@ from licitacoes.models import Edital
 from financeiro.models import DocumentoFiscal, Pagamento
 from django.contrib.contenttypes.models import ContentType
 import json 
-from contratacoes.models import Contrato, ETP
+from contratacoes.models import Contrato, ETP, TR
 from licitacoes.models import Edital, ResultadoLicitacao
 from financeiro.models import Pagamento
-
-# views.py (apenas para teste temporário)
 import os
 from django.conf import settings # Importar settings para acessar STATIC_ROOT ou MEDIA_ROOT
 
-# core/views.py
-import os
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, Http404
 
 
 def visualizar_anexo_pdf(request, anexo_id):
@@ -180,15 +174,6 @@ def criar_processo_view(request):
     return render(request, 'core/criar_processo.html', context)
 
 
-
-from django.shortcuts import render, get_object_or_404
-from django.contrib.contenttypes.models import ContentType
-from .models import Processo, ArquivoAnexo
-
-# Importe os modelos dos outros apps para poder encontrá-los
-from contratacoes.models import ETP, TR, Contrato
-from licitacoes.models import Edital
-
 @login_required(login_url='/accounts/login/')
 def detalhes_processo_view(request, processo_id):
     processo = get_object_or_404(Processo, id=processo_id)
@@ -324,11 +309,6 @@ def render_arquivo_anexo_detail_snippet(request, pk):
     html_content = render_to_string('core/snippets/arquivo_anexo_detail_snippet.html', {'anexo': anexo}, request=request)
     return HttpResponse(html_content)
 
-# Em core/views.py
-from .forms import FornecedorForm # Adicione esta importação
-from .models import Fornecedor    # Adicione esta importação
-
-# ... (outras views) ...
 
 @login_required
 def listar_fornecedores(request):
@@ -397,7 +377,6 @@ def editar_fornecedor(request, pk):
 
 
 
-@login_required
 def manual_do_sistema_view(request):
     """
     Renderiza a página do manual interativo do sistema.
@@ -407,3 +386,51 @@ def manual_do_sistema_view(request):
     }
     return render(request, 'core/manual_do_sistema.html', context)
 
+
+@login_required
+def busca_global_view(request):
+    """
+    Realiza uma busca em múltiplos modelos e exibe os resultados.
+    """
+    query = request.GET.get('q', '')
+    
+    # Listas para guardar os resultados de cada tipo de documento
+    resultados_processos = []
+    resultados_etps = []
+    resultados_contratos = []
+    resultados_fornecedores = []
+    
+    if query:
+        # Busca em Processos (por título ou protocolo)
+        resultados_processos = Processo.objects.filter(
+            Q(titulo__icontains=query) | Q(numero_protocolo__icontains=query)
+        )
+        
+        # Busca em ETPs (por título ou número do processo)
+        resultados_etps = ETP.objects.filter(
+            Q(titulo__icontains=query) | Q(numero_processo__icontains=query)
+        )
+        
+        # Busca em Contratos (por objeto, número ou nome do fornecedor)
+        resultados_contratos = Contrato.objects.filter(
+            Q(objeto__icontains=query) | 
+            Q(numero_contrato__icontains=query) |
+            Q(contratado__razao_social__icontains=query)
+        )
+        
+        # Busca em Fornecedores (por razão social ou CNPJ)
+        resultados_fornecedores = Fornecedor.objects.filter(
+            Q(razao_social__icontains=query) | Q(cnpj__icontains=query)
+        )
+
+    context = {
+        'query': query,
+        'resultados_processos': resultados_processos,
+        'resultados_etps': resultados_etps,
+        'resultados_contratos': resultados_contratos,
+        'resultados_fornecedores': resultados_fornecedores,
+        'total_resultados': len(resultados_processos) + len(resultados_etps) + len(resultados_contratos) + len(resultados_fornecedores),
+        'titulo_pagina': f"Resultados da Busca por '{query}'"
+    }
+    
+    return render(request, 'core/busca_resultados.html', context)

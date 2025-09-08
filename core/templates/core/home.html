@@ -4,106 +4,162 @@
 {% block title %}Dashboard Principal - SysGov{% endblock title %}
 
 {% block content %}
-<div class="hero-section text-white text-center py-5">
-    <div class="container">
-        <h1 class="display-4 fw-bold mb-3">Bem-vindo ao SysGov!</h1>
-        <p class="lead mb-4">A sua plataforma completa para a gestão de contratos e licitações.</p>
+<div class="hero-section text-center py-5" style="background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%);">
+    <div class="container py-5">
+        <h1 class="display-4 fw-bold mb-3 text-white">Bem-vindo ao SysGov!</h1>
+        <p class="lead mb-4 text-white">Sua plataforma completa para gestão de contratos e licitações. Simplifique processos, garanta transparência e esteja em conformidade.</p>
+        
         {% if user.is_authenticated %}
-            <a href="{% url 'core:criar_processo' %}" class="btn btn-light btn-lg rounded-pill px-4 me-3"><i class="fas fa-plus-circle me-2"></i> Iniciar Novo Processo</a>
-            <a href="{% url 'core:meus_processos' %}" class="btn btn-outline-light btn-lg rounded-pill px-4"><i class="fas fa-folder-open me-2"></i> Ver Meus Processos</a>
+            <div class="row justify-content-center mb-5">
+                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                    <a href="{% url 'core:criar_processo' %}" class="btn btn-light btn-lg rounded-pill w-100 shadow-sm">
+                        <i class="fas fa-plus-circle me-2"></i> Iniciar Novo Processo
+                    </a>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                    <a href="{% url 'core:meus_processos' %}" class="btn btn-outline-light btn-lg rounded-pill w-100 shadow-sm">
+                        <i class="fas fa-folder-open me-2"></i> Ver Meus Processos
+                    </a>
+                </div>
+            </div>
         {% else %}
-            <a href="{% url 'account_login' %}" class="btn btn-light btn-lg rounded-pill px-4 me-3">Entrar</a>
+            <div class="row justify-content-center mb-5">
+                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                    <a href="{% url 'account_login' %}" class="btn btn-light btn-lg rounded-pill w-100 shadow-sm">Entrar</a>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                    <a href="{% url 'account_signup' %}" class="btn btn-success btn-lg rounded-pill w-100 shadow-sm">Cadastrar</a>
+                </div>
+            </div>
         {% endif %}
+
+        <!-- MANUAL DO SISTEMA INTEGRADO -->
+        <p class="lead text-center mt-5 mb-4 text-white">
+            Conheça todas as funcionalidades do sistema no nosso <a href="{% url 'core:manual_do_sistema' %}" class="text-decoration-underline text-white fw-bold">Manual do Sistema</a>.
+        </p>
+
     </div>
 </div>
 
 <div class="container my-5">
-    <!-- PAINEL DE INDICADORES (SÓ APARECE SE ESTIVER LOGADO) -->
     {% if user.is_authenticated and dashboard_stats %}
     <div class="mb-5">
         <h2 class="text-center mb-4 display-5 fw-bold text-primary">Painel de Indicadores</h2>
-        <div class="row g-4">
-            <!-- Coluna do Gráfico -->
-            <div class="col-lg-8">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header"><h5 class="mb-0">Top 5 Fornecedores por Valor Contratado</h5></div>
-                    <div class="card-body d-flex align-items-center justify-content-center p-4">
-                        <!-- O canvas do gráfico vai aqui -->
-                        <div class="chart-container" style="position: relative; height:350px; width:100%;">
-                            <canvas id="topFornecedoresChart"></canvas>
-                        </div>
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm h-100 border-start border-primary border-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h3 class="display-5 text-primary">{{ dashboard_stats.processos_em_analise }}</h3>
+                        <p class="text-muted mb-0">Processos em Análise</p>
                     </div>
                 </div>
             </div>
-            <!-- Coluna das Estatísticas -->
-            <div class="col-lg-4">
-                <div class="row g-4">
-                    <div class="col-12"><div class="card shadow-sm"><div class="card-body text-center py-4"><h3 class="display-4 text-primary">{{ dashboard_stats.processos_em_analise }}</h3><p class="text-muted mb-0">Processos em Análise</p></div></div></div>
-                    <div class="col-12"><div class="card shadow-sm"><div class="card-body text-center py-4"><h3 class="display-4 text-warning">{{ dashboard_stats.licitacoes_abertas }}</h3><p class="text-muted mb-0">Licitações Abertas</p></div></div></div>
-                    <div class="col-12"><div class="card shadow-sm"><div class="card-body text-center py-4"><h3 class="display-4 text-success">{{ dashboard_stats.contratos_vigentes }}</h3><p class="text-muted mb-0">Contratos Vigentes</p></div></div></div>
+            <div class="col-md-3">
+                <div class="card shadow-sm h-100 border-start border-warning border-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h3 class="display-5 text-warning">{{ dashboard_stats.licitacoes_abertas }}</h3>
+                        <p class="text-muted mb-0">Licitações Abertas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm h-100 border-start border-success border-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h3 class="display-5 text-success">{{ dashboard_stats.contratos_vigentes }}</h3>
+                        <p class="text-muted mb-0">Contratos Vigentes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm h-100 border-start border-danger border-4 rounded-4">
+                    <div class="card-body p-4">
+                        <h3 class="display-5 text-danger">{{ dashboard_stats.pagamentos_pendentes }}</h3>
+                        <p class="text-muted mb-0">Pagamentos Pendentes</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- SUA SECÇÃO DE NAVEGAÇÃO (MANTIDA) -->
-    <h2 class="text-center mb-4 display-5 fw-bold text-primary">Navegue pelos Módulos</h2>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <div class="col"><div class="card h-100 shadow-sm"><div class="card-body text-center p-4"><i class="fas fa-project-diagram fa-3x text-primary mb-3"></i><h5 class="card-title fw-bold">Processos Gerais</h5><a href="{% url 'core:meus_processos' %}" class="btn btn-outline-primary btn-sm mt-3">Ver Meus Processos</a></div></div></div>
-        <div class="col"><div class="card h-100 shadow-sm"><div class="card-body text-center p-4"><i class="fas fa-file-contract fa-3x text-success mb-3"></i><h5 class="card-title fw-bold">Documentos</h5><a href="{% url 'contratacoes:listar_contratos' %}" class="btn btn-outline-success btn-sm mt-3">Contratos e Atas</a></div></div></div>
-        <div class="col"><div class="card h-100 shadow-sm"><div class="card-body text-center p-4"><i class="fas fa-gavel fa-3x text-warning mb-3"></i><h5 class="card-title fw-bold">Licitações</h5><a href="{% url 'licitacoes:listar_editais' %}" class="btn btn-outline-warning btn-sm mt-3">Editais e Pregões</a></div></div></div>
-        <div class="col"><div class="card h-100 shadow-sm"><div class="card-body text-center p-4"><i class="fas fa-dollar-sign fa-3x text-info mb-3"></i><h5 class="card-title fw-bold">Financeiro</h5><a href="{% url 'financeiro:listar_empenhos' %}" class="btn btn-outline-info btn-sm mt-3">Empenhos e Pagamentos</a></div></div></div>
-        <div class="col"><div class="card h-100 shadow-sm"><div class="card-body text-center p-4"><i class="fas fa-users fa-3x text-secondary mb-3"></i><h5 class="card-title fw-bold">Fornecedores</h5><a href="{% url 'core:listar_fornecedores' %}" class="btn btn-outline-secondary btn-sm mt-3">Gerir Fornecedores</a></div></div></div>
-        <div class="col"><div class="card h-100 shadow-sm"><div class="card-body text-center p-4"><i class="fas fa-cloud-upload-alt fa-3x text-danger mb-3"></i><h5 class="card-title fw-bold">Integração AUDESP</h5><a href="{% url 'integracao_audesp:painel_audesp' %}" class="btn btn-outline-danger btn-sm mt-3">Painel de Submissão</a></div></div></div>
+    <div class="mb-5">
+        <h2 class="text-center mb-4 display-5 fw-bold text-primary">Navegue pelos Módulos</h2>
+        <p class="text-center lead mb-5">Explore as principais áreas do sistema para gerenciar cada etapa do ciclo de contratação.</p>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <!-- Cards de Módulos -->
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-project-diagram fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">Processos Gerais</h5>
+                        <a href="{% url 'core:meus_processos' %}" class="btn btn-outline-primary btn-sm mt-3">Ver Meus Processos</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-file-contract fa-3x text-success mb-3"></i>
+                        <h5 class="card-title fw-bold">Documentos</h5>
+                        <a href="{% url 'contratacoes:listar_contratos' %}" class="btn btn-outline-success btn-sm mt-3">Contratos, ETPs e TRs</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-gavel fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title fw-bold">Licitações</h5>
+                        <a href="{% url 'licitacoes:listar_editais' %}" class="btn btn-outline-warning btn-sm mt-3">Editais e Pregões</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-dollar-sign fa-3x text-info mb-3"></i>
+                        <h5 class="card-title fw-bold">Financeiro</h5>
+                        <a href="{% url 'financeiro:listar_empenhos' %}" class="btn btn-outline-info btn-sm mt-3">Empenhos e Pagamentos</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-users fa-3x text-secondary mb-3"></i>
+                        <h5 class="card-title fw-bold">Fornecedores</h5>
+                        <a href="{% url 'core:listar_fornecedores' %}" class="btn btn-outline-secondary btn-sm mt-3">Gerir Fornecedores</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title fw-bold">Integração AUDESP</h5>
+                        <a href="{% url 'integracao_audesp:listar_submissoes_audesp' %}" class="btn btn-outline-danger btn-sm mt-3">Ver Submissões</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-book fa-3x text-secondary mb-3"></i>
+                        <h5 class="card-title fw-bold">Catálogos e Padrões</h5>
+                        <a href="{% url 'contratacoes:listar_catalogo_itens' %}" class="btn btn-outline-secondary btn-sm mt-3">Acessar Catálogos</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title fw-bold">Dashboard Gerencial</h5>
+                        <a href="{% url 'core:dashboard_gerencial' %}" class="btn btn-outline-warning btn-sm mt-3">Dashboards Gerenciais</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock content %}
-
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('topFornecedoresChart');
-    if (ctx) {
-        // "Desempacota" o JSON que veio do Django de forma segura
-        const labels = JSON.parse('{{ labels_fornecedores|escapejs }}');
-        const data = JSON.parse('{{ data_fornecedores|escapejs }}');
-
-        if (labels && labels.length > 0) {
-            new Chart(ctx.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Valor Total Contratado (R$)', data: data,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-                    scales: { x: { beginAtZero: true, ticks: { callback: function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); } } } },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) { label += ': '; }
-                                    if (context.parsed.x !== null) { label += 'R$ ' + context.parsed.x.toLocaleString('pt-BR', { minimumFractionDigits: 2 }); }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-             ctx.parentElement.innerHTML = '<p class="text-muted text-center my-auto">Não há dados de contratos para gerar o gráfico.</p>';
-        }
-    }
-});
-</script>
-{% endblock scripts %}

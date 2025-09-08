@@ -30,4 +30,5 @@ urlpatterns = [
     
     path('dashboard/', views.dashboard_gerencial_view, name='dashboard_gerencial'),
     path('manual/', views.manual_do_sistema_view, name='manual_do_sistema'),
+    path('busca/', views.busca_global_view, name='busca_global_view'),
 ]

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="mb-4">
+        <h1 class="display-5 fw-bold text-primary mb-0">Resultados da Busca</h1>
+        <p class="lead">Foram encontrados <strong>{{ total_resultados }}</strong> resultado(s) para "<strong>{{ query }}</strong>".</p>
+    </div>
+
+    <!-- Seção de Processos -->
+    {% if resultados_processos %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">Processos Encontrados ({{ resultados_processos.count }})</h5></div>
+        <div class="list-group list-group-flush">
+            {% for processo in resultados_processos %}
+                <a href="{% url 'core:detalhes_processo' processo_id=processo.pk %}" class="list-group-item list-group-item-action">
+                    <strong>{{ processo.numero_protocolo }}</strong> - {{ processo.titulo }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Seção de ETPs -->
+    {% if resultados_etps %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">ETPs Encontrados ({{ resultados_etps.count }})</h5></div>
+        <div class="list-group list-group-flush">
+            {% for etp in resultados_etps %}
+                <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="list-group-item list-group-item-action">
+                    <strong>{{ etp.numero_processo }}</strong> - {{ etp.titulo }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Seção de Contratos -->
+    {% if resultados_contratos %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">Contratos Encontrados ({{ resultados_contratos.count }})</h5></div>
+        <div class="list-group list-group-flush">
+            {% for contrato in resultados_contratos %}
+                 <a href="{% url 'contratacoes:detalhar_contrato' pk=contrato.pk %}" class="list-group-item list-group-item-action">
+                    <strong>Contrato {{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</strong> - {{ contrato.contratado.razao_social }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Seção de Fornecedores -->
+    {% if resultados_fornecedores %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">Fornecedores Encontrados ({{ resultados_fornecedores.count }})</h5></div>
+        <div class="list-group list-group-flush">
+            {% for fornecedor in resultados_fornecedores %}
+                <a href="{% url 'core:detalhar_fornecedor' pk=fornecedor.pk %}" class="list-group-item list-group-item-action">
+                    <strong>{{ fornecedor.razao_social }}</strong> - {{ fornecedor.cnpj }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if total_resultados == 0 %}
+        <div class="alert alert-warning text-center">
+            Nenhum resultado foi encontrado para a sua busca.
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}
