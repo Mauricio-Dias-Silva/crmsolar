@@ -64,4 +64,6 @@ urlpatterns = [
     
     path('atas-rp/', views.listar_atas_rp, name='listar_atas_rp'),
     path('atas-rp/<int:pk>/', views.detalhar_ata_rp, name='detalhar_ata_rp'),
+    path('processo/<int:processo_id>/ata-rp/criar/', views.criar_ata_rp, name='criar_ata_rp'),
+    path('atas-rp/<int:pk>/editar/', views.editar_ata_rp, name='editar_ata_rp'),
 ]

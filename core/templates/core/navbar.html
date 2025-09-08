@@ -2,7 +2,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">
-        
             <i class="fas fa-landmark me-2"></i>ProGestor Público
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -11,24 +10,23 @@
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'core:home' %}">Início</a>
+                    <a class="nav-link" href="{% url 'core:home' %}">Início</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:meus_processos' %}">Meus Processos</a>
                 </li>
-
-                <!-- NOVO ITEM DE MENU PARA O DASHBOARD -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'core:dashboard_gerencial' %}">
-                        <i class="fas fa-chart-line me-1"></i>Dashboard Gerencial
-                    </a>
+                    <a class="nav-link" href="{% url 'core:dashboard_gerencial' %}"><i class="fas fa-chart-line me-1"></i>Dashboard Geral</a>
                 </li>
                 
+                <!-- MENU DE CONTRATAÇÕES ATUALIZADO -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarContratacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Contratações
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarContratacoes">
+                        <li><a class="dropdown-item" href="{% url 'contratacoes:dashboard_contratacoes' %}">Dashboard de Contratações</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{% url 'contratacoes:listar_etps' %}">Listar ETPs</a></li>
                         <li><a class="dropdown-item" href="{% url 'contratacoes:listar_trs' %}">Listar TRs</a></li>
                         <li><hr class="dropdown-divider"></li>
@@ -37,20 +35,26 @@
                     </ul>
                 </li>
 
+                <!-- MENU DE LICITAÇÕES ATUALIZADO -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarLicitacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Licitações
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarLicitacoes">
+                         <li><a class="dropdown-item" href="{% url 'licitacoes:licitacoes_dashboard' %}">Dashboard de Licitações</a></li>
+                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{% url 'licitacoes:listar_editais' %}">Listar Editais</a></li>
                     </ul>
                 </li>
 
+                <!-- MENU FINANCEIRO ATUALIZADO -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarFinanceiro" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Financeiro
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarFinanceiro">
+                        <li><a class="dropdown-item" href="{% url 'financeiro:financeiro_dashboard' %}">Dashboard Financeiro</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{% url 'financeiro:listar_empenhos' %}">Listar Empenhos</a></li>
                         <li><a class="dropdown-item" href="{% url 'financeiro:listar_documentos_fiscais' %}">Documentos Fiscais</a></li>
                         <li><a class="dropdown-item" href="{% url 'financeiro:listar_pagamentos' %}">Pagamentos</a></li>
@@ -76,32 +80,39 @@
                         <li><a class="dropdown-item" href="{% url 'integracao_audesp:listar_submissoes_audesp' %}">Histórico de Submissões</a></li>
                     </ul>
                 </li>
-
             </ul>
-            <!-- Lado direito do Navbar -->
+            
+            <!-- Lado direito do Navbar (com o sino de notificações) -->
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle me-1"></i> Olá, {{ user.username }}!
+                        <a class="nav-link position-relative" href="#" id="navbarNotificacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            {% if notificacoes_nao_lidas_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6em;">{{ notificacoes_nao_lidas_count }}</span>
+                            {% endif %}
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarNotificacoes" style="width: 350px;">
+                            <li class="px-3 py-2 fw-bold">Notificações</li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% for n in notificacoes_nao_lidas_list %}
+                                <li><a class="dropdown-item text-wrap" href="{% url 'core:marcar_notificacao_como_lida' notificacao_id=n.pk %}"><small>{{ n.mensagem }}</small><div class="text-muted" style="font-size: 0.75em;">{{ n.data_criacao|timesince }} atrás</div></a></li>
+                            {% empty %}
+                                <li class="px-3 py-2 text-muted text-center">Nenhuma nova notificação.</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user-circle me-1"></i> Olá, {{ user.username }}!</a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Painel Admin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:manual_do_sistema' %}"><i class="fas fa-book me-2"></i>Manual do Sistema</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="post" action="{% url 'account_logout' %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Sair
-                                    </button>
-                                </form>
-                            </li>
+                            <li><form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sair</button></form></li>
                         </ul>
                     </li>
                 {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'account_login' %}">Entrar</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'account_login' %}">Entrar</a></li>
                 {% endif %}
             </ul>
         </div>

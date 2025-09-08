@@ -29,5 +29,5 @@ urlpatterns = [
     path('fornecedores/<int:pk>/editar/', views.editar_fornecedor, name='editar_fornecedor'),
     
     path('dashboard/', views.dashboard_gerencial_view, name='dashboard_gerencial'),
-    
+    path('manual/', views.manual_do_sistema_view, name='manual_do_sistema'),
 ]

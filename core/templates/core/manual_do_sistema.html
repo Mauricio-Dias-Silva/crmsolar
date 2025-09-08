@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Interativo - Sistema SysGov</title>
+    <!-- Chosen Palette: Government Modern -->
+    <!-- Application Structure Plan: A dashboard-style single-page app. The core is a visual, clickable workflow diagram that serves as the main navigation. Clicking a stage scrolls to a detailed "card" for that module. Each card explains the module's purpose and includes interactive simulations (e.g., AI assistant forms, Pregoeiro's Panel actions) to actively engage the user. This structure was chosen because it mirrors the user's mental model of a process-driven workflow, making it more intuitive than a linear document. -->
+    <!-- Visualization & Content Choices: 
+        - Workflow Diagram: Goal: Guide user. Method: Clickable HTML/CSS flowchart (Flexbox divs). Interaction: Smooth scroll to section. Justification: Visual map of the entire process.
+        - AI Assistant Simulation: Goal: Demonstrate feature. Method: Textarea + Button revealing pre-written text. Interaction: JS toggles visibility. Justification: Actively shows the AI's value.
+        - Pregoeiro's Panel: Goal: Explain complex interface. Method: HTML table with interactive buttons. Interaction: JS highlights rows, simulates accepting a bid. Justification: Makes a complex feature understandable.
+        - AUDESP Panel: Goal: Show compliance output. Method: Table with buttons opening a modal with pre-formatted JSON. Interaction: JS toggles modal visibility. Justification: Clearly shows the final deliverable for TCE.
+        - Benefits Chart: Goal: Quantify value. Method: Chart.js Bar Chart in a responsive container. Interaction: Static visual. Justification: Provides a quick, data-driven summary of system benefits. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .workflow-step {
+            transition: all 0.3s ease;
+        }
+        .workflow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 1rem;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header Section -->
+    <header class="bg-gray-800 text-white text-center py-20">
+        <div class="container mx-auto px-4">
+            <i class="fas fa-landmark fa-3x text-blue-400 mb-4"></i>
+            <h1 class="text-5xl font-bold mb-2">Manual Interativo do Sistema SysGov</h1>
+            <p class="text-xl text-gray-300">Preparado para a Prefeituras</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+
+        <!-- Workflow Section -->
+        <section id="workflow" class="mb-16">
+            <h2 class="text-4xl font-bold text-center text-gray-700 mb-2">O Ciclo de Vida de uma Contratação</h2>
+            <p class="text-center text-lg text-gray-500 mb-12">Clique em cada etapa para explorar os detalhes e funcionalidades do módulo.</p>
+            <div class="flex flex-wrap justify-center items-center gap-4 text-center">
+                <div onclick="scrollToSection('processo')" class="workflow-step cursor-pointer p-4 bg-white rounded-lg shadow-md border-t-4 border-blue-500 w-40 h-32 flex flex-col justify-center">
+                    <i class="fas fa-folder-open fa-2x text-blue-500 mb-2"></i>
+                    <h3 class="font-bold">Processo</h3>
+                </div>
+                <i class="fas fa-arrow-right text-gray-400 hidden md:block"></i>
+                <div onclick="scrollToSection('etp-tr')" class="workflow-step cursor-pointer p-4 bg-white rounded-lg shadow-md border-t-4 border-green-500 w-40 h-32 flex flex-col justify-center">
+                    <i class="fas fa-file-alt fa-2x text-green-500 mb-2"></i>
+                    <h3 class="font-bold">Planeamento (ETP/TR)</h3>
+                </div>
+                <i class="fas fa-arrow-right text-gray-400 hidden md:block"></i>
+                 <div onclick="scrollToSection('pregao')" class="workflow-step cursor-pointer p-4 bg-white rounded-lg shadow-md border-t-4 border-yellow-500 w-40 h-32 flex flex-col justify-center">
+                    <i class="fas fa-gavel fa-2x text-yellow-500 mb-2"></i>
+                    <h3 class="font-bold">Licitação (Pregão)</h3>
+                </div>
+                <i class="fas fa-arrow-right text-gray-400 hidden md:block"></i>
+                <div onclick="scrollToSection('execucao')" class="workflow-step cursor-pointer p-4 bg-white rounded-lg shadow-md border-t-4 border-purple-500 w-40 h-32 flex flex-col justify-center">
+                    <i class="fas fa-file-signature fa-2x text-purple-500 mb-2"></i>
+                    <h3 class="font-bold">Execução</h3>
+                </div>
+                <i class="fas fa-arrow-right text-gray-400 hidden md:block"></i>
+                <div onclick="scrollToSection('audesp')" class="workflow-step cursor-pointer p-4 bg-white rounded-lg shadow-md border-t-4 border-red-500 w-40 h-32 flex flex-col justify-center">
+                    <i class="fas fa-cloud-upload-alt fa-2x text-red-500 mb-2"></i>
+                    <h3 class="font-bold">Prestação de Contas</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Processo Module Section -->
+        <section id="processo" class="py-12 bg-white rounded-xl shadow-lg mb-12 p-8">
+            <h3 class="text-3xl font-bold mb-4 text-blue-600"><i class="fas fa-folder-open mr-3"></i>O Ponto de Partida: O Processo</h3>
+            <p class="text-lg text-gray-600 mb-6">Tudo no SysGov começa com um Processo. Ele funciona como a "pasta" digital que centraliza todos os documentos e ações de uma demanda. Ao iniciar um novo processo, você cria a "capa" que dará origem a todo o ciclo de contratação, garantindo rastreabilidade do início ao fim.</p>
+        </section>
+
+        <!-- ETP & TR Module Section -->
+        <section id="etp-tr" class="py-12 bg-white rounded-xl shadow-lg mb-12 p-8">
+            <h3 class="text-3xl font-bold mb-4 text-green-600"><i class="fas fa-file-alt mr-3"></i>Módulo de Planeamento (ETP & TR)</h3>
+            <p class="text-lg text-gray-600 mb-8">Esta é a fase mais crucial, onde a necessidade é justificada e detalhada. O SysGov oferece ferramentas poderosas para tornar este trabalho mais rápido e inteligente.</p>
+            
+            <div class="bg-green-50 p-6 rounded-lg">
+                <h4 class="text-2xl font-bold mb-3"><i class="fas fa-magic text-green-500 mr-2"></i>Destaque: Assistente de IA</h4>
+                <p class="mb-4">Para acelerar a criação de documentos, o SysGov oferece um assistente de Inteligência Artificial. Descreva a sua necessidade em linguagem simples e o sistema gerará um rascunho completo e bem estruturado para si.</p>
+                <label for="ai-request" class="font-semibold block mb-2">Simule a criação de um ETP. Descreva uma necessidade:</label>
+                <textarea id="ai-request" class="w-full p-2 border rounded-md mb-4" rows="3" placeholder="Ex: Precisamos de 20 novas mesas e 40 cadeiras para a escola municipal do centro."></textarea>
+                <button onclick="simulateAI()" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300">Gerar Rascunho com IA</button>
+                <div id="ai-response" class="hidden mt-6 p-4 bg-gray-100 border-l-4 border-green-400 rounded">
+                    <h5 class="font-bold mb-2">Rascunho do ETP Gerado:</h5>
+                    <p><strong>1. DESCRIÇÃO DA NECESSIDADE:</strong><br>Aquisição de 20 mesas e 40 cadeiras escolares para suprir a demanda da Escola Municipal Central, visando a melhoria da infraestrutura para os alunos e professores.</p>
+                    <p class="mt-2"><strong>2. JUSTIFICATIVA:</strong><br>A contratação justifica-se pela necessidade de substituir o mobiliário antigo e danificado, que já não oferece condições adequadas de ergonomia e segurança, impactando diretamente a qualidade do ambiente de aprendizagem.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Licitação Module Section -->
+        <section id="pregao" class="py-12 bg-white rounded-xl shadow-lg mb-12 p-8">
+            <h3 class="text-3xl font-bold mb-4 text-yellow-600"><i class="fas fa-gavel mr-3"></i>Módulo de Licitações (Painel do Pregoeiro)</h3>
+            <p class="text-lg text-gray-600 mb-6">O Painel do Pregoeiro é a central de controlo interativa para a condução das sessões de pregão. A partir daqui, é possível gerir todos os aspetos da disputa em tempo real.</p>
+            <h4 class="text-xl font-bold mb-4">Simulação do Painel:</h4>
+            <div class="border rounded-lg p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">
+                        <h5 class="font-bold">Participantes</h5>
+                        <ul class="list-disc list-inside text-gray-600">
+                            <li>Fornecedor Alfa Ltda.</li>
+                            <li>Comércio Beta S.A.</li>
+                            <li>Serviços Gama EIRELI</li>
+                        </ul>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h5 class="font-bold">Lances para o Item: "Cadeira Escolar"</h5>
+                        <table class="w-full text-sm text-left text-gray-500 mt-2">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr><th class="px-4 py-2">Licitante</th><th class="px-4 py-2">Valor (R$)</th><th class="px-4 py-2 text-center">Ação</th></tr>
+                            </thead>
+                            <tbody id="lance-table-body">
+                                <tr class="bg-white border-b">
+                                    <td class="px-4 py-2">Serviços Gama EIRELI</td>
+                                    <td class="px-4 py-2">120,00</td>
+                                    <td class="px-4 py-2 text-center"><button class="lance-btn bg-blue-500 text-white text-xs px-2 py-1 rounded hover:bg-blue-600" onclick="acceptLance(this)">Aceitar</button></td>
+                                </tr>
+                                <tr class="bg-white border-b">
+                                    <td class="px-4 py-2">Fornecedor Alfa Ltda.</td>
+                                    <td class="px-4 py-2">115,50</td>
+                                    <td class="px-4 py-2 text-center"><button class="lance-btn bg-blue-500 text-white text-xs px-2 py-1 rounded hover:bg-blue-600" onclick="acceptLance(this)">Aceitar</button></td>
+                                </tr>
+                                <tr class="bg-white border-b">
+                                    <td class="px-4 py-2">Comércio Beta S.A.</td>
+                                    <td class="px-4 py-2">118,00</td>
+                                    <td class="px-4 py-2 text-center"><button class="lance-btn bg-blue-500 text-white text-xs px-2 py-1 rounded hover:bg-blue-600" onclick="acceptLance(this)">Aceitar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p id="winner-message" class="hidden mt-4 text-center font-bold text-green-600 bg-green-100 p-2 rounded"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Execução Module Section -->
+        <section id="execucao" class="py-12 bg-white rounded-xl shadow-lg mb-12 p-8">
+            <h3 class="text-3xl font-bold mb-4 text-purple-600"><i class="fas fa-file-signature mr-3"></i>Módulos de Execução (Contratos e Financeiro)</h3>
+            <p class="text-lg text-gray-600 mb-6">Após a licitação, o SysGov continua a gerir o ciclo de vida da contratação. Os módulos de Contratos e Financeiro garantem que a execução e o pagamento sejam registados de forma correta e interligada.</p>
+             <div class="chart-container">
+                <canvas id="benefitsChart"></canvas>
+            </div>
+             <p class="text-center text-sm text-gray-500 mt-2">Gráfico ilustrativo da redução de tempo manual por módulo com o uso do SysGov.</p>
+        </section>
+
+        <!-- AUDESP Module Section -->
+        <section id="audesp" class="py-12 bg-white rounded-xl shadow-lg p-8">
+            <h3 class="text-3xl font-bold mb-4 text-red-600"><i class="fas fa-cloud-upload-alt mr-3"></i>Módulo de Integração AUDESP</h3>
+            <p class="text-lg text-gray-600 mb-6">A prestação de contas ao TCE é simplificada. O Painel de Submissão mostra todos os documentos pendentes, e com um clique, o sistema gera o arquivo JSON ou XML no formato exato exigido, eliminando erros manuais.</p>
+            <h4 class="text-xl font-bold mb-4">Simulação do Painel de Submissão:</h4>
+            <div class="border rounded-lg p-4">
+                <table class="w-full text-sm text-left text-gray-500">
+                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2">Documento</th>
+                            <th class="px-4 py-2">Detalhes</th>
+                            <th class="px-4 py-2 text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b">
+                            <td class="px-4 py-2 font-medium">Contrato 042/2025</td>
+                            <td class="px-4 py-2">Aquisição de Mobiliário Escolar</td>
+                            <td class="px-4 py-2 text-center"><button class="bg-red-500 text-white text-xs px-2 py-1 rounded hover:bg-red-600" onclick="showJsonModal()">Gerar JSON</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- JSON Modal -->
+    <div id="jsonModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" onclick="closeJsonModal()">&times;</span>
+        <h4 class="text-xl font-bold mb-4">JSON Gerado para o AUDESP</h4>
+        <pre class="bg-gray-100 p-4 rounded-md text-sm overflow-x-auto"><code>{
+    "descritor": {
+        "municipio": "3505708",
+        "entidade": "Prefeitura de Barueri",
+        "codigoContrato": "CT-042/2025"
+    },
+    "objetoContrato": "Aquisição de Mobiliário Escolar",
+    "valorGlobal": 11550.00,
+    "dataAssinatura": "2025-09-04",
+    "niFornecedor": "12345678000199",
+    "nomeRazaoSocialFornecedor": "Fornecedor Alfa Ltda."
+}</code></pre>
+      </div>
+    </div>
+
+    <footer class="bg-gray-800 text-white text-center py-4 mt-16">
+        <p>&copy; 2025 Sistema SysGov. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView();
+        }
+
+        function simulateAI() {
+            const requestText = document.getElementById('ai-request').value;
+            if (requestText.trim() !== '') {
+                document.getElementById('ai-response').classList.remove('hidden');
+            } else {
+                 document.getElementById('ai-response').classList.add('hidden');
+            }
+        }
+        
+        function acceptLance(button) {
+            const allButtons = document.querySelectorAll('.lance-btn');
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                btn.textContent = 'Finalizado';
+            });
+
+            const winnerRow = button.closest('tr');
+            winnerRow.classList.add('bg-green-100');
+            button.textContent = 'Vencedor';
+            button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+            button.classList.add('bg-green-600');
+            
+            const winnerName = winnerRow.cells[0].textContent;
+            const winnerMessage = document.getElementById('winner-message');
+            winnerMessage.textContent = `🏆 ${winnerName} é o vencedor!`;
+            winnerMessage.classList.remove('hidden');
+        }
+
+        const modal = document.getElementById('jsonModal');
+        function showJsonModal() {
+            modal.style.display = "block";
+        }
+        function closeJsonModal() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        const ctx = document.getElementById('benefitsChart').getContext('2d');
+        const benefitsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Criação de ETP/TR', 'Condução do Pregão', 'Criação de Contrato', 'Prestação de Contas'],
+                datasets: [{
+                    label: 'Tempo Gasto (em horas)',
+                    data: [8, 12, 6, 10],
+                    backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Tempo Gasto com SysGov (em horas)',
+                    data: [1.5, 4, 1, 0.5],
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Horas de Trabalho'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Otimização do Tempo com a Automação do SysGov',
+                        font: { size: 18 }
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

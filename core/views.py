@@ -9,13 +9,13 @@ from django.db.models.functions import TruncMonth
 # Importações dos modelos e formulários do próprio app 'core'
 from .models import Processo, ArquivoAnexo
 from .forms import ProcessoForm, ArquivoAnexoForm
-from django.db.models import Sum, Count, F, Func
+from django.db.models import Sum, Count, F, Func,Q
 # Importe os modelos necessários dos outros apps (agora que estão no mesmo projeto)
 from contratacoes.models import ETP, TR
 from licitacoes.models import Edital
 from financeiro.models import DocumentoFiscal, Pagamento
 from django.contrib.contenttypes.models import ContentType
-
+import json 
 from contratacoes.models import Contrato, ETP
 from licitacoes.models import Edital, ResultadoLicitacao
 from financeiro.models import Pagamento
@@ -59,49 +59,106 @@ def visualizar_anexo_pdf(request, anexo_id):
         return response
     
 
-def home(request):
+def home(request): # O nome da sua URL pode apontar para 'home_view', certifique-se de que os nomes correspondem
     dashboard_stats = {}
-    # Nomes para o novo gráfico de status
-    labels_status = []
-    data_status = []
+    labels_fornecedores = []
+    data_fornecedores = []
 
+    # A lógica do dashboard só é executada para usuários logados
     if request.user.is_authenticated:
-        # Estatísticas gerais (já existentes)
+        # 1. Lógica para as estatísticas dos cartões
         dashboard_stats = {
             'processos_em_analise': Processo.objects.filter(status='EM_ANALISE').count(),
             'licitacoes_abertas': Edital.objects.filter(status='ABERTO').count(),
             'contratos_vigentes': Contrato.objects.filter(status='VIGENTE').count(),
+            'pagamentos_pendentes': 0 # Lógica a ser implementada no futuro
         }
         
-        # --- NOVA LÓGICA PARA O GRÁFICO DE STATUS ---
-        # Agrupa os ETPs por status e conta quantos há em cada um
-        status_data = ETP.objects.values('status') \
-            .annotate(count=Count('id')) \
-            .order_by('status')
+        # 2. Lógica para preparar os dados do gráfico de Top Fornecedores
+        top_fornecedores_data = Contrato.objects.values('contratado__razao_social') \
+            .annotate(total_valor=Sum('valor_total')) \
+            .order_by('-total_valor')[:5]
 
-        # Cria um dicionário para traduzir o código do status (ex: 'EM_ELABORACAO') para o nome legível
-        status_display_map = dict(ETP._meta.get_field('status').choices)
+        labels_fornecedores = [item['contratado__razao_social'] for item in top_fornecedores_data]
+        data_fornecedores = [float(item['total_valor']) for item in top_fornecedores_data]
 
-        labels_status = [status_display_map.get(item['status'], item['status']) for item in status_data]
-        data_status = [item['count'] for item in status_data]
-
+    # 3. Todos os dados são enviados para o template no 'context'
     context = {
         'dashboard_stats': dashboard_stats,
-        'labels_status': labels_status,
-        'data_status': data_status,
+        'labels_fornecedores': json.dumps(labels_fornecedores), # Enviamos como JSON
+        'data_fornecedores': json.dumps(data_fornecedores),   # Enviamos como JSON
     }
     return render(request, 'core/home.html', context)
 
-# ... (suas outras views)
-# View para a página "Meus Processos"
-@login_required(login_url='/accounts/login/')
-def meus_processos_view(request):
-    processos = Processo.objects.filter(usuario=request.user)
+
+@login_required
+def dashboard_gerencial_view(request):
+    """Coleta e prepara os dados para o dashboard gerencial com múltiplos gráficos."""
+    # Gráfico 1: Distribuição de ETPs por Status
+    status_data = ETP.objects.values('status').annotate(count=Count('id')).order_by('status')
+    status_display_map = dict(ETP._meta.get_field('status').choices)
+    labels_status = [status_display_map.get(item['status'], item['status']) for item in status_data]
+    data_status = [item['count'] for item in status_data]
+
+    # Gráfico 2: Top 5 Fornecedores por Valor Contratado
+    top_fornecedores_data = Contrato.objects.values('contratado__razao_social') \
+        .annotate(total_valor=Sum('valor_total')) \
+        .order_by('-total_valor')[:5]
+    labels_fornecedores = [item['contratado__razao_social'] for item in top_fornecedores_data]
+    data_fornecedores = [float(item['total_valor']) for item in top_fornecedores_data]
+
+    # Gráfico 3: Economia Média Mensal em Licitações
+    economia_mensal_data = ResultadoLicitacao.objects.filter(valor_estimado_inicial__isnull=False, valor_homologado__isnull=False) \
+        .annotate(mes=TruncMonth('data_homologacao')) \
+        .values('mes') \
+        .annotate(economia_total=Sum(F('valor_estimado_inicial') - F('valor_homologado')), num_licitacoes=Count('id')) \
+        .order_by('mes')
+    labels_economia = [item['mes'].strftime('%b/%Y') for item in economia_mensal_data]
+    data_economia = [float(item['economia_total'] / item['num_licitacoes']) if item['num_licitacoes'] > 0 else 0 for item in economia_mensal_data]
+
     context = {
-        'processos': processos,
-        'usuario_atual': request.user.username
+        'titulo_pagina': 'Dashboard Gerencial',
+        'labels_status': json.dumps(labels_status),
+        'data_status': json.dumps(data_status),
+        'labels_fornecedores': json.dumps(labels_fornecedores),
+        'data_fornecedores': json.dumps(data_fornecedores),
+        'labels_economia': json.dumps(labels_economia),
+        'data_economia': json.dumps(data_economia),
+    }
+    return render(request, 'core/dashboard_gerencial.html', context)
+
+# --- GESTÃO DE PROCESSOS ---
+
+@login_required
+def meus_processos_view(request):
+    """
+    Lista os processos com base no perfil do utilizador e permite a filtragem.
+    """
+    is_manager = request.user.is_superuser or request.user.groups.filter(name__in=['Analise de Requerimentos', 'Setor de Orcamento', 'Comissao de Licitacao']).exists()
+
+    if is_manager:
+        processos_list = Processo.objects.all()
+        titulo_pagina = "Todos os Processos do Sistema"
+    else:
+        processos_list = Processo.objects.filter(usuario=request.user)
+        titulo_pagina = "Meus Processos"
+
+    query = request.GET.get('q')
+    status_filter = request.GET.get('status')
+    if query:
+        processos_list = processos_list.filter(Q(titulo__icontains=query) | Q(numero_protocolo__icontains=query))
+    if status_filter:
+        processos_list = processos_list.filter(status=status_filter)
+
+    context = {
+        'processos': processos_list.order_by('-data_criacao'),
+        'status_choices': Processo.STATUS_CHOICES,
+        'query_atual': query or "",
+        'status_atual': status_filter or "",
+        'titulo_pagina': titulo_pagina
     }
     return render(request, 'core/meus_processos.html', context)
+
 
 # View para Criar um Novo Processo
 @login_required(login_url='/accounts/login/')
@@ -157,7 +214,7 @@ def detalhes_processo_view(request, processo_id):
 
     # Busca TODOS os contratos vinculados a este processo
     contratos = processo.contratos.all()
-
+    atas_rp = processo.atas_rp.all()
     # Busca os anexos genéricos do processo
     processo_content_type = ContentType.objects.get_for_model(Processo)
     anexos_do_processo = ArquivoAnexo.objects.filter(
@@ -171,6 +228,7 @@ def detalhes_processo_view(request, processo_id):
         'tr': tr,
         'edital': edital,
         'contratos': contratos,
+        'atas_rp': atas_rp,
         'anexos_do_processo': anexos_do_processo,
         'titulo_pagina': f"Painel do Processo {processo.numero_protocolo or ''}"
     }
@@ -340,49 +398,12 @@ def editar_fornecedor(request, pk):
 
 
 @login_required
-def dashboard_gerencial_view(request):
+def manual_do_sistema_view(request):
     """
-    Coleta e prepara os dados para o dashboard gerencial com múltiplos gráficos.
+    Renderiza a página do manual interativo do sistema.
     """
-    # --- Gráfico 1: Distribuição de ETPs por Status ---
-    status_data = ETP.objects.values('status').annotate(count=Count('id')).order_by('status')
-    status_display_map = dict(ETP._meta.get_field('status').choices)
-    labels_status = [status_display_map.get(item['status'], item['status']) for item in status_data]
-    data_status = [item['count'] for item in status_data]
-
-    # --- Gráfico 2: Top 5 Fornecedores por Valor Contratado ---
-    top_fornecedores_data = Contrato.objects.values('contratado__razao_social') \
-        .annotate(total_valor=Sum('valor_total')) \
-        .order_by('-total_valor')[:5]
-    labels_fornecedores = [item['contratado__razao_social'] for item in top_fornecedores_data]
-    data_fornecedores = [float(item['total_valor']) for item in top_fornecedores_data]
-
-    # --- Gráfico 3: Economia Média Mensal em Licitações ---
-    economia_mensal_data = ResultadoLicitacao.objects.filter(
-        valor_estimado_inicial__isnull=False, 
-        valor_homologado__isnull=False
-    ).annotate(mes=TruncMonth('data_homologacao')) \
-     .values('mes') \
-     .annotate(
-        economia_total=Sum(F('valor_estimado_inicial') - F('valor_homologado')),
-        num_licitacoes=Count('id')
-     ).order_by('mes')
-    
-    labels_economia = [item['mes'].strftime('%b/%Y') for item in economia_mensal_data]
-    data_economia = []
-    for item in economia_mensal_data:
-        if item['num_licitacoes'] > 0:
-            data_economia.append(float(item['economia_total'] / item['num_licitacoes']))
-        else:
-            data_economia.append(0)
-
     context = {
-        'titulo_pagina': 'Dashboard Gerencial',
-        'labels_status': labels_status,
-        'data_status': data_status,
-        'labels_fornecedores': labels_fornecedores,
-        'data_fornecedores': data_fornecedores,
-        'labels_economia': labels_economia,
-        'data_economia': data_economia,
+        'titulo_pagina': 'Manual do Sistema SysGov'
     }
-    return render(request, 'core/dashboard_gerencial.html', context)
+    return render(request, 'core/manual_do_sistema.html', context)
+

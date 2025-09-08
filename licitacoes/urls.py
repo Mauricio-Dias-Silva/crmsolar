@@ -7,9 +7,7 @@ from . import views
 app_name = 'licitacoes' # Essencial
 
 urlpatterns = [
-    # Dashboard ou página inicial do módulo de licitações
-    path('', views.licitacoes_dashboard, name='dashboard_licitacoes'),
-
+    
     # URLs para Editais
     path('editais/criar/', views.criar_edital, name='criar_edital'),
     path('editais/criar/<int:processo_id>/', views.criar_edital, name='criar_edital_para_processo'), # Para criar a partir de um Processo
@@ -24,5 +22,7 @@ urlpatterns = [
     path('resultados/<int:pk>/editar/', views.editar_resultado_licitacao, name='editar_resultado_licitacao'),
     path('pregao/<int:pregao_id>/painel/', views.painel_pregao, name='painel_pregao'),
     path('pregao/<int:pregao_id>/ata-pdf/', views.gerar_ata_pregao_pdf, name='gerar_ata_pregao_pdf'),
+    
+    path('dashboard/', views.licitacoes_dashboard, name='licitacoes_dashboard'),
 ]
 

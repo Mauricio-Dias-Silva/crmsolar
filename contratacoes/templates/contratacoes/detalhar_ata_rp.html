@@ -1,76 +1,26 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes da Ata de RP</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        .header {
-            background-color: #333;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-        }
-        .nav {
-            background-color: #444;
-            color: white;
-            padding: 0.5rem;
-            text-align: center;
-        }
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0 1rem;
-        }
-        .container {
-            width: 80%;
-            margin: 2rem auto;
-            background-color: white;
-            padding: 2rem;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-
-    <header class="header">
-        <h1>Sistema de Gerenciamento</h1>
-    </header>
-
-    <nav class="nav">
-        <a href="#">Início</a>
-        <a href="#">Atas</a>
-        <a href="#">Relatórios</a>
-        <a href="#">Contato</a>
-    </nav>
-
-    <div class="container">
-        <h1>Detalhes da Ata de Registro de Preços</h1>
-        
-        <p>
-            Esta página irá exibir os detalhes completos de uma ata de registro de preços específica.
-            Aqui, você pode adicionar tabelas, listas e outros elementos para mostrar informações como:
-            <ul>
-                <li>Número da Ata</li>
-                <li>Data de Publicação</li>
-                <li>Órgão Gerenciador</li>
-                <li>Itens/Objetos</li>
-                <li>Fornecedores Participantes</li>
-                <li>Preços Registrados</li>
-            </ul>
-        </p>
-
+{% extends 'base.html' %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Fornecedor: {{ ata.fornecedor_beneficiario.razao_social }}</p>
         </div>
-
-</body>
-</html>
+        <div class="d-flex gap-2">
+            <a href="{% url 'contratacoes:listar_atas_rp' %}" class="btn btn-outline-secondary">Voltar</a>
+            <a href="{% url 'contratacoes:editar_ata_rp' pk=ata.pk %}" class="btn btn-warning">Editar</a>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">Informações da Ata</h5></div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Objeto</dt><dd class="col-sm-9">{{ ata.objeto|linebreaksbr }}</dd>
+                <dt class="col-sm-3">Valor Total Registado</dt><dd class="col-sm-9">R$ {{ ata.valor_total_registrado|floatformat:2 }}</dd>
+                <dt class="col-sm-3">Vigência</dt><dd class="col-sm-9">{{ ata.data_inicio_vigencia|date:"d/m/Y" }} a {{ ata.data_fim_vigencia|date:"d/m/Y" }}</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

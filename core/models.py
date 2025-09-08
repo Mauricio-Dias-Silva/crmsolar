@@ -78,11 +78,7 @@ class ArquivoAnexo(models.Model):
     def is_xml(self):
         return self.get_file_extension() == '.xml'
     
-# Em SysGov_Project/core/models.py
 
-# ... (seus modelos Processo e ArquivoAnexo continuam aqui em cima) ...
-
-# vvv ADICIONE O CÓDIGO ABAIXO vvv
 
 class Fornecedor(models.Model):
     razao_social = models.CharField(
@@ -139,3 +135,37 @@ class Fornecedor(models.Model):
 
     def __str__(self):
         return f"{self.razao_social} ({self.cnpj})"
+    
+    
+class Notificacao(models.Model):
+    usuario_destino = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='notificacoes',
+        verbose_name="Utilizador de Destino"
+    )
+    mensagem = models.CharField(
+        max_length=255,
+        verbose_name="Mensagem da Notificação"
+    )
+    link_acao = models.URLField(
+        max_length=500,
+        blank=True, null=True,
+        verbose_name="Link para Ação"
+    )
+    lida = models.BooleanField(
+        default=False,
+        verbose_name="Lida?"
+    )
+    data_criacao = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Data de Criação"
+    )
+
+    class Meta:
+        verbose_name = "Notificação"
+        verbose_name_plural = "Notificações"
+        ordering = ['-data_criacao']
+
+    def __str__(self):
+        return f"Notificação para {self.usuario_destino.username}: {self.mensagem[:30]}..."

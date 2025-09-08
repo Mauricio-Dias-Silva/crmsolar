@@ -2,69 +2,66 @@
 <footer class="footer-custom text-white py-5 mt-auto">
     <div class="container">
         <div class="row">
+            <!-- Coluna 1: Sobre o Sistema -->
             <div class="col-md-4 mb-4 mb-md-0 text-center text-md-start">
-                <h4 class="fw-bold mb-3">ProGestor Público</h4>
-                <p class="text-muted small">A Plataforma Digital da sua prefeitura para uma gestão de licitações mais eficiente e transparente.</p>
+                <h4 class="fw-bold mb-3"><i class="fas fa-landmark me-2"></i>ProGestor Público</h4>
+                <p class="text-white-50 small">A Plataforma Digital da Prefeitura de Barueri para uma gestão de licitações mais eficiente e transparente.</p>
             </div>
+
+            <!-- Coluna 2: Links Rápidos (ATUALIZADOS E FUNCIONAIS) -->
             <div class="col-md-4 mb-4 mb-md-0 text-center">
                 <h5 class="fw-bold mb-3">Links Rápidos</h5>
                 <ul class="list-unstyled">
                     <li><a href="{% url 'core:home' %}" class="text-white text-decoration-none py-1 d-block">Início</a></li>
                     {% if user.is_authenticated %}
                         <li><a href="{% url 'core:meus_processos' %}" class="text-white text-decoration-none py-1 d-block">Meus Processos</a></li>
-                        <li><a href="{% url 'contratacoes:dashboard_contratacoes' %}" class="text-white text-decoration-none py-1 d-block">Contratações</a></li>
-                        <li><a href="{% url 'licitacoes:dashboard_licitacoes' %}" class="text-white text-decoration-none py-1 d-block">Licitações</a></li>
-                        <li><a href="{% url 'financeiro:dashboard_financeiro' %}" class="text-white text-decoration-none py-1 d-block">Financeiro</a></li>
+                        <li><a href="{% url 'core:dashboard_gerencial' %}" class="text-white text-decoration-none py-1 d-block">Dashboard Gerencial</a></li>
+                        <li><a href="{% url 'contratacoes:listar_contratos' %}" class="text-white text-decoration-none py-1 d-block">Contratos</a></li>
+                        <li><a href="{% url 'licitacoes:listar_editais' %}" class="text-white text-decoration-none py-1 d-block">Editais</a></li>
                     {% endif %}
                 </ul>
             </div>
+
+            <!-- Coluna 3: Contato -->
             <div class="col-md-4 mb-4 mb-md-0 text-center text-md-end">
                 <h5 class="fw-bold mb-3">Contato</h5>
-                <address class="mb-0 text-muted small">
-                    Prefeitura Municipal de [Nome da Cidade]<br>
-                    [Endereço Completo]<br>
-                    [Telefone: (XX) XXXX-XXXX]<br>
-                    [Email: contato@prefeitura.gov.br]
+                <address class="mb-0 text-white-50 small fst-normal">
+                    Prefeitura Municipal de Barueri<br>
+                    Rua Prof. João da Matta e Luz, 84 - Centro<br>
+                    Barueri - SP, 06401-160<br>
+                    Telefone: (11) 4199-8000
                 </address>
-                <div class="mt-3">
-                    <a href="#" class="text-white me-2"><i class="bi bi-facebook fs-4"></i></a>
-                    <a href="#" class="text-white me-2"><i class="bi bi-instagram fs-4"></i></a>
-                    <a href="#" class="text-white"><i class="bi bi-linkedin fs-4"></i></a>
-                </div>
             </div>
         </div>
-        <hr class="my-4 border-white-50">
+        <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.2);">
         <div class="row">
             <div class="col-12 text-center">
-                <p class="mb-0 text-muted small copyright-text">
-                    &copy; {{ ano_atual }} ProGestor Público. Todos os direitos reservados.
+                <p class="mb-0 small copyright-text">
+                    &copy; {% now "Y" %} SysGov. Todos os direitos reservados.
                 </p>
             </div>
         </div>
     </div>
 </footer>
 
+<!-- ESTILOS DO FOOTER (MANTIDOS) -->
 <style>
     .footer-custom {
         background: linear-gradient(to right, #1a2a4b, #2a3c68);
-        padding: 3rem 0;
         color: #ffffff;
-        border-top: 5px solid rgba(255, 255, 255, 0.1);
     }
     .footer-custom a, .footer-custom .text-muted {
         color: rgba(255, 255, 255, 0.8) !important;
+        transition: color 0.2s ease-in-out;
     }
     .footer-custom a:hover {
         color: #ffffff !important;
-        text-decoration: underline !important;
+        text-decoration: none !important;
     }
     .footer-custom .copyright-text {
-        font-size: 0.9em;
         opacity: 0.6;
     }
-    .footer-custom .bi {
-        transition: color 0.2s ease-in-out;
-    }
+</style>
     .footer-custom .bi:hover {
         color: #ffffff !important;
     }

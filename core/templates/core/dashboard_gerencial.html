@@ -14,13 +14,9 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header"><h5 class="mb-0">Distribuição de ETPs por Status (Gargalos)</h5></div>
                 <div class="card-body d-flex align-items-center justify-content-center p-4">
-                    {% if labels_status %}
-                        <div class="chart-container" style="position: relative; height:350px; width:100%; max-width: 400px;">
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    {% else %}
-                        <p class="text-muted">Não há dados de ETPs para gerar o gráfico.</p>
-                    {% endif %}
+                    <div class="chart-container" style="position: relative; height:350px; width:100%; max-width: 400px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -30,13 +26,9 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header"><h5 class="mb-0">Top 5 Fornecedores por Valor Contratado</h5></div>
                 <div class="card-body p-4">
-                     {% if labels_fornecedores %}
-                        <div class="chart-container" style="position: relative; height:350px; width:100%;">
-                            <canvas id="fornecedoresChart"></canvas>
-                        </div>
-                    {% else %}
-                        <p class="text-muted">Não há dados de contratos para gerar o gráfico.</p>
-                    {% endif %}
+                    <div class="chart-container" style="position: relative; height:350px; width:100%;">
+                        <canvas id="fornecedoresChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -46,13 +38,9 @@
              <div class="card shadow-sm">
                 <div class="card-header"><h5 class="mb-0">Economia Média Gerada por Mês em Licitações</h5></div>
                 <div class="card-body p-4">
-                     {% if labels_economia %}
-                        <div class="chart-container" style="position: relative; height:350px; width:100%;">
-                            <canvas id="economiaChart"></canvas>
-                        </div>
-                    {% else %}
-                        <p class="text-muted">Não há dados de resultados de licitação para gerar o gráfico.</p>
-                    {% endif %}
+                    <div class="chart-container" style="position: relative; height:350px; width:100%;">
+                        <canvas id="economiaChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -66,53 +54,59 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     // --- INÍCIO DO NOSSO "ESPIÃO" ---
-    console.log("--- Diagnóstico do Dashboard ---");
-    // Espião para o Gráfico de Status
-    const labelsStatus = {{ labels_status|safe }};
-    const dataStatus = {{ data_status|safe }};
-    console.log("Dados para o Gráfico de Status:", { labels: labelsStatus, data: dataStatus });
-
-    // Espião para o Gráfico de Fornecedores
-    const labelsFornecedores = {{ labels_fornecedores|safe }};
-    const dataFornecedores = {{ data_fornecedores|safe }};
-    console.log("Dados para o Gráfico de Fornecedores:", { labels: labelsFornecedores, data: dataFornecedores });
+    // Este código só corre no seu navegador
+    console.log("--- Diagnóstico do Dashboard (JavaScript no Navegador) ---");
     
-    // Espião para o Gráfico de Economia
-    const labelsEconomia = {{ labels_economia|safe }};
-    const dataEconomia = {{ data_economia|safe }};
-    console.log("Dados para o Gráfico de Economia:", { labels: labelsEconomia, data: dataEconomia });
-    console.log("---------------------------------");
-    // --- FIM DO NOSSO "ESPIÃO" ---
+    try {
+        // Espião para o Gráfico de Status
+        const labelsStatus = JSON.parse('{{ labels_status|escapejs }}');
+        const dataStatus = JSON.parse('{{ data_status|escapejs }}');
+        console.log("Dados para o Gráfico de Status:", { labels: labelsStatus, data: dataStatus });
+
+        // Espião para o Gráfico de Fornecedores
+        const labelsFornecedores = JSON.parse('{{ labels_fornecedores|escapejs }}');
+        const dataFornecedores = JSON.parse('{{ data_fornecedores|escapejs }}');
+        console.log("Dados para o Gráfico de Fornecedores:", { labels: labelsFornecedores, data: dataFornecedores });
+        
+        // Espião para o Gráfico de Economia
+        const labelsEconomia = JSON.parse('{{ labels_economia|escapejs }}');
+        const dataEconomia = JSON.parse('{{ data_economia|escapejs }}');
+        console.log("Dados para o Gráfico de Economia:", { labels: labelsEconomia, data: dataEconomia });
+        console.log("---------------------------------");
+        
+        // --- FIM DO NOSSO "ESPIÃO" ---
 
 
-    // Gráfico 1: Status
-    const statusCtx = document.getElementById('statusChart');
-    if (statusCtx && dataStatus.length > 0) {
-        new Chart(statusCtx.getContext('2d'), {
+        // Função para renderizar os gráficos
+        function renderChart(canvasId, chartConfig) {
+            const ctx = document.getElementById(canvasId);
+            if (ctx && chartConfig.data.labels && chartConfig.data.labels.length > 0) {
+                new Chart(ctx.getContext('2d'), chartConfig);
+            } else if (ctx) {
+                ctx.parentElement.innerHTML = '<p class="text-muted text-center my-auto">Não há dados suficientes para gerar este gráfico.</p>';
+            }
+        }
+
+        // Chamadas para renderizar cada gráfico
+        renderChart('statusChart', {
             type: 'doughnut',
-            data: { labels: labelsStatus, datasets: [{ label: 'Qtd. ETPs', data: dataStatus, backgroundColor: ['rgba(255, 99, 132, 0.7)','rgba(54, 162, 235, 0.7)','rgba(255, 206, 86, 0.7)','rgba(75, 192, 192, 0.7)'], borderWidth: 2 }] },
+            data: { labels: labelsStatus, datasets: [{ label: 'Qtd. ETPs', data: dataStatus, backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'], borderWidth: 2 }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
         });
-    }
-
-    // Gráfico 2: Fornecedores
-    const fornecedoresCtx = document.getElementById('fornecedoresChart');
-    if (fornecedoresCtx && dataFornecedores.length > 0) {
-        new Chart(fornecedoresCtx.getContext('2d'), {
+        renderChart('fornecedoresChart', {
             type: 'bar',
-            data: { labels: labelsFornecedores, datasets: [{ label: 'Valor Contratado (R$)', data: dataFornecedores, backgroundColor: 'rgba(75, 192, 192, 0.7)' }] },
+            data: { labels: labelsFornecedores, datasets: [{ label: 'Valor Contratado (R$)', data: dataFornecedores, backgroundColor: '#4bc0c0' }] },
             options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { beginAtZero: true } }, plugins: { legend: { display: false } } }
         });
-    }
-    
-    // Gráfico 3: Economia
-    const economiaCtx = document.getElementById('economiaChart');
-    if (economiaCtx && dataEconomia.length > 0) {
-        new Chart(economiaCtx.getContext('2d'), {
+        renderChart('economiaChart', {
             type: 'line',
-            data: { labels: labelsEconomia, datasets: [{ label: 'Economia Média (R$)', data: dataEconomia, borderColor: 'rgba(153, 102, 255, 1)', backgroundColor: 'rgba(153, 102, 255, 0.2)', fill: true, tension: 0.1 }] },
+            data: { labels: labelsEconomia, datasets: [{ label: 'Economia Média (R$)', data: dataEconomia, borderColor: '#9966ff', backgroundColor: 'rgba(153, 102, 255, 0.2)', fill: true, tension: 0.1 }] },
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
         });
+
+    } catch (e) {
+        console.error("ERRO CRÍTICO NO JAVASCRIPT:", e);
+        document.getElementById('statusChart').parentElement.innerHTML = '<p class="text-danger text-center my-auto">Ocorreu um erro ao processar os dados do gráfico. Verifique o console.</p>';
     }
 });
 </script>

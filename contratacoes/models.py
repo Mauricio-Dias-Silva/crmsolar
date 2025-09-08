@@ -515,11 +515,7 @@ class RequisitoPadrao(models.Model):
         return f"{self.codigo} - {self.titulo}"
     
 
-    # Em SysGov_Project/contratacoes/models.py
 
-# ... (seus modelos ETP, TR, PCA, etc. continuam aqui em cima) ...
-
-# vvv ADICIONE O CÓDIGO ABAIXO vvv
 
 STATUS_CONTRATO_CHOICES = [
     ('VIGENTE', 'Vigente'),

@@ -8,9 +8,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
-            <p class="lead">Lista de todos os documentos fiscais registrados no sistema.</p>
+            <p class="lead">Lista de todos os documentos fiscais registados no sistema.</p>
         </div>
-        <!-- O botão agora guia o usuário para o fluxo correto -->
+        <!-- BOTÃO CORRIGIDO: Agora guia o utilizador para o fluxo correto -->
         <a href="{% url 'contratacoes:listar_contratos' %}" class="btn btn-primary" title="Um Documento Fiscal deve ser criado a partir de um Contrato existente.">
             <i class="fas fa-plus me-2"></i>Novo Documento (a partir de Contrato)
         </a>
@@ -24,7 +24,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th scope="col">Número NF</th>
-                                <th scope="col">Fornecedor</th> {# <<< COLUNA NOVA ADICIONADA #}
+                                <th scope="col">Fornecedor</th>
                                 <th scope="col">Valor (R$)</th>
                                 <th scope="col">Data Emissão</th>
                                 <th scope="col">Ações</th>
@@ -34,7 +34,7 @@
                             {% for documento in documentos %}
                             <tr>
                                 <td>{{ documento.documento_fiscal_numero|default:"N/A" }}</td>
-                                <td>{{ documento.fornecedor.razao_social|default:"N/A" }}</td> {# <<< DADO NOVO ADICIONADO #}
+                                <td>{{ documento.fornecedor.razao_social|default:"N/A" }}</td>
                                 <td>{{ documento.documento_fiscal_valor|floatformat:2 }}</td>
                                 <td>{{ documento.documento_fiscal_data_emissao|date:"d/m/Y" }}</td>
                                 <td>
@@ -49,8 +49,8 @@
                 </div>
             {% else %}
                 <div class="alert alert-info text-center mt-3 p-4 rounded-3" role="alert">
-                    <h4 class="alert-heading">Nenhum Documento Fiscal Registrado!</h4>
-                    <p>Para registrar um documento fiscal, primeiro aceda a um contrato existente.</p>
+                    <h4 class="alert-heading">Nenhum Documento Fiscal Registado!</h4>
+                    <p>Para registar um documento fiscal, primeiro aceda a um contrato existente.</p>
                     <hr>
                     <p class="mb-0">
                         <a href="{% url 'contratacoes:listar_contratos' %}" class="btn btn-primary">

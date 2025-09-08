@@ -4,10 +4,29 @@ from django import forms
 from django.core.exceptions import ValidationError
 from .models import (
     ETP, TR, PCA, ItemPCA, PesquisaPreco, ParecerTecnico,
-    ItemCatalogo, RequisitoPadrao, Contrato
+    ItemCatalogo, RequisitoPadrao, Contrato,AtaRegistroPrecos
 )
 from ckeditor.widgets import CKEditorWidget
 
+class AtaRegistroPrecosForm(forms.ModelForm):
+    class Meta:
+        model = AtaRegistroPrecos
+        # Excluímos os campos que serão preenchidos automaticamente pela view
+        exclude = ['processo_vinculado', 'data_criacao']
+        widgets = {
+            'licitacao_origem': forms.Select(attrs={'class': 'form-select'}),
+            'fornecedor_beneficiario': forms.Select(attrs={'class': 'form-select'}),
+            'numero_ata': forms.TextInput(attrs={'class': 'form-control'}),
+            'ano_ata': forms.NumberInput(attrs={'class': 'form-control'}),
+            'objeto': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'valor_total_registrado': forms.NumberInput(attrs={'class': 'form-control'}),
+            'data_assinatura': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'data_inicio_vigencia': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'data_fim_vigencia': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+        }
+        
+        
 class ItemCatalogoForm(forms.ModelForm):
     class Meta:
         model = ItemCatalogo

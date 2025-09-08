@@ -1,78 +1,87 @@
-{# SysGov_Project/core/templates/core/meus_processos.html #}
+{% extends 'base.html' %}
+{% load static %}
 
-{% extends 'base.html' %} 
-{% load widget_tweaks %}
-
-
-{% block title_suffix %}Meus Processos Licitatórios{% endblock title_suffix %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
 
 {% block content %}
-<section class="header-section mb-4">
-    <div class="container">
-        <h1 class="display-5 fw-bold">Meus Processos Licitatórios</h1>
-        <p class="lead">Acompanhe e gerencie suas solicitações e processos de licitação.</p>
-    </div>
-</section>
-
-<div class="container my-4">
+<div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary fw-bold mb-0">Lista de Processos</h2>
-        <a href="{% url 'core:criar_processo' %}" class="btn btn-success btn-lg">
-            Novo Processo <i class="bi bi-plus-circle"></i>
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Acompanhe e gira todos os seus processos administrativos.</p>
+        </div>
+        <a href="{% url 'core:criar_processo' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Iniciar Novo Processo
         </a>
     </div>
 
-    {% if processos %}
-        <div class="table-responsive-lg">
-            <table class="table table-striped table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Protocolo</th>
-                        <th scope="col">Título/Assunto</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Aberto em</th>
-                        <th scope="col">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for processo in processos %}
-                    <tr>
-                        <td>{{ processo.numero_protocolo|default:"N/A" }}</td>
-                        <td>{{ processo.titulo }}</td>
-                        <td>
-                            {% if processo.status == 'EM_ANALISE' %}
-                                <span class="badge bg-warning text-dark fs-6">{{ processo.get_status_display }}</span>
-                            {% elif processo.status == 'APROVADO' %}
-                                <span class="badge bg-success fs-6">{{ processo.get_status_display }}</span>
-                            {% elif processo.status == 'REJEITADO' %}
-                                <span class="badge bg-danger fs-6">{{ processo.get_status_display }}</span>
-                            {% elif processo.status == 'CONCLUIDO' %}
-                                <span class="badge bg-info fs-6">{{ processo.get_status_display }}</span>
-                            {% else %}
-                                <span class="badge bg-secondary fs-6">{{ processo.get_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ processo.data_criacao|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            {# <<< ESTE É O LINK CORRETO PARA A TELA 'SOLAR BPM' >>> #}
-                            <a href="{% url 'detalhes_processo' processo_id=processo.id %}" class="btn btn-sm btn-primary">
-                                <i class="bi bi-eye-fill"></i> Ver Detalhes
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- PAINEL DE FILTROS E BUSCA -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'core:meus_processos' %}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="q" class="form-label">Buscar por Título ou Protocolo</label>
+                        <input type="text" name="q" id="q" class="form-control" value="{{ query_atual }}" placeholder="Digite para buscar...">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Filtrar por Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">-- Todos os Status --</option>
+                            {% for value, display in status_choices %}
+                                <option value="{{ value }}" {% if status_atual == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
-    {% else %}
-        <div class="alert alert-info text-center mt-5 p-4 rounded-3" role="alert">
-            <h4 class="alert-heading">Nenhum Processo Licitatório Encontrado!</h4>
-            <p>Você ainda não possui processos ou solicitações de licitação em andamento em seu nome.</p>
-            <hr>
-            <p class="mb-0">
-                <a href="{% url 'core:criar_processo' %}" class="btn btn-info text-white fw-bold">Clique aqui para iniciar um novo Processo!</a>
-            </p>
+    </div>
+
+    <!-- LISTA DE PROCESSOS -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Protocolo</th>
+                            <th scope="col">Título / Assunto</th>
+                            <th scope="col">Data de Criação</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for processo in processos %}
+                        <tr>
+                            <td>{{ processo.numero_protocolo|default:"N/A" }}</td>
+                            <td>{{ processo.titulo }}</td>
+                            <td>{{ processo.data_criacao|date:"d/m/Y" }}</td>
+                            <td><span class="badge bg-primary rounded-pill">{{ processo.get_status_display }}</span></td>
+                            <td>
+                                <a href="{% url 'core:detalhes_processo' processo_id=processo.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> Detalhes
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center p-4">
+                                <p class="mb-1">Nenhum processo encontrado.</p>
+                                <small class="text-muted">Tente ajustar os seus filtros de busca ou crie um novo processo.</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock content %}

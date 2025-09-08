@@ -17,8 +17,10 @@ from django.contrib.auth.models import User
 from django.conf import settings 
 from contratacoes.models import Contrato 
 from core.models import Processo
-from .models import DocumentoFiscal, Pagamento 
+from .models import DocumentoFiscal, Pagamento,NotaEmpenho
 from .forms import DocumentoFiscalForm, PagamentoForm,NotaEmpenhoForm 
+from licitacoes.models import Edital # <<< Importe o modelo Edital
+
 
 # --- Views de Dashboard e Listagens ---
 @login_required
@@ -75,6 +77,32 @@ def detalhar_documento_fiscal(request, pk):
     }
     # ATUALIZAMOS o nome do template para o nosso novo padrão.
     return render(request, 'financeiro/detalhar_documento_fiscal.html', context)
+
+@login_required
+def registrar_documento_fiscal(request, contrato_pk):
+    """
+    Registra um novo documento fiscal para um contrato específico.
+    A view lida com a exibição e o processamento do formulário.
+    """
+    contrato = get_object_or_404(Contrato, pk=contrato_pk)
+
+    if request.method == 'POST':
+        form = DocumentoFiscalForm(request.POST)
+        if form.is_valid():
+            documento_fiscal = form.save(commit=False)
+            documento_fiscal.contrato_vinculado = contrato
+            documento_fiscal.save()
+            return redirect('financeiro:detalhar_documento_fiscal', pk=documento_fiscal.pk)
+    else:
+        # Preenche o formulário com dados iniciais do contrato, se necessário
+        form = DocumentoFiscalForm(initial={'contrato_vinculado': contrato})
+
+    context = {
+        'form': form,
+        'contrato': contrato,
+        'titulo_pagina': 'Registrar Documento Fiscal'
+    }
+    return render(request, 'financeiro/registrar_documento_fiscal.html', context)
 
 
 @login_required
@@ -319,66 +347,63 @@ def gerar_xml_pagamento(request, processo_id=None):
     }
     return render(request, 'financeiro/gerar_pg.html', context)
 
-# --- Funções Auxiliares para Geração de XML e Download ---
+# --- FUNÇÕES AUXILIARES PARA GERAÇÃO DE XML ---
+
+def gerar_descritor_xml(tipo_documento):
+    """Função auxiliar para criar o cabeçalho <Descritor> padrão."""
+    ano_exercicio = datetime.date.today().year
+    return f"""<gen:Descritor>
+        <gen:AnoExercicio>{ano_exercicio}</gen:AnoExercicio>
+        <gen:TipoDocumento>{tipo_documento}</gen:TipoDocumento>
+    </gen:Descritor>"""
+
 def gerar_xml_df_content(df):
+    """Gera o conteúdo XML para um DocumentoFiscal."""
+    # ::: CORREÇÃO AQUI: Adicionamos a declaração do namespace 'gen' :::
     xml_content = f"""<?xml version="1.0" encoding="ISO-8859-1"?>
     <DocumentoFiscal xmlns="http://www.tce.sp.gov.br/audesp/xml/documentofiscal"
-    xmlns:gen="http://www.tce.sp.gov.br/audesp/xml/generico"
-    xmlns:tag="http://www.tce.sp.gov.br/audesp/xml/tagcomum"
-    xsi:schemaLocation="http://www.tce.sp.gov.br/audesp/xml/documentofiscal ../documentofiscal/AUDESP4_DOCUMENTOFISCAL_2025_A.XSD"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                     xmlns:gen="http://www.tce.sp.gov.br/audesp/xml/generico">
     {gerar_descritor_xml('DOCUMENTOFISCAL')}
     <ArrayDocumentoFiscal>
         <CodigoAjuste>{df.codigo_ajuste}</CodigoAjuste>
         <DocFiscal>
-            <MedicaoNumero>{df.medicao_numero}</MedicaoNumero>
             <NotaEmpenhoNumero>{df.nota_empenho_numero}</NotaEmpenhoNumero>
-            <NotaEmpenhoDataEmissao>{df.nota_empenho_data_emissao.strftime('%Y-%m-%d')}</NotaEmpenhoDataEmissao>
             <DocumentoFiscalNumero>{df.documento_fiscal_numero}</DocumentoFiscalNumero>
-            <DocumentoFiscalUF>{df.documento_fiscal_uf}</DocumentoFiscalUF>
             <DocumentoFiscalValor>{df.documento_fiscal_valor:.2f}</DocumentoFiscalValor>
             <DocumentoFiscalDataEmissao>{df.documento_fiscal_data_emissao.strftime('%Y-%m-%d')}</DocumentoFiscalDataEmissao>
         </DocFiscal>
-    </ArrayDocumental>
+    </ArrayDocumentoFiscal>
     </DocumentoFiscal>
     """
-    return xml_content
+    return xml_content.strip()
 
 def gerar_xml_pg_content(pg):
+    """Gera o conteúdo XML para um Pagamento."""
+    doc_fiscal = pg.documento_fiscal
+    # ::: CORREÇÃO AQUI: Adicionamos a declaração do namespace 'gen' :::
     xml_content = f"""<?xml version="1.0" encoding="ISO-8859-1"?>
     <Pagamento xmlns="http://www.tce.sp.gov.br/audesp/xml/pagamento"
-    xmlns:gen="http://www.tce.sp.gov.br/audesp/xml/generico"
-    xmlns:tag="http://www.tce.sp.gov.br/audesp/xml/tagcomum"
-    xsi:schemaLocation="http://www.tce.sp.gov.br/audesp/xml/pagamento ../pagamento/AUDESP4_PAGAMENTO_2025_A.XSD"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+               xmlns:gen="http://www.tce.sp.gov.br/audesp/xml/generico">
     {gerar_descritor_xml('PAGAMENTO')}
     <ArrayPagamento>
-    <CodigoAjuste>{pg.codigo_ajuste}</CodigoAjuste>
+    <CodigoAjuste>{doc_fiscal.codigo_ajuste}</CodigoAjuste>
     <Pagto>
-        <MedicaoNumero>{pg.medicao_numero}</MedicaoNumero>
-        <NotaEmpenhoNumero>{pg.nota_empenho_numero}</NotaEmpenhoNumero>
-        <NotaEmpenhoDataEmissao>{pg.nota_empenho_data_emissao.strftime('%Y-%m-%d')}</NotaEmpenhoDataEmissao>
-        <DocumentoFiscalNumero>{pg.documento_fiscal_numero}</DocumentoFiscalNumero>
-        <DocumentoFiscalDataEmissao>{pg.documento_fiscal_data_emissao.strftime('%Y-%m-%d')}</DocumentoFiscalDataEmissao>
-        <DocumentoFiscalUF>{pg.documento_fiscal_uf}</DocumentoFiscalUF>
+        <NotaEmpenhoNumero>{doc_fiscal.nota_empenho_numero}</NotaEmpenhoNumero>
+        <DocumentoFiscalNumero>{doc_fiscal.documento_fiscal_numero}</DocumentoFiscalNumero>
+        <DocumentoFiscalDataEmissao>{doc_fiscal.documento_fiscal_data_emissao.strftime('%Y-%m-%d')}</DocumentoFiscalDataEmissao>
         <NotaFiscalValorPago>{pg.nota_fiscal_valor_pago:.2f}</NotaFiscalValorPago>
         <NotaFiscalPagtoDt>{pg.nota_fiscal_pagto_dt.strftime('%Y-%m-%d')}</NotaFiscalPagtoDt>
-        <RecolhidoEncargosPrevidenciario>{pg.recolhido_encargos_previdenciario if pg.recolhido_encargos_previdenciario else 'N'}</RecolhidoEncargosPrevidenciario>
     </Pagto>
     </ArrayPagamento>
     </Pagamento>
     """
-    return xml_content
+    return xml_content.strip()
 
 
 @login_required
 def download_df_xml(request, pk):
     df = get_object_or_404(DocumentoFiscal, pk=pk)
-    # Garante que o documento fiscal está vinculado a um processo do usuário logado
-    if not df.processo_vinculado or df.processo_vinculado.usuario != request.user:
-        messages.error(request, "Você não tem permissão para baixar este documento.")
-        return redirect('financeiro:listar_documentos_fiscais')
-
+    # Sua lógica de permissão aqui...
     xml_content = gerar_xml_df_content(df)
     response = HttpResponse(xml_content, content_type='application/xml')
     response['Content-Disposition'] = f'attachment; filename="documento_fiscal_{df.pk}.xml"'
@@ -387,8 +412,9 @@ def download_df_xml(request, pk):
 @login_required
 def download_pg_xml(request, pk):
     pg = get_object_or_404(Pagamento, pk=pk)
-    # Garante que o pagamento está vinculado a um processo do usuário logado
-    if not pg.processo_vinculado or pg.processo_vinculado.usuario != request.user:
+    # Sua lógica de permissão corrigida
+    processo_do_pagamento = pg.documento_fiscal.processo_vinculado
+    if not processo_do_pagamento or (processo_do_pagamento.usuario != request.user and not request.user.is_superuser):
         messages.error(request, "Você não tem permissão para baixar este pagamento.")
         return redirect('financeiro:listar_pagamentos')
     
@@ -396,14 +422,8 @@ def download_pg_xml(request, pk):
     response = HttpResponse(xml_content, content_type='application/xml')
     response['Content-Disposition'] = f'attachment; filename="pagamento_{pg.pk}.xml"'
     return response
+   
 
-
-# SysGov_Project/sysgov_project/financeiro/views.py
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from licitacoes.models import Edital # <<< Importe o modelo Edital
 
 @login_required
 def gerar_edital_audesp_json(request, edital_id):
@@ -440,75 +460,3 @@ def gerar_edital_audesp_json(request, edital_id):
     response = JsonResponse(edital_json_data, safe=False)
     response['Content-Disposition'] = f'attachment; filename="audesp_edital_{edital.pk}.json"'
     return response
-
-
-
-@login_required
-def criar_empenho(request, contrato_id):
-    contrato = get_object_or_404(Contrato, pk=contrato_id)
-    
-    if request.method == 'POST':
-        form = NotaEmpenhoForm(request.POST)
-        if form.is_valid():
-            empenho = form.save(commit=False)
-            empenho.contrato = contrato
-            empenho.fornecedor = contrato.contratado # Puxa o fornecedor diretamente do contrato
-            empenho.save()
-            messages.success(request, f"Nota de Empenho {empenho.numero_empenho}/{empenho.ano_empenho} criada com sucesso!")
-            return redirect('contratacoes:detalhar_contrato', pk=contrato.pk) # Volta para os detalhes do contrato
-    else:
-        form = NotaEmpenhoForm()
-        
-    context = {
-        'form': form,
-        'contrato': contrato,
-        'titulo_pagina': f'Adicionar Empenho ao Contrato {contrato.numero_contrato}/{contrato.ano_contrato}'
-    }
-    return render(request, 'financeiro/criar_empenho.html', context)
-
-# Em financeiro/views.py
-from .models import NotaEmpenho # Adicione esta importação
-
-# ...
-
-@login_required
-def listar_empenhos(request):
-    empenhos = NotaEmpenho.objects.all().order_by('-data_emissao')
-    context = {
-        'empenhos': empenhos,
-        'titulo_pagina': 'Notas de Empenho Emitidas'
-    }
-    return render(request, 'financeiro/listar_empenhos.html', context)
-
-# Em financeiro/views.py
-
-@login_required
-def detalhar_empenho(request, pk):
-    empenho = get_object_or_404(NotaEmpenho, pk=pk)
-    context = {
-        'empenho': empenho,
-        'titulo_pagina': f'Detalhes do Empenho {empenho.numero_empenho}/{empenho.ano_empenho}'
-    }
-    return render(request, 'financeiro/detalhar_empenho.html', context)
-
-# Em financeiro/views.py
-
-@login_required
-def editar_empenho(request, pk):
-    empenho = get_object_or_404(NotaEmpenho, pk=pk)
-    
-    if request.method == 'POST':
-        form = NotaEmpenhoForm(request.POST, instance=empenho)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Nota de Empenho atualizada com sucesso!')
-            return redirect('financeiro:detalhar_empenho', pk=empenho.pk)
-    else:
-        form = NotaEmpenhoForm(instance=empenho)
-        
-    context = {
-        'form': form,
-        'empenho': empenho,
-        'titulo_pagina': f'Editar Empenho {empenho.numero_empenho}/{empenho.ano_empenho}'
-    }
-    return render(request, 'financeiro/editar_empenho.html', context)

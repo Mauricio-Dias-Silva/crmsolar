@@ -22,19 +22,22 @@ from .models import (
     ModeloTexto, RequisitoPadrao, ItemCatalogo, STATUS_DOCUMENTO_CHOICES,Contrato 
 )
 
+from django.db.models import Avg, Count, Q, F
 from .forms import (
     ETPForm, TRForm, PesquisaPrecoForm,
     ParecerTecnicoForm, ETPStatusForm, 
-    # PesquisaPrecoFormSet,  <<< REMOVIDO DESTA IMPORTAÇÃO
     TRStatusForm,
     PCAForm, ItemPCAForm,
-    ItemCatalogoForm
+    ItemCatalogoForm, ContratoForm, AtaRegistroPrecosForm 
 )
 
 # DEFINIÇÃO DOS FORMSETS - O LUGAR CORRETO É AQUI!
 PesquisaPrecoFormSet = inlineformset_factory(ETP, PesquisaPreco, form=PesquisaPrecoForm, extra=1, can_delete=True)
 ParecerTecnicoFormSet = inlineformset_factory(ETP, ParecerTecnico, form=ParecerTecnicoForm, extra=1, can_delete=True)
 ItemPCAFormSet = inlineformset_factory(PCA, ItemPCA, form=ItemPCAForm, extra=1, can_delete=True)
+
+
+
 
 @login_required
 def listar_catalogo_itens(request):
@@ -65,21 +68,6 @@ def criar_item_catalogo(request): # <<< VIEW COMPLETA
     return render(request, 'contratacoes/criar_item_catalogo.html', context)
 
 
-
-
-# SysGov_Project/contratacoes/views.py
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib import messages
-from django.db.models import Avg, Count, Q, F
-# ... (outros imports) ...
-
-# Em SysGov_Project/contratacoes/views.py
-
-from django.db.models import Q # <<< Adicione esta importação no topo se não existir
-
-# ... (outras views) ...
 
 @login_required 
 def listar_etps(request):
@@ -872,66 +860,8 @@ def parse_rascunho_etp(rascunho_texto):
 
     return dados_etp
 
-# Em SysGov_Project/contratacoes/views.py
 
-@login_required
-def processar_acao_etp(request, pk):
-    etp = get_object_or_404(ETP, pk=pk)
-    acao = request.POST.get('acao')
 
-    # Ação: Submeter para análise
-    if acao == 'submeter_analise' and etp.status == 'EM_ELABORACAO':
-        if request.user.has_perm('contratacoes.pode_submeter_etp_analise'):
-            etp.status = 'AGUARDANDO_ANALISE'
-            etp.save()
-            messages.success(request, 'ETP submetido para Análise de Requerimentos.')
-        else:
-            messages.error(request, 'Você não tem permissão para submeter este ETP.')
-
-    # Ações da Análise de Requerimentos
-    elif acao == 'aprovar_analise' and etp.status == 'AGUARDANDO_ANALISE':
-        if request.user.has_perm('contratacoes.pode_aprovar_etp_analise'):
-            etp.status = 'AGUARDANDO_ORCAMENTO'
-            etp.save()
-            messages.success(request, 'ETP aprovado pela Análise. Enviado para o Setor de Orçamento.')
-        else:
-            messages.error(request, 'Você não tem permissão para aprovar este ETP.')
-    
-    elif acao == 'recusar_analise' and etp.status == 'AGUARDANDO_ANALISE':
-        if request.user.has_perm('contratacoes.pode_recusar_etp_analise'):
-            etp.status = 'RECUSADO_ANALISE'
-            etp.save()
-            messages.warning(request, 'ETP foi recusado pela Análise e devolvido para elaboração.')
-        else:
-            messages.error(request, 'Você não tem permissão para recusar este ETP.')
-
-    # --- INÍCIO DA NOVA LÓGICA ADICIONADA ---
-    # Ações do Setor de Orçamento
-    elif acao == 'aprovar_orcamento' and etp.status == 'AGUARDANDO_ORCAMENTO':
-        if request.user.has_perm('contratacoes.pode_aprovar_etp_orcamento'):
-            etp.status = 'APROVADO' # Estado final do ETP!
-            etp.save()
-            messages.success(request, 'ETP aprovado pelo Orçamento! O processo pode continuar.')
-        else:
-            messages.error(request, 'Você não tem permissão para aprovar o orçamento deste ETP.')
-            
-    elif acao == 'recusar_orcamento' and etp.status == 'AGUARDANDO_ORCAMENTO':
-        if request.user.has_perm('contratacoes.pode_recusar_etp_orcamento'):
-            etp.status = 'RECUSADO_ORCAMENTO'
-            etp.save()
-            messages.warning(request, 'ETP foi recusado pelo Setor de Orçamento.')
-        else:
-            messages.error(request, 'Você não tem permissão para recusar o orçamento deste ETP.')
-    # --- FIM DA NOVA LÓGICA ADICIONADA ---
-
-    else:
-        messages.warning(request, 'Ação inválida ou não permitida para o status atual do ETP.')
-
-    return redirect('contratacoes:detalhar_etp', pk=etp.pk) 
-
-# Em SysGov_Project/contratacoes/views.py
-
-# ... (outras importações e views) ...
 
 @login_required
 def editar_item_catalogo(request, pk):
@@ -955,12 +885,6 @@ def editar_item_catalogo(request, pk):
     }
     return render(request, 'contratacoes/editar_item_catalogo.html', context)
 
-# Em contratacoes/views.py
-
-from .forms import ContratoForm # Adicione ContratoForm na sua lista de importações de forms
-from core.models import Processo # Adicione a importação do Processo
-
-# ... (outras views) ...
 
 @login_required
 def criar_contrato(request, processo_id):
@@ -1117,3 +1041,123 @@ def detalhar_ata_rp(request, pk):
         'titulo_pagina': f'Detalhes da Ata de RP {ata.numero_ata}/{ata.ano_ata}'
     }
     return render(request, 'contratacoes/detalhar_ata_rp.html', context)
+
+
+@login_required
+def criar_ata_rp(request, processo_id):
+    processo = get_object_or_404(Processo, pk=processo_id)
+    if request.method == 'POST':
+        form = AtaRegistroPrecosForm(request.POST)
+        if form.is_valid():
+            ata = form.save(commit=False)
+            ata.processo_vinculado = processo
+            ata.save()
+            messages.success(request, 'Ata de Registro de Preços criada com sucesso!')
+            # Após criar, redireciona para a página de detalhes do processo
+            return redirect('core:detalhes_processo', processo_id=processo.pk)
+    else:
+        form = AtaRegistroPrecosForm()
+    context = {
+        'form': form, 
+        'processo': processo, 
+        'titulo_pagina': 'Criar Ata de Registro de Preços'
+    }
+    return render(request, 'contratacoes/criar_ata_rp.html', context)
+
+@login_required
+def editar_ata_rp(request, pk):
+    ata = get_object_or_404(AtaRegistroPrecos, pk=pk)
+    if request.method == 'POST':
+        form = AtaRegistroPrecosForm(request.POST, instance=ata)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ata de Registro de Preços atualizada com sucesso!')
+            return redirect('contratacoes:detalhar_ata_rp', pk=ata.pk)
+    else:
+        form = AtaRegistroPrecosForm(instance=ata)
+    context = {
+        'form': form, 
+        'ata': ata, 
+        'titulo_pagina': 'Editar Ata de Registro de Preços'
+    }
+    return render(request, 'contratacoes/editar_ata_rp.html', context)
+
+
+@login_required
+def processar_acao_etp(request, pk):
+    etp = get_object_or_404(ETP, pk=pk)
+    acao = request.POST.get('acao')
+
+    # Ação: Submeter para análise
+    if acao == 'submeter_analise' and etp.status == 'EM_ELABORACAO':
+        if request.user.has_perm('contratacoes.pode_submeter_etp_analise'):
+            etp.status = 'AGUARDANDO_ANALISE'
+            etp.save()
+            messages.success(request, 'ETP submetido para Análise de Requerimentos.')
+
+            # --- INÍCIO DA LÓGICA DO CARTEIRO ---
+            # Encontra o grupo "Analise de Requerimentos"
+            try:
+                grupo_analise = Group.objects.get(name='Analise de Requerimentos')
+                usuarios_para_notificar = grupo_analise.user_set.all()
+                link = request.build_absolute_uri(reverse('contratacoes:detalhar_etp', kwargs={'pk': etp.pk}))
+                
+                # Cria uma notificação para cada utilizador do grupo
+                for usuario in usuarios_para_notificar:
+                    Notificacao.objects.create(
+                        usuario_destino=usuario,
+                        mensagem=f"O ETP '{etp.titulo[:30]}...' aguarda a sua análise.",
+                        link_acao=link
+                    )
+                messages.info(request, f"Notificação enviada para {usuarios_para_notificar.count()} analista(s).")
+            except Group.DoesNotExist:
+                messages.warning(request, "Grupo 'Analise de Requerimentos' não encontrado. Nenhuma notificação foi enviada.")
+            # --- FIM DA LÓGICA DO CARTEIRO ---
+
+        else:
+            messages.error(request, 'Você não tem permissão para submeter este ETP.')
+
+    # Ação: Aprovar pela Análise
+    elif acao == 'aprovar_analise' and etp.status == 'AGUARDANDO_ANALISE':
+        if request.user.has_perm('contratacoes.pode_aprovar_etp_analise'):
+            etp.status = 'AGUARDANDO_ORCAMENTO'
+            etp.save()
+            messages.success(request, 'ETP aprovado pela Análise. Aguardando Orçamento.')
+            
+            # Notifica o autor original que o seu ETP avançou
+            if etp.autor:
+                link = request.build_absolute_uri(reverse('contratacoes:detalhar_etp', kwargs={'pk': etp.pk}))
+                Notificacao.objects.create(
+                    usuario_destino=etp.autor,
+                    mensagem=f"Boa notícia! O seu ETP '{etp.titulo[:30]}...' foi aprovado pela Análise.",
+                    link_acao=link
+                )
+
+        else:
+            messages.error(request, 'Você não tem permissão para aprovar este ETP.')
+    
+    # Ação: Recusar pela Análise
+    elif acao == 'recusar_analise' and etp.status == 'AGUARDANDO_ANALISE':
+        if request.user.has_perm('contratacoes.pode_recusar_etp_analise'):
+            etp.status = 'RECUSADO_ANALISE' # Ou talvez de volta para 'EM_ELABORACAO'
+            etp.save()
+            messages.warning(request, 'ETP foi recusado pela Análise de Requerimentos.')
+
+            # Notifica o autor original que o seu ETP foi devolvido
+            if etp.autor:
+                link = request.build_absolute_uri(reverse('contratacoes:detalhar_etp', kwargs={'pk': etp.pk}))
+                Notificacao.objects.create(
+                    usuario_destino=etp.autor,
+                    mensagem=f"Atenção: O seu ETP '{etp.titulo[:30]}...' foi devolvido pela Análise para correção.",
+                    link_acao=link
+                )
+        else:
+            messages.error(request, 'Você não tem permissão para recusar este ETP.')
+    
+
+
+    else:
+        messages.warning(request, 'Ação inválida ou não permitida para o status atual do ETP.')
+
+    return redirect('contratacoes:detalhar_etp', pk=etp.pk)
+
