@@ -17,6 +17,7 @@
             <a href="{% url 'contratacoes:gerar_etp_pdf' pk=etp.pk %}" class="btn btn-info">
                 <i class="fas fa-file-pdf me-2"></i>Gerar PDF
             </a>
+            <a href="{% url 'contratacoes:assistente_tr_ia' etp.pk %}" class="btn btn-primary">Gerar TR com IA</a>
         </div>
     </div>
 

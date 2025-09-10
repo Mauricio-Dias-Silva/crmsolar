@@ -7,7 +7,7 @@ from django.template.loader import render_to_string # Para renderizar templates 
 from django.contrib import messages
 from django.db.models.functions import TruncMonth
 # Importações dos modelos e formulários do próprio app 'core'
-from .models import Processo, ArquivoAnexo, Fornecedor 
+from .models import Processo, ArquivoAnexo, Fornecedor,Notificacao
 from .forms import ProcessoForm, ArquivoAnexoForm,FornecedorForm
 from django.db.models import Sum, Count, F, Func,Q
 # Importe os modelos necessários dos outros apps (agora que estão no mesmo projeto)
@@ -21,7 +21,6 @@ from licitacoes.models import Edital, ResultadoLicitacao
 from financeiro.models import Pagamento
 import os
 from django.conf import settings # Importar settings para acessar STATIC_ROOT ou MEDIA_ROOT
-
 
 
 def visualizar_anexo_pdf(request, anexo_id):
@@ -434,3 +433,22 @@ def busca_global_view(request):
     }
     
     return render(request, 'core/busca_resultados.html', context)
+
+
+@login_required
+def marcar_notificacao_como_lida(request, notificacao_id):
+    """
+    Encontra uma notificação, marca-a como lida e redireciona o utilizador
+    para o link de ação original da notificação.
+    """
+    # Garante que estamos a marcar uma notificação que pertence ao utilizador logado
+    notificacao = get_object_or_404(Notificacao, pk=notificacao_id, usuario_destino=request.user)
+    
+    if not notificacao.lida:
+        notificacao.lida = True
+        notificacao.save()
+    
+    if notificacao.link_acao:
+        return redirect(notificacao.link_acao)
+    else:
+        return redirect('core:home')

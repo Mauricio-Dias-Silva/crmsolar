@@ -16,9 +16,7 @@ urlpatterns = [
 
     # A URL para gerar o JSON do Edital
     path('edital/<int:edital_id>/json/', views.gerar_edital_audesp_json, name='gerar_edital_audesp_json'),
-
     # A URL para gerar o JSON de "Ajuste" a partir de um Contrato
     path('contrato/<int:contrato_id>/ajuste-json/', views.gerar_contrato_audesp_json, name='gerar_contrato_audesp_json'),
-    
     # Adicione aqui as URLs para gerar os JSONs/XMLs de Documento Fiscal e Pagamento se necessário
 ]

@@ -20,7 +20,6 @@ urlpatterns = [
     path('etps/<int:pk>/pdf/', views.gerar_etp_pdf, name='gerar_etp_pdf'), 
     path('etps/<int:etp_id>/anexos/adicionar/', views.adicionar_anexo_etp, name='adicionar_anexo_etp'),
     path('etps/<int:pk>/gerar-tr/', views.gerar_tr_a_partir_etp, name='gerar_tr_a_partir_etp'),
-    path('etp/assistente-ia/', views.gerar_etp_ia_view, name='gerar_etp_ia'),
     path('etp/<int:pk>/processar-acao/', views.processar_acao_etp, name='processar_acao_etp'),
     
     # URLs para TRs
@@ -66,4 +65,10 @@ urlpatterns = [
     path('atas-rp/<int:pk>/', views.detalhar_ata_rp, name='detalhar_ata_rp'),
     path('processo/<int:processo_id>/ata-rp/criar/', views.criar_ata_rp, name='criar_ata_rp'),
     path('atas-rp/<int:pk>/editar/', views.editar_ata_rp, name='editar_ata_rp'),
+    
+    path('ia/etp/', views.gerar_etp_ia_view, name='gerar_etp_ia'),
+    path('ia/tr/', views.gerar_tr_ia_view, name='ia_tr'), # <<< Nova URL
+    path('ia/analise-contrato/', views.analise_contrato_ia_view, name='ia_analise_contrato'), # <<< Nova URL
+    path('ia/tr/a-partir-etp/<int:etp_pk>/', views.assistente_tr_ia_view, name='assistente_tr_ia'), # Garanta que esta URL existe para a view que você já tem
+    path('ia/tr/salvar/', views.salvar_tr_ia_view, name='salvar_tr_ia'),
 ]

@@ -1,75 +1,103 @@
 {% load static %}
-{% load account %}
-{% load socialaccount %}
-{% load widget_tweaks %}
 
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SysGov - {% block title %}{% endblock title %}</title>
-
-    {# CSS Libraries #}
+    <title>{% block title %}SysGov{% endblock %} - ProGestor Público</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
-    {# Seus Estilos Globais do Projeto (MANTIDOS) #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #0056b3;
-            --secondary-color: #337ab7;
-            --dark-blue: #1a2a4b;
-            --light-grey: #f8f9fa;
-            --medium-grey: #e9ecef;
-            --text-dark: #495057;
-            --text-light: #ffffff;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--light-grey);
-            color: var(--text-dark);
-        }
-        main {
-            flex: 1;
-        }
-
-            
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex: 1 0 auto; }
+        .footer { flex-shrink: 0; }
     </style>
-
     {% block extra_head %}{% endblock extra_head %}
 </head>
 <body class="d-flex flex-column h-100">
-    {# Navbar principal do projeto #}
-    {% include 'core/navbar.html' %}
 
-    {# Container para mensagens do Django #}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="messages-container" style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; z-index: 1050;">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
+    <!-- BARRA DE NAVEGAÇÃO (NAVBAR) REORGANIZADA -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="{% url 'core:home' %}"><i class="fas fa-landmark me-2"></i>ProGestor Público</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Início</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:meus_processos' %}">Meus Processos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:dashboard_gerencial' %}"><i class="fas fa-chart-line me-1"></i>Dashboard</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarContratacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">Contratações</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarContratacoes">
+                            <li><a class="dropdown-item" href="#">Dashboard de Contratações</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'contratacoes:listar_etps' %}">Listar ETPs</a></li>
+                            <li><a class="dropdown-item" href="{% url 'contratacoes:listar_trs' %}">Listar TRs</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarLicitacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">Licitações</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarLicitacoes">
+                             <li><a class="dropdown-item" href="{% url 'licitacoes:licitacoes_dashboard' %}">Dashboard de Licitações</a></li>
+                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'licitacoes:listar_editais' %}">Listar Editais</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarFinanceiro" role="button" data-bs-toggle="dropdown" aria-expanded="false">Financeiro</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarFinanceiro">
+                            <li><a class="dropdown-item" href="{% url 'financeiro:financeiro_dashboard' %}">Dashboard Financeiro</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- NOVO MENU "ADMINISTRAÇÃO & FERRAMENTAS" -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarAdmin" role="button" data-bs-toggle="dropdown" aria-expanded="false">Administração & Ferramentas</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarAdmin">
+                            <li class="dropdown-header">Cadastros Gerais</li>
+                            <li><a class="dropdown-item" href="{% url 'core:listar_fornecedores' %}">Fornecedores</a></li>
+                            <li><a class="dropdown-item" href="{% url 'contratacoes:listar_catalogo_itens' %}">Catálogo de Itens</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">Integração TCE</li>
+                             <li><a class="dropdown-item" href="{% url 'integracao_audesp:painel_audesp' %}">Painel de Submissão AUDESP</a></li>
+                            <li><a class="dropdown-item" href="{% url 'integracao_audesp:listar_submissoes_audesp' %}">Histórico de Submissões</a></li>
+                             <li><hr class="dropdown-divider"></li>
+                             <li class="dropdown-header">Assistentes de IA</li>
+                             <li><a class="dropdown-item" href="{% url 'contratacoes:gerar_etp_ia' %}">Assistente de ETP</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <!-- (O sino de notificações e o menu do utilizador continuam aqui) -->
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'account_login' %}">Entrar</a></li>
                     {% endif %}
-                </div>
+                </ul>
             </div>
         </div>
-    </div>
+    </nav>
 
-    {# Conteúdo principal da página #}
     <main class="py-4">
-        {% block content %}
-        {# Conteúdo específico de cada página vai aqui #}
-        {% endblock content %}
+        {% if messages %}
+            <div class="container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock content %}
     </main>
 
     {# Footer principal do projeto #}
@@ -78,8 +106,7 @@
     {# Bootstrap JS Bundle (Popper incluído) #}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- ::: O "ENCAIXE" CORRIGIDO ::: -->
-    <!-- O nome do bloco foi alterado de 'extra_js' para 'scripts' para corresponder aos templates filhos -->
+    {# Bloco para scripts personalizados de cada template #}
     {% block scripts %}{% endblock scripts %}
 
 </body>

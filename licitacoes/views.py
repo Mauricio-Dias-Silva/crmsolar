@@ -406,3 +406,48 @@ def gerar_ata_pregao_pdf(request, pregao_id):
     except Exception as e:
         messages.error(request, f"Ocorreu um erro ao gerar o PDF da Ata: {e}")
         return redirect('licitacoes:painel_pregao', pregao_id=pregao_id)
+    
+    
+@login_required
+def analise_edital_ia_view(request):
+    resultado_analise = None
+    if request.method == 'POST' and 'edital_file' in request.FILES:
+        edital_file = request.FILES['edital_file']
+        texto_edital = ""
+
+        try:
+            if edital_file.name.endswith('.pdf'):
+                reader = PyPDF2.PdfReader(edital_file)
+                for page in reader.pages:
+                    texto_edital += page.extract_text()
+            elif edital_file.name.endswith('.txt'):
+                texto_edital = edital_file.read().decode('utf-8')
+
+            # Chama a nova função para analisar o edital
+            resultado_analise = ai_services.analisar_edital_com_ia(texto_edital)
+
+        except Exception as e:
+            resultado_analise = f"Ocorreu um erro ao processar o arquivo: {e}"
+
+    context = {
+        'resultado_analise': resultado_analise,
+        'titulo_pagina': 'Análise de Edital com IA'
+    }
+    return render(request, 'licitacoes/ia_analise_edital.html', context)
+
+
+@login_required
+def licitacoes_dashboard(request):
+    """
+    Exibe um painel com informações resumidas sobre as licitações.
+    """
+    editais_recentes = Edital.objects.all().order_by('-data_publicacao')[:5]
+    pregoes_recentes = Pregao.objects.all().order_by('-data_abertura_sessao')[:5]
+    
+    context = {
+        'editais_recentes': editais_recentes,
+        'pregoes_recentes': pregoes_recentes,
+        'titulo_pagina': 'Dashboard de Licitações'
+    }
+    return render(request, 'licitacoes/dashboard_licitacoes.html', context)
+

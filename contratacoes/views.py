@@ -806,29 +806,7 @@ def gerar_tr_a_partir_etp(request, pk):
     }
     return render(request, 'contratacoes/gerar_tr_a_partir_etp.html', context)
 
-# SysGov_Project/contratacoes/views.py
-# ... (outras importações) ...
 
-@login_required
-def gerar_etp_ia_view(request):
-    rascunho_gerado = None
-    if request.method == 'POST':
-        descricao = request.POST.get('descricao_necessidade')
-        if descricao:
-            rascunho_gerado = ai_services.gerar_rascunho_etp_com_ia(descricao)
-            if "Ocorreu um erro" not in rascunho_gerado:
-                # <<< NOVA LÓGICA AQUI >>>
-                # Usamos o parser para extrair os dados
-                dados_etp_parseados = ai_services.parse_rascunho_etp(rascunho_gerado)
-                # Salvamos os dados na sessão para usar na próxima página
-                request.session['dados_etp_ia'] = dados_etp_parseados
-
-    context = {
-        'rascunho_gerado': rascunho_gerado
-    }
-    return render(request, 'contratacoes/gerar_etp_ia.html', context)
-
-# Substitua a função existente por esta
 def parse_rascunho_etp(rascunho_texto):
     """
     Versão Final: Lê o rascunho completo da IA e mapeia para os campos do modelo.
@@ -959,40 +937,6 @@ def editar_contrato(request, pk):
     return render(request, 'contratacoes/editar_contrato.html', context)
 
 
-
-@login_required
-def assistente_tr_ia_view(request, etp_pk):
-    """
-    Pega um ETP aprovado, envia para a IA e mostra o rascunho do TR.
-    """
-    etp = get_object_or_404(ETP, pk=etp_pk, status='APROVADO')
-    
-    # Montamos um texto único com todas as informações do ETP para dar contexto à IA
-    texto_etp_completo = f"""
-    Título do ETP: {etp.titulo}
-    Número do Processo: {etp.numero_processo}
-    Setor Demandante: {etp.setor_demandante}
-    Descrição da Necessidade: {etp.descricao_necessidade}
-    Objetivo da Contratação: {etp.objetivo_contratacao}
-    Requisitos da Contratação: {etp.requisitos_contratacao}
-    Estimativa de Quantidades: {etp.estimativa_quantidades}
-    Estimativa de Valor: R$ {etp.estimativa_valor}
-    Resultados Esperados: {etp.resultados_esperados}
-    Justificativa da Solução: {etp.viabilidade_justificativa_solucao}
-    Alinhamento Estratégico: {etp.alinhamento_planejamento}
-    """
-    
-    rascunho_tr_gerado = ai_services.gerar_rascunho_tr_com_ia(texto_etp_completo)
-
-    context = {
-        'etp': etp,
-        'rascunho_gerado': rascunho_tr_gerado,
-        'titulo_pagina': 'Assistente de IA para Termo de Referência'
-    }
-    
-    return render(request, 'contratacoes/gerar_tr_ia.html', context)
-
-# Adicione esta view ao seu contratacoes/views.py
 
 @login_required
 def gerar_contrato_pdf(request, pk):
@@ -1160,4 +1104,202 @@ def processar_acao_etp(request, pk):
         messages.warning(request, 'Ação inválida ou não permitida para o status atual do ETP.')
 
     return redirect('contratacoes:detalhar_etp', pk=etp.pk)
+
+
+# SysGov_Project/contratacoes/views.py
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+import PyPDF2 # Você precisará instalar esta biblioteca: pip install PyPDF2
+from . import ai_services
+from .models import ETP, TR
+
+# ... (outras views e imports)
+
+@login_required
+def gerar_tr_ia_upload_view(request):
+    rascunho_gerado = None
+    if request.method == 'POST':
+        if 'etp_pdf' in request.FILES:
+            pdf_file = request.FILES['etp_pdf']
+            texto_etp = ""
+            try:
+                reader = PyPDF2.PdfReader(pdf_file)
+                for page in reader.pages:
+                    texto_etp += page.extract_text()
+                
+                # Envia o texto extraído do PDF para a função de IA
+                rascunho_gerado = ai_services.gerar_rascunho_tr_com_ia(texto_etp)
+                
+            except Exception as e:
+                # Tratar erro de leitura do PDF
+                rascunho_gerado = f"Erro ao processar o PDF: {e}"
+
+    context = {
+        'rascunho_gerado': rascunho_gerado,
+        'titulo_pagina': 'Gerador de TR com IA'
+    }
+    return render(request, 'contratacoes/ia_tr.html', context)
+
+@login_required
+def salvar_tr_ia_view(request):
+    if request.method == 'POST':
+        rascunho_tr_editado = request.POST.get('rascunho_tr')
+        etp_pk = request.POST.get('etp_pk')
+        
+        if rascunho_tr_editado and etp_pk:
+            try:
+                # 1. Busque o ETP de origem e o usuário logado
+                etp_origem = get_object_or_404(ETP, pk=etp_pk)
+                autor = request.user
+                
+                # 2. Parse o rascunho do TR gerado pela IA
+                dados_tr = ai_services.parse_rascunho_tr(rascunho_tr_editado)
+                
+                # 3. Preencha o resto dos dados obrigatórios
+                # Use o titulo gerado pela IA, ou um padrão se não existir
+                titulo_tr = dados_tr.get('objeto', 'TR gerado por IA')
+                
+                # Use o número do processo do ETP
+                numero_processo_tr = etp_origem.numero_processo
+                
+                # 4. Crie o objeto TR com todos os dados
+                tr = TR.objects.create(
+                    etp_origem=etp_origem,
+                    processo_vinculado=etp_origem.processo_vinculado, # VINCULAR O PROCESSO
+                    autor=autor,
+                    titulo=titulo_tr,
+                    numero_processo=numero_processo_tr,
+                    objeto=dados_tr.get('objeto', ''),
+                    justificativa=dados_tr.get('justificativa', ''),
+                    especificacoes_tecnicas=dados_tr.get('especificacoes_tecnicas', ''),
+                    prazo_execucao_entrega=dados_tr.get('prazo_execucao_entrega', ''),
+                    criterios_aceitacao=dados_tr.get('criterios_aceitacao', ''),
+                    obrigacoes_partes=dados_tr.get('obrigacoes_partes', ''),
+                    sancoes_administrativas=dados_tr.get('sancoes_administrativas', ''),
+                    fiscalizacao_contrato=dados_tr.get('fiscalizacao_contrato', ''),
+                    vigencia_contrato=dados_tr.get('vigencia_contrato', ''),
+                    # Campos que podem não estar no rascunho da IA
+                    metodologia_execucao=dados_tr.get('metodologia_execucao', ''),
+                    cronograma_fisico_financeiro=dados_tr.get('cronograma_fisico_financeiro', ''),
+                    criterios_habilitacao=dados_tr.get('criterios_habilitacao', ''),
+                    criterios_pagamento=dados_tr.get('criterios_pagamento', ''),
+                    # O valor precisa ser tratado. A IA não fornece um número.
+                    # estimativa_preco_tr=...
+                )
+
+                # Redireciona para a página de detalhes do novo TR
+                return redirect('contratacoes:detalhar_tr', pk=tr.pk)
+            
+            except Exception as e:
+                # Tratar exceções de forma mais elegante no futuro
+                print(f"Erro ao salvar TR: {e}")
+                return redirect('contratacoes:ia_tr')
+
+    return redirect('contratacoes:ia_tr')
+
+
+
+@login_required
+def gerar_etp_ia_view(request):
+    rascunho_gerado = None
+    if request.method == 'POST':
+        descricao = request.POST.get('descricao_necessidade')
+        if descricao:
+            rascunho_gerado = ai_services.gerar_rascunho_etp_com_ia(descricao)
+            if "Ocorreu um erro" not in rascunho_gerado:
+                dados_etp_parseados = ai_services.parse_rascunho_etp(rascunho_gerado)
+                request.session['dados_etp_ia'] = dados_etp_parseados
+
+    context = {
+        'rascunho_gerado': rascunho_gerado
+    }
+    return render(request, 'contratacoes/gerar_etp_ia.html', context)
+
+@login_required
+def assistente_tr_ia_view(request, etp_pk):
+    """
+    Pega um ETP aprovado, envia para a IA e mostra o rascunho do TR.
+    """
+    etp = get_object_or_404(ETP, pk=etp_pk)
+    
+    rascunho_gerado = None
+    
+    # Montamos um texto único com todas as informações do ETP para dar contexto à IA
+    texto_etp_completo = f"""
+    Título do ETP: {etp.titulo}
+    Número do Processo: {etp.numero_processo}
+    Setor Demandante: {etp.setor_demandante}
+    Descrição da Necessidade: {etp.descricao_necessidade}
+    Objetivo da Contratação: {etp.objetivo_contratacao}
+    Requisitos da Contratação: {etp.requisitos_contratacao}
+    Estimativa de Quantidades: {etp.estimativa_quantidades}
+    Estimativa de Valor: {etp.estimativa_valor}
+    Resultados Esperados: {etp.resultados_esperados}
+    Justificativa da Solução: {etp.viabilidade_justificativa_solucao}
+    Alinhamento Estratégico: {etp.alinhamento_planejamento}
+    """
+    
+    # Gerar o rascunho do TR com base no ETP
+    rascunho_gerado = ai_services.gerar_rascunho_tr_com_ia(texto_etp_completo)
+
+    context = {
+        'etp': etp,
+        'rascunho_gerado': rascunho_gerado,
+        'titulo_pagina': 'Assistente de IA para Termo de Referência'
+    }
+    
+    return render(request, 'contratacoes/gerar_tr_ia.html', context)
+
+# <<< NOVA VIEW: Gerador de TR (cria do zero) >>>
+@login_required
+def gerar_tr_ia_view(request):
+    rascunho_gerado = None
+    if request.method == 'POST':
+        texto_inicial = request.POST.get('texto_tr') # Você pode usar um campo de texto livre aqui
+        if texto_inicial:
+            # Lógica para gerar rascunho do TR a partir de um texto livre
+            rascunho_gerado = ai_services.gerar_rascunho_tr_com_ia(texto_inicial)
+    
+    context = {
+        'rascunho_gerado': rascunho_gerado
+    }
+    return render(request, 'contratacoes/ia_tr.html', context)
+
+
+
+@login_required
+def analise_contrato_ia_view(request):
+    resultado_analise = None
+    if request.method == 'POST' and 'contrato_file' in request.FILES:
+        contrato_file = request.FILES['contrato_file']
+        texto_contrato = ""
+        
+        try:
+            # Lógica para extrair texto de diferentes tipos de arquivo
+            if contrato_file.name.endswith('.pdf'):
+                reader = PyPDF2.PdfReader(contrato_file)
+                for page in reader.pages:
+                    texto_contrato += page.extract_text()
+            elif contrato_file.name.endswith('.txt'):
+                texto_contrato = contrato_file.read().decode('utf-8')
+            # Você pode adicionar lógica para .docx se precisar, usando python-docx
+            # elif contrato_file.name.endswith('.docx'):
+            #     from docx import Document
+            #     doc = Document(contrato_file)
+            #     for para in doc.paragraphs:
+            #         texto_contrato += para.text + '\n'
+
+            # Envia o texto extraído para a função de análise da IA
+            resultado_analise = ai_services.analisar_contrato_com_ia(texto_contrato)
+        
+        except Exception as e:
+            resultado_analise = f"Ocorreu um erro ao processar o arquivo: {e}"
+
+    context = {
+        'resultado_analise': resultado_analise,
+        'titulo_pagina': 'Análise de Contrato com IA'
+    }
+    return render(request, 'contratacoes/ia_analise_contrato.html', context)
+
 

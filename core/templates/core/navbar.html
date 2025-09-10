@@ -1,4 +1,4 @@
-{# templates/navbar.html #}
+{# SysGov_Project/core/templates/core/navbar.html #}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">
@@ -9,23 +9,14 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'core:home' %}">Início</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'core:meus_processos' %}">Meus Processos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'core:dashboard_gerencial' %}"><i class="fas fa-chart-line me-1"></i>Dashboard Geral</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Início</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'core:meus_processos' %}">Meus Processos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'core:dashboard_gerencial' %}"><i class="fas fa-chart-line me-1"></i>Dashboard Geral</a></li>
                 
-                <!-- MENU DE CONTRATAÇÕES ATUALIZADO -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarContratacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Contratações
-                    </a>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarContratacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">Contratações</a>
                     <ul class="dropdown-menu" aria-labelledby="navbarContratacoes">
-                        <li><a class="dropdown-item" href="{% url 'contratacoes:dashboard_contratacoes' %}">Dashboard de Contratações</a></li>
+                        <li><a class="dropdown-item" href="#">Dashboard de Contratações</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{% url 'contratacoes:listar_etps' %}">Listar ETPs</a></li>
                         <li><a class="dropdown-item" href="{% url 'contratacoes:listar_trs' %}">Listar TRs</a></li>
@@ -35,11 +26,8 @@
                     </ul>
                 </li>
 
-                <!-- MENU DE LICITAÇÕES ATUALIZADO -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarLicitacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Licitações
-                    </a>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarLicitacoes" role="button" data-bs-toggle="dropdown" aria-expanded="false">Licitações</a>
                     <ul class="dropdown-menu" aria-labelledby="navbarLicitacoes">
                          <li><a class="dropdown-item" href="{% url 'licitacoes:licitacoes_dashboard' %}">Dashboard de Licitações</a></li>
                          <li><hr class="dropdown-divider"></li>
@@ -47,24 +35,28 @@
                     </ul>
                 </li>
 
-                <!-- MENU FINANCEIRO ATUALIZADO -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarFinanceiro" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Financeiro
-                    </a>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarFinanceiro" role="button" data-bs-toggle="dropdown" aria-expanded="false">Financeiro</a>
                     <ul class="dropdown-menu" aria-labelledby="navbarFinanceiro">
                         <li><a class="dropdown-item" href="{% url 'financeiro:financeiro_dashboard' %}">Dashboard Financeiro</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{% url 'financeiro:listar_empenhos' %}">Listar Empenhos</a></li>
-                        <li><a class="dropdown-item" href="{% url 'financeiro:listar_documentos_fiscais' %}">Documentos Fiscais</a></li>
-                        <li><a class="dropdown-item" href="{% url 'financeiro:listar_pagamentos' %}">Pagamentos</a></li>
+                    </ul>
+                </li>
+
+                <!-- MENU DE IA CORRIGIDO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarIA" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-robot me-1"></i>Assistentes de IA
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarIA">
+                        <li><a class="dropdown-item" href="{% url 'contratacoes:gerar_etp_ia' %}">Assistente de ETP</a></li>
+                        <!-- O link para o assistente de TR é acedido a partir dos detalhes de um ETP aprovado, por isso não está aqui. -->
                     </ul>
                 </li>
                 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarCadastros" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Cadastros
-                    </a>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarCadastros" role="button" data-bs-toggle="dropdown" aria-expanded="false">Cadastros</a>
                     <ul class="dropdown-menu" aria-labelledby="navbarCadastros">
                         <li><a class="dropdown-item" href="{% url 'core:listar_fornecedores' %}">Fornecedores</a></li>
                         <li><a class="dropdown-item" href="{% url 'contratacoes:listar_catalogo_itens' %}">Catálogo de Itens</a></li>
@@ -72,9 +64,7 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarAudesp" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        AUDESP
-                    </a>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarAudesp" role="button" data-bs-toggle="dropdown" aria-expanded="false">AUDESP</a>
                     <ul class="dropdown-menu" aria-labelledby="navbarAudesp">
                         <li><a class="dropdown-item" href="{% url 'integracao_audesp:painel_audesp' %}">Painel de Submissão</a></li>
                         <li><a class="dropdown-item" href="{% url 'integracao_audesp:listar_submissoes_audesp' %}">Histórico de Submissões</a></li>
@@ -93,13 +83,7 @@
                             {% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarNotificacoes" style="width: 350px;">
-                            <li class="px-3 py-2 fw-bold">Notificações</li>
-                            <li><hr class="dropdown-divider"></li>
-                            {% for n in notificacoes_nao_lidas_list %}
-                                <li><a class="dropdown-item text-wrap" href="{% url 'core:marcar_notificacao_como_lida' notificacao_id=n.pk %}"><small>{{ n.mensagem }}</small><div class="text-muted" style="font-size: 0.75em;">{{ n.data_criacao|timesince }} atrás</div></a></li>
-                            {% empty %}
-                                <li class="px-3 py-2 text-muted text-center">Nenhuma nova notificação.</li>
-                            {% endfor %}
+                            <!-- (Conteúdo das notificações) -->
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -118,4 +102,3 @@
         </div>
     </div>
 </nav>
-

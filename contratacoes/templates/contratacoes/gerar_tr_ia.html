@@ -1,31 +1,35 @@
 {% extends 'base.html' %}
-{% load widget_tweaks %}
-
-{% block title %}{{ titulo_pagina }}{% endblock %}
+{% block title %}Gerador de TR com IA{% endblock %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold text-primary">{{ titulo_pagina }}</h1>
-        <p class="lead">Com base no ETP aprovado "{{ etp.titulo }}", a IA gerou o rascunho abaixo para o seu Termo de Referência.</p>
-    </div>
-
-    <div class="card shadow-sm">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Rascunho do TR Gerado com Sucesso!</h5>
+<div class="container mt-5">
+    <h1>Assistente de IA para Termo de Referência</h1>
+    <p class="lead">Envie um arquivo PDF de ETP para gerar um rascunho de Termo de Referência.</p>
+    <hr>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_etp_pdf" class="form-label fw-bold">Selecione o arquivo PDF do ETP:</label>
+            <input type="file" class="form-control" id="id_etp_pdf" name="etp_pdf" accept="application/pdf" required>
         </div>
-        <div class="card-body">
-            <p>Revise o texto, faça os ajustes necessários e depois clique no botão abaixo para iniciar a criação do TR oficial com estes dados pré-preenchidos.</p>
-            <hr>
-            <div class="bg-light p-3 rounded border" style="white-space: pre-wrap;">{{ rascunho_gerado|safe }}</div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-magic me-1"></i> Gerar Rascunho do TR</button>
+        </div>
+    </form>
 
-            <div class="text-center mt-4 d-grid gap-2">
-                <!-- Este botão ainda não funciona, iremos implementá-lo no próximo passo -->
-                <a href="#" class="btn btn-success btn-lg disabled">
-                    <i class="fas fa-file-import me-2"></i> Usar este Rascunho para Criar TR
-                </a>
+    {% if rascunho_gerado %}
+    <div class="mt-4 p-3 bg-light rounded">
+        <h3>Rascunho Gerado:</h3>
+        <form method="post" action="{% url 'contratacoes:salvar_tr_ia' %}">
+            {% csrf_token %}
+            <textarea class="form-control mb-3" name="rascunho_tr" rows="25" style="font-family: monospace;">{{ rascunho_gerado }}</textarea>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i> Salvar e Criar TR</button>
             </div>
-        </div>
+        </form>
     </div>
+    {% endif %}
+
 </div>
-{% endblock content %}
+{% endblock %}

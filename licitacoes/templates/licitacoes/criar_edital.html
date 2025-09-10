@@ -36,7 +36,7 @@
                     {% endif %}
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-file-earmark-plus"></i> Criar Edital</button>
-                        <a href="{% if processo_core %}{% url 'detalhes_processo' processo_id=processo_core.id %}{% else %}{% url 'licitacoes:dashboard_licitacoes' %}{% endif %}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-circle"></i> Cancelar</a>
+                        <a href="{% if processo_core %}{% url 'detalhes_processo' processo_id=processo_core.id %}{% else %}{% url 'licitacoes:licitacoes_dashboard' %}{% endif %}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-circle"></i> Cancelar</a>
                     </div>
                 </form>
             </div>

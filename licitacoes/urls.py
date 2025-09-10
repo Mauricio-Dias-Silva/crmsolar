@@ -24,5 +24,7 @@ urlpatterns = [
     path('pregao/<int:pregao_id>/ata-pdf/', views.gerar_ata_pregao_pdf, name='gerar_ata_pregao_pdf'),
     
     path('dashboard/', views.licitacoes_dashboard, name='licitacoes_dashboard'),
+    path('ia/analise-edital/', views.analise_edital_ia_view, name='ia_analise_edital'),
+
 ]
 
