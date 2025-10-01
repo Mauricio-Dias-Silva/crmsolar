@@ -1,0 +1,80 @@
+{% extends 'solar/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Projeto{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Editar Projeto: {{ projeto.nome }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <hr class="my-4">
+                <h5>Documentos já anexados</h5>
+                <p class="text-muted">Estes documentos estão vinculados ao projeto.</p>
+                <ul class="list-group mb-3">
+                    {% for doc in documentos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{{ doc.arquivo.url }}" download>{{ doc.nome }}</a>
+                            {% if doc.visivel_cliente %}
+                                <span class="badge bg-success ms-2">Visível ao cliente</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">Interno</span>
+                            {% endif %}
+                            <span class="text-muted small ms-3">Enviado em {{ doc.data_upload|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <form method="post" action="{% url 'crm:excluir_documento_projeto' projeto.id doc.id %}" style="margin:0;display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir documento"
+                                    onclick="return confirm('Tem certeza que deseja excluir este documento?');">
+                                &#128465; Excluir
+                            </button>
+                        </form>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">Nenhum documento anexado ainda.</li>
+                    {% endfor %}
+                </ul>
+
+                <hr class="my-4">
+                <h5>Adicionar Novos Documentos</h5>
+                <p class="text-muted">Você pode enviar novos arquivos abaixo.</p>
+
+                <div class="row mb-3">
+                    {% for doc_label in documentos_labels %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ doc_label }}</label>
+                        <input type="file" name="documento_arquivo_{{ forloop.counter }}" class="form-control mb-1">
+                        <div class="form-check">
+                            <input type="checkbox" name="documento_visivel_{{ forloop.counter }}" class="form-check-input" id="visivel_{{ forloop.counter }}">
+                            <label class="form-check-label" for="visivel_{{ forloop.counter }}">
+                                Visível ao cliente
+                            </label>
+                        </div>
+                        <input type="hidden" name="documento_nome_{{ forloop.counter }}" value="{{ doc_label }}">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                <a href="{% url 'crm:detalhe_projeto' projeto.id %}" class="btn btn-secondary ms-2">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+{% endblock %}

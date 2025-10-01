@@ -1,0 +1,21 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Pagamento Recusado{% endblock %}
+
+{% block content %}
+<div class="container my-5 text-center">
+    <div class="card p-5 shadow-lg border-red-500 border-t-4">
+        <div class="mb-4">
+            <i class="fas fa-times-circle text-red-500 text-6xl"></i>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-red-700 mb-2">O Pagamento Falhou</h1>
+        <p class="text-gray-600 text-lg md:text-xl">Houve um problema ao processar seu pagamento. Por favor, verifique os dados do seu cartão ou tente novamente.</p>
+        <div class="mt-8">
+            <a href="{% url 'produtos:ver_carrinho' %}" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                Tentar Novamente
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

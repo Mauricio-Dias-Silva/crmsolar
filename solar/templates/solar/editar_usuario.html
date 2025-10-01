@@ -1,0 +1,84 @@
+{% extends 'solar/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">Editar Usuário: {{ usuario.get_full_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <!-- Username -->
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                    {{ form.username|add_class:"form-control" }}
+                    {% for error in form.username.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <!-- Primeiro nome -->
+                <div class="mb-3">
+                    <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                    {{ form.first_name|add_class:"form-control" }}
+                    {% for error in form.first_name.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <!-- Último nome -->
+                <div class="mb-3">
+                    <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                    {{ form.last_name|add_class:"form-control" }}
+                    {% for error in form.last_name.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email|add_class:"form-control" }}
+                    {% for error in form.email.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <!-- Departamento -->
+                <div class="mb-3">
+                    <label for="{{ form.departamento.id_for_label }}">{{ form.departamento.label }}</label>
+                    {{ form.departamento|add_class:"form-select" }}
+                    {% for error in form.departamento.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <!-- Permissões de Menu -->
+                <div class="mb-3">
+                    <label>{{ form.permissoes_menu.label }}</label>
+                    <div>
+                        {% for checkbox in form.permissoes_menu %}
+                            <div class="form-check mb-1">
+                                {{ checkbox.tag|add_class:"form-check-input" }}
+                                <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% for error in form.permissoes_menu.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'crm:lista_usuarios' %}" class="btn btn-secondary">Voltar</a>
+                    <div>
+                        <a href="{% url 'crm:resetar_senha_usuario' usuario.id %}" class="btn btn-outline-secondary me-2">
+                            <img src="https://img.icons8.com/ios-filled/20/password-reset.png" class="me-1">
+                            Resetar Senha
+                        </a>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

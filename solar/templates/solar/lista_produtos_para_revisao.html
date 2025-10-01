@@ -1,0 +1,37 @@
+{% extends 'solar/base.html' %}
+{% block title %}Produtos para Revisão{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Produtos Aguardando Revisão</h3>
+        </div>
+        <div class="card-body">
+            <p>Os seguintes produtos foram criados pela IA e precisam de sua revisão antes de serem considerados finalizados.</p>
+
+            {% if produtos %}
+                <ul class="list-group">
+                    {% for produto in produtos %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ produto.name }}</strong>
+                                <br>
+                                <small class="text-muted">SKU: {{ produto.sku }} | Criado em: {{ produto.created_at|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <a href="{% url 'crm:editar_produto_ecommerce' produto.id %}?next={% url 'crm:lista_produtos_para_revisao' %}" class="btn btn-primary">
+                                Revisar
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-success text-center">
+                    <h4 class="alert-heading">Tudo certo!</h4>
+                    <p class="mb-0">Não há nenhum produto aguardando revisão no momento.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

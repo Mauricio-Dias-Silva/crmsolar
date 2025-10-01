@@ -1,0 +1,46 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Produtos na Categoria: {{ categoria_atual }}{% endblock %} {# REMOVIDO O .name #}
+
+{% block content %}
+<div class="container my-4">
+
+    {% if produtos %}
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for produto in produtos %}
+                <div class="col"> {# Essa div 'col' estava faltando no trecho que você mostrou antes #}
+                    <div class="card h-100 produto-card">
+                        <div class="card-body p-0">
+                            {# --- AQUI ESTÁ O BLOCO DA IMAGEM CORRIGIDO NO HTML --- #}
+                            {% if produto.imagem_do_card %} {# Verifica a variável que a VIEW ANEXOU #}
+                                <img src="{{ produto.imagem_do_card.image.url }}" alt="{{ produto.imagem_do_card.alt_text|default:produto.name }}" class="img-fluid rounded">
+                            {% else %}
+                                {# Se não houver imagem selecionada, mostra um placeholder #}
+                                <div class="d-flex align-items-center justify-content-center bg-light text-muted" style="min-height: 400px; width: 100%;">
+                                    <p>Imagem não disponível</p>
+                                </div>
+                            {% endif %}
+                            {# --- FIM DO BLOCO DA IMAGEM CORRIGIDO --- #}
+                        </div> {# Fechamento da div card-body p-0 #}
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2"><a href="{% url 'produtos:produto_detalhe' produto.id %}" class="text-decoration-none text-dark">{{ produto.name }}</a></h5>
+                            <p class="card-text text-muted mb-auto">{{ produto.description|truncatechars:100 }}</p>
+                            <p class="card-text produto-preco mt-2">Preço: R$ {{ produto.preco|floatformat:2 }}</p>
+                            <div class="mt-auto">
+                                <a href="{% url 'produtos:adicionar_ao_carrinho' produto.id %}" class="btn btn-primary w-100">Adicionar ao Carrinho</a>
+                                <a href="{% url 'produtos:produto_detalhe' produto.id %}" class="btn btn-outline-secondary w-100 mt-2">Ver Detalhes</a>
+                            </div>
+                        </div>
+                    </div> {# Fechamento da div card h-100 produto-card #}
+                </div> {# Fechamento da div col #}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            Não há produtos nesta categoria.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

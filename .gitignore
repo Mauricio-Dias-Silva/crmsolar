@@ -1,0 +1,44 @@
+# Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Environments
+.env
+*.env 
+venv/
+env/
+/site/
+
+# Django
+db.sqlite3 # Banco de dados SQLite local
+/media/    # Diretório para uploads de mídia (gerenciado pelo usuário)
+/static/   # Diretório para arquivos estáticos coletados (gerado pelo collectstatic)
+*.log      # Arquivos de log
+*.pot      # Arquivos de tradução (se você usa i18n)
+
+# Docker
+.dockerignore # O próprio .dockerignore não precisa ser ignorado pelo Git
+docker-compose.override.yml # Arquivo de override local do Docker Compose (se você tiver)
+
+# IDEs and Editors
+.vscode/   # VS Code specific files
+.idea/     # PyCharm / IntelliJ specific files
+*.sublime-project
+*.sublime-workspace
+.DS_Store  # macOS specific files
+Thumbs.db  # Windows specific files
+
+# Celery (se usar)
+*.pid
+*.sock
+
+# Outros
+*.example # Se você tiver arquivos de exemplo de configurações (ex: .env.example)
+
+# Ignorar o diretório raiz do projeto (se ele for o mesmo nome do seu repositório)
+# crmsolar/

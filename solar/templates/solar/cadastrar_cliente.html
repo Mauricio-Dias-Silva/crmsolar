@@ -1,0 +1,247 @@
+{% extends 'solar/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Cadastrar Cliente{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Cadastrar Novo Cliente</h4>
+        </div>
+        <div class="card-body">
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="POST" id="form_cliente">
+                {% csrf_token %}
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.nome.id_for_label }}">Nome do Cliente</label>
+                    {{ form.nome|add_class:"form-control" }}
+                    {% if form.nome.errors %}
+                        <div id="nome-error" class="text-danger small">
+                            {% for error in form.nome.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.email.id_for_label }}">E-mail</label>
+                    {{ form.email|add_class:"form-control" }}
+                    {% if form.email.errors %}
+                        <div id="email-error" class="text-danger small">
+                            {% for error in form.email.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.telefone.id_for_label }}">Telefone</label>
+                    {{ form.telefone|add_class:"form-control" }}
+                    {% if form.telefone.errors %}
+                        <div id="telefone-error" class="text-danger small">
+                            {% for error in form.telefone.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Tipo de Documento</label><br>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="tipo_doc" id="opcao_cpf" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="opcao_cpf">CPF</label>
+
+                        <input type="radio" class="btn-check" name="tipo_doc" id="opcao_cnpj" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="opcao_cnpj">CNPJ</label>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3" id="cpf_group">
+                    <label for="{{ form.cpf.id_for_label }}">CPF</label>
+                    {{ form.cpf|add_class:"form-control"|attr:"placeholder:000.000.000-00" }}
+                    {% if form.cpf.errors %}
+                        <div id="cpf-error" class="text-danger small">
+                            {% for error in form.cpf.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3 d-none" id="cnpj_group">
+                    <label for="{{ form.cnpj.id_for_label }}">CNPJ</label>
+                    {{ form.cnpj|add_class:"form-control"|attr:"placeholder:00.000.000/0000-00" }}
+                    {% if form.cnpj.errors %}
+                        <div id="cnpj-error" class="text-danger small">
+                            {% for error in form.cnpj.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Endereço separado -->
+                <div class="form-group mb-3">
+                    <label for="{{ form.rua.id_for_label }}">Rua</label>
+                    {{ form.rua|add_class:"form-control"|attr:"placeholder:Av. Brasil" }}
+                    {% if form.rua.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.rua.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.numero.id_for_label }}">Número</label>
+                    {{ form.numero|add_class:"form-control"|attr:"placeholder:123" }}
+                    {% if form.numero.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.numero.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.cep.id_for_label }}">CEP</label>
+                    {{ form.cep|add_class:"form-control"|attr:"placeholder:00000-000" }}
+                    {% if form.cep.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.cep.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.cidade.id_for_label }}">Cidade</label>
+                    {{ form.cidade|add_class:"form-control"|attr:"placeholder:São Paulo" }}
+                    {% if form.cidade.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.cidade.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.estado.id_for_label }}">Estado</label>
+                    {{ form.estado|add_class:"form-control"|attr:"placeholder:SP" }}
+                    {% if form.estado.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.estado.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    {{ form.possui_whatsapp|add_class:"form-check-input" }}
+                    <label class="form-check-label" for="{{ form.possui_whatsapp.id_for_label }}">Possui WhatsApp?</label>
+                </div>
+
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'crm:lista_clientes' %}" class="btn btn-secondary">Voltar</a>
+                    <button type="submit" class="btn btn-success">Cadastrar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // --- MUDANÇA AQUI: Usando os IDs dinâmicos do Django ---
+    // Isso torna o script mais seguro e compatível com o Django.
+    const cpfInput = document.getElementById("{{ form.cpf.id_for_label }}");
+    const cnpjInput = document.getElementById("{{ form.cnpj.id_for_label }}");
+    const cepInput = document.getElementById("{{ form.cep.id_for_label }}");
+    
+    // Os elementos abaixo não vêm do form do Django, então os IDs fixos estão corretos.
+    const cpfGroup = document.getElementById("cpf_group");
+    const cnpjGroup = document.getElementById("cnpj_group");
+    const opcaoCpf = document.getElementById("opcao_cpf");
+    const opcaoCnpj = document.getElementById("opcao_cnpj");
+
+    // Suas funções de formatação já estão perfeitas!
+    function formatCPF(value) {
+        value = value.replace(/\D/g, "").slice(0, 11);
+        return value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+    }
+
+    function formatCNPJ(value) {
+        value = value.replace(/\D/g, "").slice(0, 14);
+        return value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+    }
+
+    function formatCEP(value) {
+        value = value.replace(/\D/g, "").slice(0, 8);
+        return value.replace(/^(\d{5})(\d{3})$/, "$1-$2");
+    }
+
+    // Sua função de alternar os campos também está perfeita!
+    function toggleDocumentoFields() {
+        if (opcaoCpf.checked) {
+            cpfGroup.classList.remove("d-none");
+            cnpjGroup.classList.add("d-none");
+            if(cnpjInput) cnpjInput.value = ""; // Limpa o campo CNPJ
+        } else {
+            cnpjGroup.classList.remove("d-none");
+            cpfGroup.classList.add("d-none");
+            if(cpfInput) cpfInput.value = ""; // Limpa o campo CPF
+        }
+    }
+
+    // A lógica para aplicar as máscaras está ótima.
+    if (cpfInput) {
+        cpfInput.addEventListener("input", () => {
+            cpfInput.value = formatCPF(cpfInput.value);
+        });
+    }
+
+    if (cnpjInput) {
+        cnpjInput.addEventListener("input", () => {
+            cnpjInput.value = formatCNPJ(cnpjInput.value);
+        });
+    }
+
+    if (cepInput) {
+        cepInput.addEventListener("input", () => {
+            cepInput.value = formatCEP(cepInput.value);
+        });
+    }
+    
+    // A lógica para escutar as mudanças nos botões também está perfeita.
+    if(opcaoCpf && opcaoCnpj) {
+        opcaoCpf.addEventListener("change", toggleDocumentoFields);
+        opcaoCnpj.addEventListener("change", toggleDocumentoFields);
+    }
+
+    // A chamada inicial para garantir o estado correto da página está ótima.
+    toggleDocumentoFields();
+});
+</script>

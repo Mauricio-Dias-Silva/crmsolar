@@ -1,0 +1,73 @@
+{% extends 'solar/base.html' %}
+
+{% block title %}Materiais{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Materiais Cadastrados</h2>
+        <a href="{% url 'crm:cadastrar_material' %}" class="btn btn-primary">+ Cadastrar novo material</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Modelo</th>
+                    <th>Fabricante</th>
+                    <th>Nº Série</th>
+                    <th>Unidade</th>
+                    <th>Estoque</th>
+                    <th>Estoque Mín.</th>
+                    <th>Localização</th>
+                    <th>Preço Compra</th>
+                    <th>Preço Venda</th>
+                    <th>Garantia Até</th>
+                    <th>Data Entrada</th>
+                    <th>Observações</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for material in materiais %}
+                <tr>
+                    <td>{{ material.nome }}</td>
+                    <td>{{ material.codigo }}</td>
+                    <td>{{ material.modelo }}</td>
+                    <td>{{ material.fabricante }}</td>
+                    <td>{{ material.numero_serie }}</td>
+                    <td>{{ material.unidade_medida }}</td>
+                    <td>{{ material.quantidade_estoque }}</td>
+                    <td>{{ material.estoque_minimo }}</td>
+                    <td>{{ material.localizacao }}</td>
+                    <td>
+                        {% if material.preco_compra %}R$ {{ material.preco_compra|floatformat:2 }}{% endif %}
+                    </td>
+                    <td>
+                        {% if material.preco_venda %}R$ {{ material.preco_venda|floatformat:2 }}{% endif %}
+                    </td>
+                    <td>
+                        {% if material.garantia_ate %}{{ material.garantia_ate|date:"d/m/Y" }}{% endif %}
+                    </td>
+                    <td>
+                        {% if material.data_entrada %}{{ material.data_entrada|date:"d/m/Y" }}{% endif %}
+                    </td>
+                    <td>{{ material.observacoes }}</td>
+                    <td>
+                        <a href="{% url 'crm:editar_material' material.id %}" class="btn btn-sm btn-warning">Editar</a>
+                        <!-- Botão de exclusão pode ser colocado aqui futuramente -->
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="15" class="text-center text-muted">Nenhum material cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+{% endblock %}

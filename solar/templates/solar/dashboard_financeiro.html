@@ -1,0 +1,112 @@
+{% extends 'solar/base.html' %}
+{% block title %}Dashboard Financeiro{% endblock %}
+
+{% block content %}
+<h2>Dashboard Financeiro</h2>
+
+<form method="GET" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label>Projeto:</label>
+        <select name="projeto" class="form-select">
+            <option value="">Todos</option>
+            {% for projeto in projetos %}
+            <option value="{{ projeto.id }}" {% if filtro.projeto == projeto.id|stringformat:"s" %}selected{% endif %}>{{ projeto.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label>Tipo:</label>
+        <select name="tipo" class="form-select">
+            <option value="">Todos</option>
+            <option value="recebimento" {% if filtro.tipo == 'recebimento' %}selected{% endif %}>Recebimento</option>
+            <option value="pagamento" {% if filtro.tipo == 'pagamento' %}selected{% endif %}>Pagamento</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label>Status:</label>
+        <select name="status" class="form-select">
+            <option value="">Todos</option>
+            <option value="pago" {% if filtro.status == 'pago' %}selected{% endif %}>Pago</option>
+            <option value="pendente" {% if filtro.status == 'pendente' %}selected{% endif %}>Pendente</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label>Data início:</label>
+        <input type="date" name="data_inicio" value="{{ filtro.data_inicio }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+        <label>Data fim:</label>
+        <input type="date" name="data_fim" value="{{ filtro.data_fim }}" class="form-control">
+    </div>
+    <div class="col-md-1 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-md-12 col-lg-6 mb-4">
+        <h5>Distribuição por Tipo</h5>
+        <div style="max-width: 100%; height: 300px;">
+            <canvas id="graficoTipo"></canvas>
+        </div>
+    </div>
+    <div class="col-md-12 col-lg-6">
+        <h5>Valor por Projeto</h5>
+        <div style="overflow-x: auto; height: 300px;">
+            <canvas id="graficoProjeto" width="800"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const tipoCtx = document.getElementById('graficoTipo').getContext('2d');
+    new Chart(tipoCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ tipo_labels|safe }},
+            datasets: [{
+                label: 'Total por tipo',
+                data: {{ tipo_data|safe }},
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    const projetoCtx = document.getElementById('graficoProjeto').getContext('2d');
+    new Chart(projetoCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ projeto_labels|safe }},
+            datasets: [{
+                label: 'Total por Projeto',
+                data: {{ projeto_data|safe }},
+                backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: {
+                        callback: function(value, index, ticks) {
+                            let label = this.getLabelForValue(value);
+                            return label.length > 10 ? label.slice(0, 10) + '…' : label;
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

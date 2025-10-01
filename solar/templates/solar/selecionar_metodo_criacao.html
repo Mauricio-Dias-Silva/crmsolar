@@ -1,0 +1,33 @@
+{% extends 'solar/base.html' %}
+{% block title %}Adicionar Novo Produto{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">Como você deseja adicionar o produto?</h2>
+            <p class="lead mb-5">Escolha um método para começar.</p>
+
+            <div class="card-deck d-flex justify-content-center">
+                
+                <div class="card mx-3 shadow" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-magic text-primary"></i> Adicionar com IA</h5>
+                        <p class="card-text">Faça o upload de uma imagem e deixe a IA preencher os detalhes para você. Ideal para agilizar o cadastro.</p>
+                        <a href="{% url 'crm:adicionar_produto_ia' %}" class="btn btn-primary">Iniciar com IA</a>
+                    </div>
+                </div>
+
+                <div class="card mx-3 shadow" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-keyboard text-secondary"></i> Adicionar Manualmente</h5>
+                        <p class="card-text">Preencha todos os campos do formulário manualmente para ter controle total sobre os detalhes do produto.</p>
+                        <a href="{% url 'crm:adicionar_produto_ecommerce' %}" class="btn btn-secondary">Iniciar Manualmente</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container my-5 text-center">
+    <h1>Bem-vindo à Solar Hub!</h1>
+    <p>Sua plataforma completa para soluções em energia solar.</p>
+
+    <div class="row my-5">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Loja Online de Produtos</h3>
+                    <p class="card-text">Navegue por nossa seleção de painéis, inversores, baterias e muito mais.</p>
+                    <a href="{% url 'produtos:home' %}" class="btn btn-primary">Ir para a Loja</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Área do Cliente (CRM)</h3>
+                    <p class="card-text">Acompanhe seus projetos, finanças e documentos em um só lugar.</p>
+                    <a href="{% url 'crm:dashboard_projetos' %}" class="btn btn-success">Acessar CRM</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

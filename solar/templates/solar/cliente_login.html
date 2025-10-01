@@ -1,0 +1,35 @@
+{% extends 'solar/base_cliente.html' %}
+{% load static %}
+{% block title %}Login do Cliente{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="card shadow-sm p-4" style="max-width: 400px; width:100%;">
+        <div class="text-center mb-4">
+            <img src="{% static 'images/crm_logo_big.png' %}" alt="Logo" style="max-height: 60px; margin-bottom: 16px;">
+            <h3 class="mb-2 text-primary">Área do Cliente</h3>
+            <p class="text-muted mb-0">Acompanhe seus projetos e documentos</p>
+        </div>
+        <form method="POST" autocomplete="off">
+            {% csrf_token %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger py-2">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            <div class="mb-3">
+                <label for="id_acesso" class="form-label">ID de Acesso</label>
+                <input type="text" name="id_acesso" id="id_acesso" class="form-control" required placeholder="Seu ID de acesso">
+            </div>
+            <div class="mb-3">
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" name="senha" id="senha" class="form-control" required placeholder="Sua senha">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-2">Entrar</button>
+        </form>
+        <div class="text-center mt-3">
+            <span class="text-muted small">Em caso de dúvida, entre em contato com o suporte.</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

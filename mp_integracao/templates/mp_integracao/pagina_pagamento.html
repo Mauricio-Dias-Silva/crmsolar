@@ -1,0 +1,26 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Página de Pagamento{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow-sm">
+        <h1 class="text-3xl font-bold mb-4">Detalhes do seu Pedido</h1>
+        
+        <p class="text-lg text-gray-700 mb-4">Valor total: R$ {{ valor_total }}</p>
+
+        {% if init_point %}
+            <div class="alert alert-info text-center" role="alert">
+                Clique no botão abaixo para finalizar a sua compra de forma segura.
+            </div>
+            <a href="{{ init_point }}" class="btn btn-primary btn-lg w-full">Pagar com Mercado Pago</a>
+        {% else %}
+            <div class="alert alert-danger" role="alert">
+                Erro ao gerar o link de pagamento. Por favor, volte ao carrinho e tente novamente.
+            </div>
+            <a href="{% url 'produtos:ver_carrinho' %}" class="btn btn-secondary w-full mt-3">Voltar para o Carrinho</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

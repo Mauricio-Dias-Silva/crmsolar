@@ -1,0 +1,18 @@
+{% extends 'solar/base.html' %}
+{% block content %}
+<div class="container mt-3">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4>Excluir Documento</h4>
+        </div>
+        <div class="card-body">
+            <p>Tem certeza que deseja excluir o documento <strong>{{ documento.nome }}</strong>?</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Excluir</button>
+                <a href="{% url 'crm:detalhe_projeto' projeto.id %}" class="btn btn-secondary ms-2">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

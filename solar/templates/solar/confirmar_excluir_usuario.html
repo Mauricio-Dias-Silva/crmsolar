@@ -1,0 +1,13 @@
+{% extends "solar/base.html" %}
+{% block title %}Confirmar Exclusão de Usuário{% endblock %}
+{% block content %}
+<div class="container my-5">
+    <h1>Excluir Usuário</h1>
+    <p>Tem certeza de que deseja excluir o usuário <strong>{{ usuario.username }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        <a href="{% url 'crm:lista_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

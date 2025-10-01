@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar CRM & E-commerce</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <header class="shadow-sm bg-white">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-2">
+        <img src="/static/img/logo.png" class="h-10" alt="Logo">
+      </div>
+
+      <!-- Busca -->
+      <div class="flex-1 px-4">
+        <input type="text" placeholder="Buscar produtos..." 
+               class="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-yellow-500">
+      </div>
+
+      <!-- Ícones -->
+      <div class="flex space-x-4 text-gray-600">
+        <a href="{% url 'crm:dashboard' %}" class="hover:text-yellow-600">CRM</a>
+        <a href="{% url 'login' %}" class="hover:text-yellow-600">Login</a>
+        <a href="{% url 'carrinho' %}" class="hover:text-yellow-600">🛒</a>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <nav class="bg-yellow-500 text-white">
+      <div class="max-w-7xl mx-auto flex space-x-6 px-4 py-2">
+        <a href="#" class="hover:underline">Painéis Solares</a>
+        <a href="#" class="hover:underline">Inversores</a>
+        <a href="#" class="hover:underline">Estruturas</a>
+        <a href="#" class="hover:underline">Baterias</a>
+        <a href="#" class="hover:underline">Kits Completos</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="relative bg-gray-900">
+    <img src="/static/img/banner.jpg" class="w-full h-[400px] object-cover opacity-70">
+    <div class="absolute inset-0 flex items-center justify-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white">Energia Solar com Tecnologia e Gestão</h1>
+    </div>
+  </section>
+
+  <!-- Acesso Rápido CRM -->
+  <section class="max-w-7xl mx-auto px-4 py-12 grid md:grid-cols-3 gap-6">
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition">
+      <h2 class="text-xl font-semibold mb-2">Acesse o CRM</h2>
+      <p class="text-gray-600">Gerencie seus leads, orçamentos e contratos.</p>
+      <a href="{% url 'crm:dashboard' %}" class="mt-4 inline-block px-4 py-2 bg-yellow-500 text-white rounded-lg">Entrar</a>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition">
+      <h2 class="text-xl font-semibold mb-2">Área do Cliente</h2>
+      <p class="text-gray-600">Pedidos, faturas e suporte técnico em um só lugar.</p>
+      <a href="{% url 'conta:dashboard' %}" class="mt-4 inline-block px-4 py-2 bg-yellow-500 text-white rounded-lg">Acessar</a>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition">
+      <h2 class="text-xl font-semibold mb-2">Suporte Rápido</h2>
+      <p class="text-gray-600">Nossa equipe está pronta para ajudar você.</p>
+      <a href="{% url 'suporte' %}" class="mt-4 inline-block px-4 py-2 bg-yellow-500 text-white rounded-lg">Suporte</a>
+    </div>
+  </section>
+
+  <!-- Produtos em Destaque -->
+  <section class="max-w-7xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold mb-6">Produtos em Destaque</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {% for produto in produtos_destaque %}
+      <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-4">
+        <img src="{{ produto.imagem.url }}" class="h-40 w-full object-cover rounded-lg mb-3">
+        <h3 class="font-medium">{{ produto.nome }}</h3>
+        <p class="text-yellow-600 font-bold">R$ {{ produto.preco }}</p>
+        <a href="{% url 'produto_detalhe' produto.slug %}" 
+           class="mt-2 inline-block text-sm bg-yellow-500 text-white px-3 py-1 rounded-lg">Comprar</a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer class="bg-gray-800 text-gray-200 py-6">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between">
+      <p>© 2025 Solar CRM & E-commerce</p>
+      <div class="space-x-4">
+        <a href="#" class="hover:text-yellow-400">Política de Privacidade</a>
+        <a href="#" class="hover:text-yellow-400">Termos de Uso</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

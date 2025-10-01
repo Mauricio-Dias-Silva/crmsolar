@@ -1,0 +1,80 @@
+{% extends "produtos/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% load socialaccount %} {# Para login social se necessário no futuro #}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm animate__animated animate__fadeIn">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-3 fw-bold text-dark">Bem-vindo de volta!</h2>
+                    <p class="text-center text-muted mb-4">
+                        Acesse sua conta para continuar suas compras com a <strong>Solar Shop</strong>.
+                    </p>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {# Exibir erros gerais do formulário (ex: senha incorreta) #}
+                        {% if form.non_field_errors %}
+                          <div class="alert alert-danger">
+                              {% for error in form.non_field_errors %}
+                                  {{ error }}
+                              {% endfor %}
+                          </div>
+                        {% endif %}
+
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                <div class="input-group">
+                                    {% if field.name == 'username' %}
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    {% elif field.name == 'password' %}
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    {% endif %}
+
+                                    {% if field.errors %}
+                                        {{ field|add_class:"form-control is-invalid" }}
+                                    {% else %}
+                                        {{ field|add_class:"form-control" }}
+                                    {% endif %}
+                                </div>
+
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i> Entrar
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-2">
+                        <a href="{% url 'login_ecommerce' %}" class="text-decoration-none">Esqueceu sua senha?</a>
+                    </p>
+                    <p class="text-center">
+                        Não tem uma conta? <a href="{% url 'produtos:register' %}" class="fw-bold text-decoration-none">Cadastre-se aqui</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

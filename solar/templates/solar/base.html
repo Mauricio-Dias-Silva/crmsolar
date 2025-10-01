@@ -1,0 +1,372 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM Solar{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'admin/css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    {# SEU CSS PERSONALIZADO (Mova este bloco para um arquivo .css externo, se possível) #}
+    <style>
+        body {
+            /* Garante que o body cobre toda a altura da tela */
+            min-height: 100vh; 
+            /* Adiciona padding inferior igual ou maior que a altura do footer */
+            padding-bottom: 70px; /* Ajuste se o footer tiver altura diferente */
+            position: relative; /* Necessário se o footer for 'fixed' ou 'absolute' */
+            background-color: #f8f9fa; /* Cor de fundo clara do Bootstrap */    
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 185px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: #1b263b;
+            color: white;
+            transition: 0.6s;
+            z-index: 1000;
+        }
+
+        .sidebar .menu-item {
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            margin: 4px;
+            font-size: 12px;
+        }
+
+        .sidebar .menu-item img.icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .sidebar .menu-item span {
+            flex-grow: 1;
+        }
+
+        .sidebar .menu-item:hover {
+            background-color: #415a77;
+        }
+
+        .sidebar .toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: -35px;
+            background-color: #1b263b;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 0.5rem;
+        }
+
+        .sidebar .submenu {
+            padding-left: 10px;
+            display: none;
+        }
+
+        .sidebar .submenu .menu-item {
+            padding: 10px;
+            margin: 2px 4px;
+        }
+
+        .content {
+            margin-left: 235px; /* Margem para dar espaço ao sidebar */
+            padding: 20px;
+            flex: 1; /* Permite que o conteúdo cresça e ocupe o espaço */
+            transition: margin-left 0.3s;
+            background-color: #f4f6f8;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+
+        .sidebar.collapsed ~ .content {
+            margin-left: 80px;
+        }
+
+        footer {
+            width: 100%;
+            position: fixed; 
+            bottom: 0;
+            left: 0;
+            background-color: #1b263b;
+            z-index: 1000;
+            padding: 15px; /* Adicionado padding para o conteúdo do footer */
+        }
+
+        footer img {
+            height: 40px;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: white; /* Garante que o texto seja branco no footer escuro */
+        }
+
+        /* Links do sidebar sempre brancos, sem sublinhado */
+        .sidebar a,
+        .sidebar a:visited {
+            color: #fff !important;
+            text-decoration: none !important;
+        }
+
+        .sidebar a:hover,
+        .sidebar a:active,
+        .sidebar a:focus {
+            color: #4ea8de !important;  /* Azul claro ao passar mouse */
+            text-decoration: underline;
+        }
+
+        .sidebar .submenu .menu-item a span {
+            color: inherit !important;
+        }
+
+        /* Remover sublinhado de span dentro do link */
+        .sidebar .submenu .menu-item a span:hover {
+            text-decoration: underline;
+        }
+    </style>
+    {# FIM DO SEU CSS PERSONALIZADO #}
+
+</head>
+<body style="padding-bottom: 70px;"> {# Mantido o padding-bottom inline como fallback, mas o ideal é no CSS externo #}
+
+    {# --- CONDIÇÃO PRINCIPAL PARA EXIBIR A SIDEBAR DO CRM --- #}
+    {# A sidebar inteira só é renderizada se o usuário tiver acesso ao CRM #}
+    {% if request.user.pode_acessar_crm %}
+        <div class="sidebar collapsed" id="sidebar">
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <img src="https://img.icons8.com/ios-filled/24/ffffff/menu--v1.png" alt="Menu" class="icon">
+            </button>
+
+            <div class="menu-item" onclick="toggleSubMenu('clientes')">
+                <img src="{% static 'images/icons/user-group-man-man.png' %}" alt="Clientes" class="icon">
+                <span>Clientes</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="clientes" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:lista_clientes' %}">
+                        <img src="{% static 'images/icons/list.png' %}" alt="Clientes" class="icon">
+                        <span>Clientes</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:cadastrar_cliente' %}">
+                        <img src="{% static 'images/icons/plus-math.png' %}" alt="Novo Cliente" class="icon">
+                        <span>Novo Cliente</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="toggleSubMenu('projetos')">
+                <img src="{% static 'images/icons/solar-panel.png' %}" alt="Projetos" class="icon">
+                <span>Projetos</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="projetos" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:lista_projetos' %}">
+                        <img src="{% static 'images/icons/task.png' %}" alt="Projetos" class="icon">
+                        <span>Projetos</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:cadastrar_projeto' %}">
+                        <img src="{% static 'images/icons/plus-math.png' %}" alt="Novo Projeto" class="icon">
+                        <span>Novo Projeto</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="toggleSubMenu('materiais')">
+                <img src="{% static 'images/icons/box.png' %}" alt="Materiais" class="icon">
+                <span>Materiais</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="materiais" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:lista_materiais' %}">
+                        <img src="{% static 'images/icons/list.png' %}" alt="Materiais" class="icon">
+                        <span>Materiais</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:cadastrar_material' %}">
+                        <img src="{% static 'images/icons/plus-math.png' %}" alt="Novo Material" class="icon">
+                        <span>Novo Material</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="toggleSubMenu('fornecedores')">
+                <img src="{% static 'images/icons/supplier.png' %}" alt="Fornecedores" class="icon">
+                <span>Fornecedores</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="fornecedores" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:lista_fornecedores' %}">
+                        <img src="{% static 'images/icons/list.png' %}" alt="Fornecedores" class="icon">
+                        <span>Fornecedores</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:cadastrar_fornecedor' %}">
+                        <img src="{% static 'images/icons/plus-math.png' %}" alt="Novo Fornecedor" class="icon">
+                        <span>Novo Fornecedor</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="toggleSubMenu('financeiro')">
+                <img src="{% static 'images/icons/money.png' %}" alt="Financeiro" class="icon">
+                <span>Lançamentos</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="financeiro" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:lista_financeiro' %}">
+                        <img src="{% static 'images/icons/list.png' %}" alt="Lançamentos" class="icon">
+                        <span>Lançamentos</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:cadastrar_lancamento' %}">
+                        <img src="{% static 'images/icons/plus-math.png' %}" alt="Novo Lançamento" class="icon">
+                        <span>Novo Lançamento</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:dashboard_financeiro' %}">
+                        <img src="{% static 'images/icons/combo-chart.png' %}" alt="Dashboard" class="icon">
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="toggleSubMenu('produtos_ecommerce')">
+                <img src="{% static 'images/icons/list.png' %}" alt="Produtos E-commerce" class="icon">
+                <span>Produtos E-commerce</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="produtos_ecommerce" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:lista_produtos_ecommerce' %}">
+                        <img src="{% static 'images/icons/list.png' %}" alt="Listar Produtos" class="icon">
+                        <span>Listar Produtos</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:selecionar_metodo_criacao' %}">
+                        <img src="{% static 'images/icons/plus-math.png' %}" alt="Adicionar Produto" class="icon">
+                        <span>Adicionar Produto</span>
+                    </a>
+                </div>
+            </div>
+            
+            {% if user.is_superuser %} {# Mantido is_superuser aqui para acesso a gerenciamento de usuários #}
+            <div class="menu-item" onclick="toggleSubMenu('usuarios')">
+                <img src="{% static 'images/icons/admin-settings-male.png' %}" alt="Usuários" class="icon">
+                <span>Usuários</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="usuarios" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:lista_usuarios' %}">
+                        <img src="{% static 'images/icons/list.png' %}" alt="Listar Usuários" class="icon">
+                        <span>Listar Usuários</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="{% url 'crm:cadastrar_usuario' %}">
+                        <img src="{% static 'images/icons/plus-math.png' %}" alt="Novo Usuário" class="icon">
+                        <span>Novo Usuário</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="menu-item">
+                <a href="{% url 'produtos:home' %}"> {# Link para a home do app 'produtos' #}
+                    <i class="fas fa-store icon"></i> {# Ícone de loja/e-commerce #}
+                    <span>Acessar E-commerce</span>
+                </a>
+            </div>
+
+            <div class="menu-item">
+                <a href="#">
+                    <img src="{% static 'images/icons/settings.png' %}" alt="Licença" class="icon">
+                    <span>Licença</span>
+                </a>
+            </div>
+
+            <div class="menu-item">
+                <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                {% csrf_token %}
+                    <button type="submit" class="no-style-button">
+                        <img src="{% static 'images/icons/logout.png' %}" alt="Sair" class="icon">
+                        <span>Sair</span>
+                    </button>
+                </form>
+            </div>
+        </div> {# Fim da sidebar #}
+    {% endif %} {# Fim da condição de acesso ao CRM #}
+
+    {# Conteúdo Principal da Página (com margem para a sidebar) #}
+    <div class="content">
+        {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="d-flex justify-content-end align-items-center p-3">
+        <span class="footer-text me-2">Desenvolvido por MDS Digital Systems</span>
+        <img src="{% static 'images/crm_logo.png' %}" alt="Logo" style="height: 40px;">
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+            if (sidebar.classList.contains('collapsed')) {
+                document.querySelectorAll('.submenu').forEach(sub => sub.style.display = 'none');
+            }
+        }
+
+        function toggleSubMenu(id) {
+            var sidebar = document.getElementById('sidebar');
+            var submenu = document.getElementById(id);
+            if (sidebar.classList.contains('collapsed')) {
+                toggleSidebar(); // Expande a sidebar primeiro se estiver recolhida
+            }
+            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        }
+    </script>
+</body>
+</html>

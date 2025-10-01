@@ -1,0 +1,262 @@
+{% extends 'solar/base.html' %}
+{% load widget_tweaks %}
+{% block title %}Cadastrar Projeto{% endblock %}
+{% block content %}
+{% if form.errors %}
+  <div class="alert alert-danger">
+    <strong>Erros encontrados:</strong>
+    <ul>
+      {% for field, errors in form.errors.items %}
+        <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+<div class="container mt-3">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Cadastrar Novo Projeto</h4>
+        </div>
+        <div class="card-body">
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <strong>Erro ao cadastrar projeto. Verifique os campos abaixo.</strong>
+                </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" novalidate id="form_projeto">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.nome.id_for_label }}" class="form-label">Nome do Projeto</label>
+                    {{ form.nome|add_class:"form-control" }}
+                    {% for error in form.nome.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.descricao.id_for_label }}" class="form-label">Descrição</label>
+                    {{ form.descricao|add_class:"form-control"|attr:"rows:2" }}
+                    {% for error in form.descricao.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.data_inicio.id_for_label }}" class="form-label">Data de Início</label>
+                        {{ form.data_inicio|add_class:"form-control" }}
+                        {% for error in form.data_inicio.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.data_fim.id_for_label }}" class="form-label">Data de Fim</label>
+                        {{ form.data_fim|add_class:"form-control" }}
+                        {% for error in form.data_fim.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                    {{ form.status|add_class:"form-control" }}
+                    {% for error in form.status.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.cliente.id_for_label }}" class="form-label">Cliente</label>
+                    {{ form.cliente|add_class:"form-control" }}
+                    {% for error in form.cliente.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Endereço da Instalação</label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.rua.id_for_label }}" class="form-label">Rua</label>
+                        {{ form.rua|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.numero.id_for_label }}" class="form-label">Número</label>
+                        {{ form.numero|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.bairro.id_for_label }}" class="form-label">Bairro</label>
+                        {{ form.bairro|add_class:"form-control" }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.cidade.id_for_label }}" class="form-label">Cidade</label>
+                        {{ form.cidade|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.estado.id_for_label }}" class="form-label">Estado</label>
+                        {{ form.estado|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.cep.id_for_label }}" class="form-label">CEP</label>
+                        {{ form.cep|add_class:"form-control" }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.potencia_kwp.id_for_label }}" class="form-label">Potência (kWp)</label>
+                        {{ form.potencia_kwp|add_class:"form-control" }}
+                        {% for error in form.potencia_kwp.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.quantidade_modulos.id_for_label }}" class="form-label">Qtd. Módulos</label>
+                        {{ form.quantidade_modulos|add_class:"form-control" }}
+                        {% for error in form.quantidade_modulos.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.inversor.id_for_label }}" class="form-label">Modelo Inversor</label>
+                        {{ form.inversor|add_class:"form-control" }}
+                        {% for error in form.inversor.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.fornecedor.id_for_label }}" class="form-label">Fornecedor</label>
+                    {{ form.fornecedor|add_class:"form-control" }}
+                    {% for error in form.fornecedor.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.valor_total.id_for_label }}" class="form-label">Valor Total (R$)</label>
+                        
+                        {{ form.valor_total|add_class:"form-control"|attr:"placeholder:R$ 0,00" }}
+
+                        {% for error in form.valor_total.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.forma_pagamento.id_for_label }}" class="form-label">Forma de Pagamento</label>
+                        
+                        {{ form.forma_pagamento|add_class:"form-control" }}
+                        
+                        {% for error in form.forma_pagamento.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <hr class="my-4">
+                <h5>Documentos do Projeto</h5>
+                <p class="text-muted">Os documentos não são obrigatórios, mas podem ser anexados agora se disponíveis.</p>
+
+                <div class="row mb-3">
+                    {% for doc_label in documentos_labels %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ doc_label }}</label>
+                        <input type="file" name="documento_arquivo_{{ forloop.counter }}" class="form-control mb-1">
+                        <div class="form-check">
+                            <input type="checkbox" name="documento_visivel_{{ forloop.counter }}" class="form-check-input" id="visivel_{{ forloop.counter }}">
+                            <label class="form-check-label" for="visivel_{{ forloop.counter }}">
+                                Visível ao cliente
+                            </label>
+                        </div>
+                        <input type="hidden" name="documento_nome_{{ forloop.counter }}" value="{{ doc_label }}">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Cadastrar Projeto</button>
+                <a href="{% url 'crm:lista_projetos' %}" class="btn btn-secondary ms-2">Voltar</a>
+            </form>
+        </div>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function aplicarMascaraData(input) {
+        input.addEventListener('input', function () {
+            let valor = input.value.replace(/\D/g, '').slice(0, 8);
+            if (valor.length >= 5) {
+                input.value = valor.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
+            } else if (valor.length >= 3) {
+                input.value = valor.replace(/(\d{2})(\d{1,2})/, '$1/$2');
+            } else {
+                input.value = valor;
+            }
+        });
+    }
+
+     function aplicarMascaraReais(input) {
+        if (!input) return; // Adiciona uma segurança caso o campo não exista
+
+        input.addEventListener('input', function (e) {
+            let valor = e.target.value.replace(/\D/g, '');
+            
+            if (valor === "") {
+                e.target.value = '';
+                return;
+            }
+
+            // Garante que temos pelo menos 3 dígitos para os centavos
+            valor = (parseInt(valor, 10) || 0).toString().padStart(3, '0');
+            
+            let reais = valor.slice(0, -2);
+            let centavos = valor.slice(-2);
+            
+            // Adiciona os pontos de milhar
+            reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            
+            e.target.value = `R$ ${reais},${centavos}`;
+        });
+
+        input.addEventListener('focus', function (e) {
+            if (!e.target.value) {
+                e.target.value = 'R$ 0,00';
+            }
+        });
+
+        input.addEventListener('click', function (e) {
+            let len = e.target.value.length;
+            e.target.setSelectionRange(len, len);
+        });
+    }
+
+    // Selecionando o campo de valor com o ID dinâmico do Django
+    const campoValorTotal = document.getElementById('{{ form.valor_total.id_for_label }}');
+
+    // Aplicando a máscara
+    aplicarMascaraReais(campoValorTotal);
+});
+
+
+    const campoDataInicio = document.getElementById('id_data_inicio');
+    const campoDataFim = document.getElementById('id_data_fim');
+    const campoValorTotal = document.getElementById('id_valor_total');
+
+    if (campoDataInicio) {
+        campoDataInicio.placeholder = 'dd/mm/aaaa';
+        aplicarMascaraData(campoDataInicio);
+    }
+    if (campoDataFim) {
+        campoDataFim.placeholder = 'dd/mm/aaaa';
+        aplicarMascaraData(campoDataFim);
+    }
+    if (campoValorTotal) {
+        campoValorTotal.placeholder = 'R$ 0,00';
+        aplicarMascaraReais(campoValorTotal);
+    }
+});
+</script>
+{% endblock %}

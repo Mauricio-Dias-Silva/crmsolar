@@ -1,0 +1,14 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Pagamento Cancelado{% endblock %}
+
+{% block content %}
+<div class="container my-5 text-center">
+    <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+    <h1 class="display-4 mt-3">Pagamento Cancelado</h1>
+    <p class="lead">Seu pagamento foi cancelado. Se desejar, você pode tentar novamente.</p>
+    <a href="{% url 'produtos:ver_carrinho' %}" class="btn btn-primary mt-3">Voltar para o Carrinho</a>
+    <a href="{% url 'produtos:home' %}" class="btn btn-outline-secondary mt-3 ms-2">Voltar para a Página Inicial</a>
+</div>
+{% endblock %}

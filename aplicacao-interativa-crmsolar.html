@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Interativo do CRM Solar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+        .sticky-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(0);
+        }
+        .sticky-sidebar.closed {
+            transform: translateX(-100%);
+        }
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+            margin-left: 256px;
+        }
+        @media (max-width: 1024px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <aside id="sidebar" class="sticky-sidebar w-64 bg-gray-900 text-white p-6 shadow-2xl z-50 lg:block hidden">
+        <h1 class="text-3xl font-bold mb-8 text-yellow-400">CRM Solar</h1>
+        <nav class="flex flex-col space-y-4">
+            <a href="#overview" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-800 p-3 rounded-lg transition-colors duration-200">
+                <i class="fas fa-info-circle w-5"></i>
+                <span class="font-medium">Visão Geral</span>
+            </a>
+            <a href="#flows" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-800 p-3 rounded-lg transition-colors duration-200">
+                <i class="fas fa-route w-5"></i>
+                <span class="font-medium">Fluxos de Acesso</span>
+            </a>
+            <a href="#guide" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-800 p-3 rounded-lg transition-colors duration-200">
+                <i class="fas fa-rocket w-5"></i>
+                <span class="font-medium">Guia Rápido</span>
+            </a>
+            <a href="#permissions" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-800 p-3 rounded-lg transition-colors duration-200">
+                <i class="fas fa-sitemap w-5"></i>
+                <span class="font-medium">Permissões Detalhadas</span>
+            </a>
+            <a href="#about" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-800 p-3 rounded-lg transition-colors duration-200">
+                <i class="fas fa-solar-panel w-5"></i>
+                <span class="font-medium">Sobre o Projeto</span>
+            </a>
+        </nav>
+    </aside>
+    <div id="main-container" class="main-content min-h-screen">
+        <button id="sidebar-toggle" class="fixed top-4 left-4 p-2 bg-gray-900 text-white rounded-lg shadow-lg z-50 lg:hidden block">
+            <i class="fas fa-bars"></i>
+        </button>
+        <main class="container mx-auto px-4 py-8 lg:py-12">
+            <section id="overview" class="mb-16">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border-t-4 border-yellow-400">
+                    <h2 class="text-4xl font-extrabold text-gray-900 mb-6 border-b pb-2">Visão Geral e Perfis de Acesso</h2>
+                    <p class="text-gray-600 mb-6 text-lg">
+                        O sistema CRM Solar é uma plataforma unificada que diferencia o acesso e as funcionalidades com base no perfil de cada usuário. Esta seção apresenta os perfis existentes e o que cada um pode fazer, servindo como uma introdução à arquitetura do sistema.
+                    </p>
+                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-8">
+                        <button class="profile-btn w-full md:w-1/4 px-6 py-3 bg-yellow-400 text-gray-900 font-bold rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200 active-profile" data-profile="cliente-loja">Cliente da Loja</button>
+                        <button class="profile-btn w-full md:w-1/4 px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200" data-profile="cliente-crm">Cliente do CRM</button>
+                        <button class="profile-btn w-full md:w-1/4 px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200" data-profile="staff-crm">Staff do CRM</button>
+                        <button class="profile-btn w-full md:w-1/4 px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200" data-profile="administrador">Administrador</button>
+                    </div>
+                    <div id="profile-content" class="bg-gray-100 p-6 rounded-xl shadow-inner transition-opacity duration-300">
+                        <h3 class="text-2xl font-bold mb-4">Cliente da Loja</h3>
+                        <p class="text-gray-700 mb-2"><strong>Flags Chave no Sistema:</strong> `is_customer=True`</p>
+                        <p class="text-gray-700"><strong>Acesso a:</strong> Apenas a loja de e-commerce. Este perfil pode comprar produtos, mas não tem acesso aos projetos de energia solar ou à dashboard de acompanhamento de obras.</p>
+                    </div>
+                </div>
+            </section>
+            <section id="flows" class="mb-16">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border-t-4 border-yellow-400">
+                    <h2 class="text-4xl font-extrabold text-gray-900 mb-6 border-b pb-2">Fluxos de Acesso e Navegação</h2>
+                    <p class="text-gray-600 mb-6 text-lg">
+                        A experiência de navegação do usuário é adaptada dinamicamente com base em seu estado de autenticação e perfil. Esta seção detalha como a barra de navegação superior muda para guiar cada tipo de usuário para a área correta do sistema.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="bg-gray-100 p-6 rounded-xl shadow-sm">
+                            <h3 class="text-2xl font-bold mb-2 cursor-pointer toggle-content">Cenário 1: Usuário Não Autenticado <i class="fas fa-chevron-down ml-2"></i></h3>
+                            <div class="overflow-hidden max-h-0 transition-all duration-500 ease-in-out text-gray-700">
+                                <ul class="list-disc list-inside mt-4 space-y-1">
+                                    <li><strong>Home:</strong> Leva para a página principal da loja (`/`).</li>
+                                    <li><strong>Acompanhe sua Obra:</strong> Leva para o fluxo de login do cliente (`/crm/cliente/dashboard/`), que o redireciona para a página de `Login / Cadastre-se`.</li>
+                                    <li><strong>Login / Cadastre-se:</strong> Leva para a página de autenticação da loja.</li>
+                                </ul>
+                                <p class="mt-4">O usuário pode navegar pela loja, mas para comprar ou ver o status de uma obra, ele precisa se autenticar.</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-100 p-6 rounded-xl shadow-sm">
+                            <h3 class="text-2xl font-bold mb-2 cursor-pointer toggle-content">Cenário 2: Usuário Autenticado como Cliente <i class="fas fa-chevron-down ml-2"></i></h3>
+                            <div class="overflow-hidden max-h-0 transition-all duration-500 ease-in-out text-gray-700">
+                                <ul class="list-disc list-inside mt-4 space-y-1">
+                                    <li><strong>Home:</strong> Leva para a página principal da loja (`/`).</li>
+                                    <li><strong>Meu Painel:</strong> Leva para a dashboard do cliente (`/crm/cliente/dashboard/`).</li>
+                                </ul>
+                                <p class="mt-4">O "Meu Painel" é a central para o cliente. Se ele tiver um projeto de energia solar, é lá que ele encontrará os detalhes. Se não tiver, a página exibirá uma mensagem indicando isso.</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-100 p-6 rounded-xl shadow-sm">
+                            <h3 class="text-2xl font-bold mb-2 cursor-pointer toggle-content">Cenário 3: Usuário Autenticado como Staff/Admin <i class="fas fa-chevron-down ml-2"></i></h3>
+                            <div class="overflow-hidden max-h-0 transition-all duration-500 ease-in-out text-gray-700">
+                                <ul class="list-disc list-inside mt-4 space-y-1">
+                                    <li><strong>Home:</strong> Leva para a página principal da loja (`/`).</li>
+                                    <li><strong>Dashboard CRM:</strong> Leva para a área administrativa do CRM (`/crm/`).</li>
+                                </ul>
+                                <p class="mt-4">Este usuário tem acesso à gestão interna. O link "Dashboard CRM" é a porta de entrada para a sidebar e todas as funcionalidades administrativas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="permissions" class="mb-16">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border-t-4 border-yellow-400">
+                    <h2 class="text-4xl font-extrabold text-gray-900 mb-6 border-b pb-2">Menus do CRM por Grupo</h2>
+                    <p class="text-gray-600 mb-6 text-lg">
+                        A sidebar de navegação do CRM é a principal ferramenta de gestão. Clique em um grupo de trabalho para visualizar quais menus e funcionalidades são visíveis para os usuários que pertencem a ele, ilustrando a granularidade das permissões do sistema.
+                    </p>
+                    <div class="flex flex-col md:flex-row justify-between mb-8 space-y-4 md:space-y-0">
+                        <div class="flex flex-wrap md:flex-nowrap space-x-2">
+                            <button class="group-filter-btn px-4 py-2 text-sm rounded-full bg-blue-500 text-white shadow-md hover:bg-blue-600 transition-colors duration-200" data-group="Todos">Todos</button>
+                            <button class="group-filter-btn px-4 py-2 text-sm rounded-full bg-gray-200 text-gray-700 shadow-md hover:bg-gray-300 transition-colors duration-200" data-group="Vendas">Vendas</button>
+                            <button class="group-filter-btn px-4 py-2 text-sm rounded-full bg-gray-200 text-gray-700 shadow-md hover:bg-gray-300 transition-colors duration-200" data-group="Instalação">Instalação</button>
+                            <button class="group-filter-btn px-4 py-2 text-sm rounded-full bg-gray-200 text-gray-700 shadow-md hover:bg-gray-300 transition-colors duration-200" data-group="Suporte">Suporte</button>
+                            <button class="group-filter-btn px-4 py-2 text-sm rounded-full bg-gray-200 text-gray-700 shadow-md hover:bg-gray-300 transition-colors duration-200" data-group="Marketing">Marketing</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div id="sidebar-container" class="p-4 bg-gray-100 rounded-xl shadow-inner overflow-y-auto" style="height: 450px;">
+                            <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-800">Menus do CRM</h3>
+                            <nav class="flex flex-col space-y-2 text-gray-700">
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Vendas,Instalação,Suporte,Marketing,Administração">
+                                    <i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Vendas,Suporte,Administração">
+                                    <i class="fas fa-users w-5"></i><span>Clientes</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Vendas,Instalação,Suporte,Administração">
+                                    <i class="fas fa-tasks w-5"></i><span>Projetos</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Vendas,Instalação,Suporte,Administração">
+                                    <i class="fas fa-boxes w-5"></i><span>Materiais</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Vendas,Administração">
+                                    <i class="fas fa-truck w-5"></i><span>Fornecedores</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Vendas,Administração">
+                                    <i class="fas fa-money-bill-wave w-5"></i><span>Financeiro</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Vendas,Marketing,Administração">
+                                    <i class="fas fa-store w-5"></i><span>Produtos E-commerce</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Administração">
+                                    <i class="fas fa-user-cog w-5"></i><span>Usuários</span>
+                                </a>
+                                <a href="#" class="sidebar-item p-3 rounded-lg flex items-center space-x-3 transition-colors duration-200" data-menus="Administração">
+                                    <i class="fas fa-cogs w-5"></i><span>Configurações</span>
+                                </a>
+                            </nav>
+                        </div>
+                        <div id="permissions-table-container" class="lg:col-span-2 overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 rounded-xl overflow-hidden shadow-lg">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-200">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">Funcionalidade</th>
+                                        <th scope="col" class="px-6 py-3">Permissão</th>
+                                        <th scope="col" class="px-6 py-3">Grupos com Acesso</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="permissions-table-body">
+                                    <!-- Table rows will be populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="about" class="mb-16">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border-t-4 border-yellow-400">
+                    <h2 class="text-4xl font-extrabold text-gray-900 mb-6 border-b pb-2">Sobre o Projeto CRM Solar</h2>
+                    <p class="text-gray-600 mb-4 text-lg">
+                        O CRM Solar é uma plataforma completa de gestão de projetos de energia solar, desenvolvida para unificar a gestão interna do negócio com a experiência de compra do cliente na loja virtual. A aplicação permite o cadastro e acompanhamento de projetos, a gestão de inventário de materiais, o controle financeiro, e um painel de acesso exclusivo para clientes acompanharem o progresso de suas obras.
+                    </p>
+                    <p class="text-gray-600 text-lg">
+                        A plataforma é construída sobre o framework Django com uma arquitetura de microserviços em Docker, usando o MySQL como banco de dados e Nginx como proxy reverso. Essa abordagem garante escalabilidade, robustez e a flexibilidade necessária para um negócio em crescimento.
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+    const data = {
+        profiles: {
+            'cliente-loja': {
+                title: 'Cliente da Loja',
+                flags: '`is_customer=True`',
+                access: 'Apenas a loja de e-commerce. Este perfil pode comprar produtos, mas não tem acesso aos projetos de energia solar ou à dashboard de acompanhamento de obras.'
+            },
+            'cliente-crm': {
+                title: 'Cliente do CRM',
+                flags: '`is_customer=True`, com perfil `Cliente` e `Projetos` associados.',
+                access: 'Apenas a sua dashboard de cliente (com projetos, documentos e financeiro).'
+            },
+            'staff-crm': {
+                title: 'Usuário Staff do CRM',
+                flags: '`is_crm_staff=True`',
+                access: 'Dashboard do CRM. Acesso granular a funcionalidades (ex: só Clientes e Projetos).'
+            },
+            'administrador': {
+                title: 'Administrador',
+                flags: '`is_superuser=True`',
+                access: 'Acesso total a todas as funcionalidades do sistema e ao Django Admin.'
+            }
+        },
+        flows: [
+            {
+                title: 'Cenário 1: Usuário Não Autenticado',
+                details: [
+                    '<strong>Home:</strong> Leva para a página principal da loja (`/`).',
+                    '<strong>Acompanhe sua Obra:</strong> Leva para o fluxo de login do cliente (`/crm/cliente/dashboard/`), que o redireciona para a página de `Login / Cadastre-se`.',
+                    '<strong>Login / Cadastre-se:</strong> Leva para a página de autenticação da loja.'
+                ],
+                text: 'O usuário pode navegar pela loja, mas para comprar ou ver o status de uma obra, ele precisa se autenticar.'
+            },
+            {
+                title: 'Cenário 2: Usuário Autenticado como Cliente',
+                details: [
+                    '<strong>Home:</strong> Leva para a página principal da loja (`/`).',
+                    '<strong>Meu Painel:</strong> Leva para a dashboard do cliente (`/crm/cliente/dashboard/`).'
+                ],
+                text: 'O "Meu Painel" é a central para o cliente. Se ele tiver um projeto de energia solar, é lá que ele encontrará os detalhes. Se não tiver, a página exibirá uma mensagem indicando isso.'
+            },
+            {
+                title: 'Cenário 3: Usuário Autenticado como Staff/Admin',
+                details: [
+                    '<strong>Home:</strong> Leva para a página principal da loja (`/`).',
+                    '<strong>Dashboard CRM:</strong> Leva para a área administrativa do CRM (`/crm/`).'
+                ],
+                text: 'Este usuário tem acesso à gestão interna. O link "Dashboard CRM" é a porta de entrada para a sidebar e todas as funcionalidades administrativas.'
+            }
+        ],
+        permissions: [
+            {
+                funcionalidade: 'Gerenciar Clientes',
+                permissao: '`solar.view_cliente`',
+                grupos: 'Vendas, Suporte, Administração'
+            },
+            {
+                funcionalidade: 'Adicionar Clientes',
+                permissao: '`solar.add_cliente`',
+                grupos: 'Vendas, Administração'
+            },
+            {
+                funcionalidade: 'Listar Projetos',
+                permissao: '`solar.view_projeto`',
+                grupos: 'Vendas, Instalação, Suporte, Administração'
+            },
+            {
+                funcionalidade: 'Adicionar Projetos',
+                permissao: '`solar.add_projeto`',
+                grupos: 'Vendas, Administração'
+            },
+            {
+                funcionalidade: 'Gerenciar Materiais',
+                permissao: '`solar.view_material`',
+                grupos: 'Vendas, Instalação, Suporte, Administração'
+            },
+            {
+                funcionalidade: 'Adicionar Materiais',
+                permissao: '`solar.add_material`',
+                grupos: 'Instalação, Administração'
+            },
+            {
+                funcionalidade: 'Gerenciar Fornecedores',
+                permissao: '`solar.view_fornecedor`',
+                grupos: 'Vendas, Administração'
+            },
+            {
+                funcionalidade: 'Adicionar Fornecedores',
+                permissao: '`solar.add_fornecedor`',
+                grupos: 'Vendas, Administração'
+            },
+            {
+                funcionalidade: 'Gerenciar Lançamentos Financeiros',
+                permissao: '`solar.view_lancamentofinanceiro`',
+                grupos: 'Vendas, Administração'
+            },
+            {
+                funcionalidade: 'Adicionar Lançamentos Financeiros',
+                permissao: '`solar.add_lancamentofinanceiro`',
+                grupos: 'Vendas, Administração'
+            },
+            {
+                funcionalidade: 'Gerenciar Produtos E-commerce',
+                permissao: '`produtos.view_produto`',
+                grupos: 'Vendas, Marketing, Administração'
+            },
+            {
+                funcionalidade: 'Adicionar Produtos E-commerce',
+                permissao: '`produtos.add_produto`',
+                grupos: 'Marketing, Administração'
+            },
+            {
+                funcionalidade: 'Gerenciar Usuários',
+                permissao: '`solar.view_usuario`',
+                grupos: 'Administração'
+            }
+        ]
+    };
+
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    const groupButtons = document.querySelectorAll('.group-filter-btn');
+    const permissionsTableBody = document.getElementById('permissions-table-body');
+    const profileButtons = document.querySelectorAll('.profile-btn');
+    const profileContent = document.getElementById('profile-content');
+    const toggleButtons = document.querySelectorAll('.toggle-content');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const mainContainer = document.getElementById('main-container');
+
+    const renderTable = (group) => {
+        permissionsTableBody.innerHTML = '';
+        data.permissions.forEach(item => {
+            const groups = item.grupos.split(', ');
+            if (group === 'Todos' || groups.includes(group)) {
+                const row = document.createElement('tr');
+                row.className = 'bg-white border-b hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4">${item.funcionalidade}</td>
+                    <td class="px-6 py-4">${item.permissao}</td>
+                    <td class="px-6 py-4">${item.grupos}</td>
+                `;
+                permissionsTableBody.appendChild(row);
+            }
+        });
+    };
+
+    const highlightSidebar = (group) => {
+        sidebarItems.forEach(item => {
+            const itemMenus = item.dataset.menus.split(',');
+            if (group === 'Todos' || itemMenus.includes(group)) {
+                item.classList.remove('text-gray-400');
+                item.classList.add('bg-blue-50', 'text-gray-900', 'font-bold');
+            } else {
+                item.classList.add('text-gray-400');
+                item.classList.remove('bg-blue-50', 'text-gray-900', 'font-bold');
+            }
+        });
+    };
+
+    profileButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            profileButtons.forEach(btn => {
+                btn.classList.remove('bg-yellow-400', 'text-gray-900', 'active-profile');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            button.classList.add('bg-yellow-400', 'text-gray-900', 'active-profile');
+            const profile = data.profiles[button.dataset.profile];
+            profileContent.innerHTML = `
+                <h3 class="text-2xl font-bold mb-4">${profile.title}</h3>
+                <p class="text-gray-700 mb-2"><strong>Flags Chave no Sistema:</strong> ${profile.flags}</p>
+                <p class="text-gray-700"><strong>Acesso a:</strong> ${profile.access}</p>
+            `;
+        });
+    });
+
+    groupButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            groupButtons.forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            button.classList.remove('bg-gray-200', 'text-gray-700');
+            button.classList.add('bg-blue-500', 'text-white');
+            const group = button.dataset.group;
+            renderTable(group);
+            highlightSidebar(group);
+        });
+    });
+
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            if (content.classList.contains('max-h-0')) {
+                content.classList.remove('max-h-0');
+                content.classList.add('max-h-96');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.classList.remove('max-h-96');
+                content.classList.add('max-h-0');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+    });
+
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('closed');
+        if (sidebar.classList.contains('closed')) {
+            mainContainer.style.marginLeft = '0';
+        } else {
+            mainContainer.style.marginLeft = '256px';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTable('Todos');
+        highlightSidebar('Todos');
+    });
+    </script>
+</body>
+</html>
+.; 

@@ -1,0 +1,55 @@
+{% extends 'produtos/base.html' %}
+{% load static %} {# Adicione esta linha se não estiver no base.html e precisar de arquivos estáticos #}
+
+{% block title %}Contato{% endblock %}
+
+{% block content %}
+<div class="container my-5"> {# Container Bootstrap para centralizar e dar margem #}
+    <div class="row justify-content-center"> {# Centraliza o conteúdo na linha #}
+        <div class="col-md-8 col-lg-6"> {# Coluna para o formulário, ocupando 8 colunas em telas médias e 6 em grandes #}
+            <div class="card shadow-lg p-4"> {# Card com sombra e padding interno #}
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">Entre em Contato Conosco</h1>
+                    <p class="text-center text-muted mb-4">
+                        Tem alguma dúvida, sugestão ou precisa de ajuda? Preencha o formulário abaixo e entraremos em contato o mais breve possível.
+                    </p>
+
+                    <form method="post" class="needs-validation" novalidate> {# needs-validation para validação Bootstrap #}
+                        {% csrf_token %}
+                        
+                        <div class="mb-3"> {# Margem inferior para o grupo do formulário #}
+                            <label for="name" class="form-label">Nome Completo:</label>
+                            <input type="text" id="name" name="name" class="form-control" required placeholder="Seu nome completo">
+                            <div class="invalid-feedback">
+                                Por favor, insira seu nome.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Endereço de Email:</label>
+                            <input type="email" id="email" name="email" class="form-control" required placeholder="seu.email@exemplo.com">
+                            <div class="invalid-feedback">
+                                Por favor, insira um e-mail válido.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4"> {# Um pouco mais de margem para a textarea #}
+                            <label for="message" class="form-label">Mensagem:</label>
+                            <textarea id="message" name="message" class="form-control" rows="5" required placeholder="Digite sua mensagem aqui..."></textarea>
+                            <div class="invalid-feedback">
+                                Por favor, digite sua mensagem.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2"> {# d-grid para o botão ocupar a largura total #}
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send-fill"></i> Enviar Mensagem
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

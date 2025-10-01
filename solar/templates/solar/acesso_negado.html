@@ -1,0 +1,14 @@
+{% extends 'solar/base.html' %}
+{% block title %}Acesso Negado{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2 class="text-danger mb-3">Acesso Negado</h2>
+    <p>Você não possui permissão para acessar esta área.</p>
+    <div class="mt-4">
+        <a href="javascript:history.back()" class="btn btn-secondary me-2">Voltar</a>
+        <a href="{% url 'crm:home' %}" class="btn btn-primary">Ir para Home</a>
+    </div>
+    <p class="mt-3 text-muted">Se precisar de acesso, contate o administrador.</p>
+</div>
+{% endblock %}

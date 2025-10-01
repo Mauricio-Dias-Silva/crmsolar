@@ -1,0 +1,21 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Pagamento Pendente{% endblock %}
+
+{% block content %}
+<div class="container my-5 text-center">
+    <div class="card p-5 shadow-lg border-yellow-500 border-t-4">
+        <div class="mb-4">
+            <i class="fas fa-exclamation-triangle text-yellow-500 text-6xl"></i>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-yellow-700 mb-2">Seu Pagamento Está Pendente</h1>
+        <p class="text-gray-600 text-lg md:text-xl">O seu pagamento está sendo processado. Você receberá uma notificação assim que for aprovado.</p>
+        <div class="mt-8">
+            <a href="{% url 'produtos:home' %}" class="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                Voltar para a Loja
+            </a>
+        </div>
+    </div>
+</div>
+{% endcomment %}

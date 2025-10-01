@@ -1,0 +1,200 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Meu Carrinho{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="text-center mb-5 display-5 fw-bold text-dark">Meu Carrinho</h2>
+
+    {% if itens_carrinho %}
+        <form method="POST" action="{% url 'mp_integracao:processar_pagamento_selecionado' %}" id="form-pagamento">
+            {% csrf_token %}
+
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="select-all" title="Selecionar todos"></th>
+                        <th>Produto</th>
+                        <th>Preço Unitário</th>
+                        <th>Quantidade</th>
+                        <th>Subtotal</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens_carrinho %}
+                    <tr data-produto-id="{{ item.produto.id }}">
+                        <td>
+                            <input type="checkbox" name="itens_selecionados" value="{{ item.produto.id }}" class="item-checkbox" checked>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if item.produto.images %}
+                                    {% with first_image=item.produto.images.first %}
+                                        {% if first_image %}
+                                            <img src="{{ first_image.image.url }}" alt="{{ item.produto.name }}" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                                <a href="{% url 'produtos:produto_detalhe' item.produto.id %}" class="text-decoration-none text-dark fw-bold">{{ item.produto.name }}</a>
+                            </div>
+                        </td>
+                        <td>R$ {{ item.preco_unitario|floatformat:2 }}</td>
+                        <td>
+                            <div class="input-group input-group-sm" style="max-width: 140px;">
+                                <button type="button" class="btn btn-outline-secondary btn-sm btn-decrement">-</button>
+                                <input type="text" class="form-control text-center quantidade" value="{{ item.quantidade }}" min="1">
+                                <button type="button" class="btn btn-outline-secondary btn-sm btn-increment">+</button>
+                            </div>
+                        </td>
+                        <td class="subtotal">R$ {{ item.subtotal|floatformat:2 }}</td>
+                        <td>
+                            <form action="{% url 'produtos:remover_do_carrinho' item.produto.id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2" class="text-end">Total do Carrinho:</th>
+                        <th>{{ total_itens }}</th>
+                        <th colspan="2" id="total-carrinho">R$ {{ total_carrinho|floatformat:2 }}</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th colspan="2" class="text-end align-middle">Frete:</th>
+                        <td></td>
+                        <th colspan="2" class="align-middle">
+                            {% if frete %}
+                                R$ {{ frete|floatformat:2 }}
+                            {% else %}
+                                <form method="POST" action="{% url 'produtos:calcular_frete_carrinho' %}" class="d-flex flex-wrap gap-2 align-items-center">
+                                    {% csrf_token %}
+                                    <input type="text" name="cep" placeholder="Digite seu CEP" class="form-control" style="max-width: 180px;" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Calcular</button>
+                                </form>
+                            {% endif %}
+                        </th>
+                        <td></td>
+                    </tr>
+                    <tr class="table-success">
+                        <th colspan="2" class="text-end">Total com Frete:</th>
+                        <td></td>
+                        <th colspan="2" id="total-com-frete">R$ {{ total_com_frete|floatformat:2 }}</th>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            {% if not request.user.is_authenticated %}
+                <div class="alert alert-warning text-center mt-4">
+                    Para finalizar a compra, faça <a href="{% url 'login_ecommerce' %}">login</a> ou <a href="{% url 'produtos:register' %}">crie uma conta</a>.
+                </div>
+            {% else %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{% url 'produtos:home' %}" class="btn btn-secondary me-md-2">Continuar Comprando</a>
+
+                    <!-- Finalizar Compra -->
+                    <div class="border p-3 rounded bg-light w-100" style="max-width: 400px;">
+                        <h4 class="mb-3">Finalizar Compra</h4>
+
+                        <div class="mb-3">
+                            <label><strong>Itens Selecionados:</strong></label>
+                            <p id="total-selecionados" class="fw-bold mb-0">Calculando...</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Meio de Pagamento:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="metodo_pagamento" id="mercadopago" value="mercadopago" checked>
+                                <label class="form-check-label" for="mercadopago">Mercado Pago</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">Pagar com Mercado Pago</button>
+                    </div>
+                </div>
+            {% endif %}
+        </form>
+
+        <!-- Script atualizado -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const checkboxes = document.querySelectorAll('.item-checkbox');
+                const selectAll = document.getElementById('select-all');
+                const totalSelecionadosElem = document.getElementById('total-selecionados');
+                const totalCarrinhoElem = document.getElementById('total-carrinho');
+                const totalComFreteElem = document.getElementById('total-com-frete');
+                const valorFrete = parseFloat('{{ frete|default:0|floatformat:2 }}'.replace(',', '.'));
+                const totalItens = {{ itens_carrinho|length }};
+
+                function atualizarTotais() {
+                    let totalSelecionado = 0;
+                    let itensSelecionados = 0;
+
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) {
+                            const row = cb.closest('tr');
+                            const subtotalCell = row.querySelector('.subtotal').textContent.replace('R$', '').trim().replace('.', '').replace(',', '.');
+                            totalSelecionado += parseFloat(subtotalCell);
+                            itensSelecionados += 1;
+                        }
+                    });
+
+                    const freteProporcional = itensSelecionados > 0 ? (valorFrete / totalItens) * itensSelecionados : 0;
+                    const totalFinal = totalSelecionado + freteProporcional;
+
+                    totalSelecionadosElem.textContent = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+                    totalCarrinhoElem.textContent = `R$ ${totalSelecionado.toFixed(2).replace('.', ',')}`;
+                    totalComFreteElem.textContent = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+                }
+
+                checkboxes.forEach(cb => cb.addEventListener('change', atualizarTotais));
+
+                selectAll.addEventListener('change', function () {
+                    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                    atualizarTotais();
+                });
+
+                // Botões de quantidade
+                document.querySelectorAll('.btn-increment').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const input = this.parentElement.querySelector('.quantidade');
+                        input.value = parseInt(input.value) + 1;
+                        atualizarSubtotal(this.closest('tr'));
+                    });
+                });
+
+                document.querySelectorAll('.btn-decrement').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const input = this.parentElement.querySelector('.quantidade');
+                        if (parseInt(input.value) > 1) {
+                            input.value = parseInt(input.value) - 1;
+                            atualizarSubtotal(this.closest('tr'));
+                        }
+                    });
+                });
+
+                function atualizarSubtotal(row) {
+                    const precoUnitario = parseFloat(row.cells[2].textContent.replace('R$', '').trim().replace('.', '').replace(',', '.'));
+                    const quantidade = parseInt(row.querySelector('.quantidade').value);
+                    const subtotal = precoUnitario * quantidade;
+                    row.querySelector('.subtotal').textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+                    atualizarTotais();
+                }
+
+                atualizarTotais();
+            });
+        </script>
+
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            Seu carrinho está vazio. <a href="{% url 'produtos:home' %}" class="alert-link">Comece a adicionar produtos!</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

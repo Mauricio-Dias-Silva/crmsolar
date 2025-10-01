@@ -1,0 +1,83 @@
+{% extends 'solar/base.html' %}
+{% block title %}Dashboard de Projetos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Dashboard de Projetos</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <canvas id="statusChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="clientesChart"></canvas>
+        </div>
+    </div>
+
+    <div class="row text-center mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3">
+                <h4>Total de Projetos</h4>
+                <h2>{{ total_projetos }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3">
+                <h4>Em Andamento</h4>
+                <h2>{{ em_andamento }}</h2>
+            </div>
+        </div>
+        <!-- Outros contadores aqui -->
+    </div>
+
+    <h4 class="mt-4">Últimos Projetos</h4>
+    <table class="table table-striped mt-2">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Cliente</th>
+                <th>Status</th>
+                <th>Data de Início</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for projeto in ultimos_projetos %}
+            <tr>
+                <td>{{ projeto.nome }}</td>
+                <td>{{ projeto.cliente.nome }}</td>
+                <td>{{ projeto.status }}</td>
+                <td>{{ projeto.data_inicio }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const statusChart = new Chart(document.getElementById('statusChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ status_labels|safe }},
+            datasets: [{
+                label: 'Projetos por Status',
+                data: {{ status_data|safe }},
+                backgroundColor: ['#007bff', '#ffc107', '#28a745', '#dc3545'],
+            }]
+        }
+    });
+
+    const clientesChart = new Chart(document.getElementById('clientesChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ cliente_labels|safe }},
+            datasets: [{
+                label: 'Projetos por Cliente',
+                data: {{ cliente_data|safe }},
+                backgroundColor: ['#17a2b8', '#6f42c1', '#fd7e14', '#20c997'],
+            }]
+        }
+    });
+</script>
+{% endblock %}

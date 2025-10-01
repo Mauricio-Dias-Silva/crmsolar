@@ -1,0 +1,98 @@
+{% extends 'solar/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Detalhes do Projeto: {{ projeto.nome }}</h2>
+            <div>
+                <a href="{% url 'crm:editar_projeto' projeto.id %}" class="btn btn-warning btn-sm me-2">Editar Projeto</a>
+                <a href="{% url 'crm:excluir_projeto' projeto.id %}" class="btn btn-danger btn-sm"
+                   onclick="return confirm('Tem certeza que deseja excluir este projeto?');">Excluir Projeto</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Cliente:</dt>
+                <dd class="col-sm-9">{{ projeto.cliente }}</dd>
+
+                <dt class="col-sm-3">Endereço da Instalação:</dt>
+                <dd class="col-sm-9">
+                    {{ projeto.rua }},
+                    nº {{ projeto.numero }},
+                    {{ projeto.bairro }}<br>
+                    {{ projeto.cidade }} - {{ projeto.estado }},
+                    CEP {{ projeto.cep }}
+                </dd>
+
+                <dt class="col-sm-3">Data de Início:</dt>
+                <dd class="col-sm-9">{{ projeto.data_inicio|date:"d/m/Y" }}</dd>
+
+                <dt class="col-sm-3">Data de Conclusão:</dt>
+                <dd class="col-sm-9">{{ projeto.data_fim|date:"d/m/Y" }}</dd>
+
+                <dt class="col-sm-3">Potência Instalada:</dt>
+                <dd class="col-sm-9">{{ projeto.potencia_kwp }} kWp</dd>
+
+                <dt class="col-sm-3">Quantidade de Módulos:</dt>
+                <dd class="col-sm-9">{{ projeto.quantidade_modulos }}</dd>
+
+                <dt class="col-sm-3">Inversor:</dt>
+                <dd class="col-sm-9">{{ projeto.inversor }}</dd>
+
+                <dt class="col-sm-3">Fornecedor:</dt>
+                <dd class="col-sm-9">{{ projeto.fornecedor }}</dd>
+
+                <dt class="col-sm-3">Valor Total:</dt>
+                <dd class="col-sm-9">R$ {{ projeto.valor_total }}</dd>
+
+                <dt class="col-sm-3">Forma de Pagamento:</dt>
+                <dd class="col-sm-9">{{ projeto.forma_pagamento }}</dd>
+
+                <dt class="col-sm-3">Status:</dt>
+                <dd class="col-sm-9">
+                    <span class="badge bg-success">{{ projeto.status }}</span>
+                </dd>
+            </dl>
+
+            <hr>
+            <h4>Etapas de Implantação</h4>
+            <ul class="list-group mb-3">
+                {% for etapa in projeto.etapas.all %}
+                <li class="list-group-item">
+                    <strong>{{ etapa.nome }}</strong> <br>
+                    <span class="text-muted">{{ etapa.descricao }}</span><br>
+                    <small>Início: {{ etapa.data_inicio|date:"d/m/Y" }} | Fim: {{ etapa.data_fim|date:"d/m/Y" }}</small>
+                </li>
+                {% empty %}
+                <li class="list-group-item">Nenhuma etapa cadastrada.</li>
+                {% endfor %}
+            </ul>
+            <a href="{% url 'crm:cadastrar_etapa' projeto.id %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Cadastrar Nova Etapa
+            </a>
+
+            <hr>
+            <h4>Documentos do Projeto</h4>
+            <ul class="list-group mb-3">
+                {% for doc in projeto.documentos.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ doc.arquivo.url }}" download>{{ doc.nome }}</a>
+                        {% if doc.visivel_cliente %}
+                            <span class="badge bg-success ms-2">Visível ao cliente</span>
+                        {% else %}
+                            <span class="badge bg-secondary ms-2">Interno</span>
+                        {% endif %}
+                        <span class="text-muted small ms-3">Enviado em {{ doc.data_upload|date:"d/m/Y H:i" }}</span>
+                    </div>
+
+                </li>
+                {% empty %}
+                <li class="list-group-item">Nenhum documento anexado.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+{% endblock %}
