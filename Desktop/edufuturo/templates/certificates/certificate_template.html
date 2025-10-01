@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Certificado - {{ certificate.course.name }}</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    body {
+      font-family: 'Times New Roman', serif;
+      background: url('/static/images/certificate-bg.jpg') no-repeat center;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+      height: 297mm;
+      width: 210mm;
+    }
+    .container {
+      padding: 30mm;
+      text-align: center;
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .title {
+      font-size: 36px;
+      font-weight: bold;
+      color: #1a3c6e;
+      margin-bottom: 10px;
+    }
+    .student-name {
+      font-size: 28px;
+      color: #000;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+    .course-name {
+      font-size: 22px;
+      margin: 15px 0;
+    }
+    .details {
+      font-size: 16px;
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+    .signature {
+      margin-top: 40px;
+      display: flex;
+      justify-content: space-around;
+      font-size: 16px;
+    }
+    .signature-line {
+      width: 200px;
+      border-top: 1px solid #000;
+      margin-top: 10px;
+    }
+    .qr-code {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      width: 80px;
+    }
+    .cert-id {
+      font-size: 12px;
+      color: #555;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">CERTIFICADO</div>
+    <p>certificamos que</p>
+    <div class="student-name">{{ certificate.student.user.get_full_name|upper }}</div>
+    <p>concluiu com êxito o curso de</p>
+    <div class="course-name">{{ certificate.course.name }}</div>
+    <div class="details">
+      <p>Carga Horária: {{ certificate.course.workload_hours }} horas</p>
+      <p>Data de Emissão: {{ certificate.issue_date|date:"d de F de Y" }}</p>
+    </div>
+    <div class="signature">
+      <div>
+        <div class="signature-line"></div>
+        <div>Coordenador Acadêmico</div>
+      </div>
+      <div>
+        <div class="signature-line"></div>
+        <div>Reitor da EduFuturo</div>
+      </div>
+    </div>
+    <div class="cert-id">ID: {{ certificate.certificate_id }}</div>
+    <img src="{{ qr_code_url }}" class="qr-code" alt="QR Code de validação">
+  </div>
+</body>
+</html>

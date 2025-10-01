@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EduFuturo - Logo Animado</title>
+  <style>
+    .logo-container {
+      text-align: center;
+      padding: 50px;
+    }
+    .logo {
+      width: 200px;
+      filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .pulse {
+      animation: grow 1.5s ease-in-out infinite;
+    }
+    @keyframes grow {
+      0% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.7; }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-container">
+    <!-- Cole o SVG aqui -->
+    <svg class="logo" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Mesmo SVG anterior, mas com classe no pulso -->
+      <defs>
+        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1a3c6e"/>
+          <stop offset="100%" stop-color="#2c5fa2"/>
+        </linearGradient>
+        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FFD700"/>
+          <stop offset="100%" stop-color="#FFC107"/>
+        </linearGradient>
+      </defs>
+      <text x="200" y="270" font-family="Poppins, sans-serif" font-size="28" fill="#1a3c6e" text-anchor="middle" font-weight="600">EduFuturo</text>
+      <path d="M180 180 L180 140 L200 120 L220 140 L220 180" fill="none" stroke="#1a3c6e" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="200" cy="100" r="30" fill="url(#blueGradient)" opacity="0.9"/>
+      <circle cx="170" cy="110" r="25" fill="url(#blueGradient)" opacity="0.8"/>
+      <circle cx="230" cy="110" r="25" fill="url(#blueGradient)" opacity="0.8"/>
+      <path d="M185 180 L170 200 L160 190 L150 200 L140 190" fill="none" stroke="url(#goldGradient)" stroke-width="5" stroke-linecap="round" stroke-dasharray="4,3"/>
+      <path d="M215 180 L230 200 L240 190 L250 200 L260 190" fill="none" stroke="url(#goldGradient)" stroke-width="5" stroke-linecap="round" stroke-dasharray="4,3"/>
+      <circle cx="200" cy="140" r="5" fill="url(#goldGradient)" class="pulse">
+    </svg>
+  </div>
+</body>
+</html>

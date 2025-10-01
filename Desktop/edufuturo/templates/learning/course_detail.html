@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Cursos</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ course.name }}</li>
+  </ol>
+</nav>
+
+<div class="row">
+  <div class="col-md-8">
+    <h1>{{ course.name }}</h1>
+    <p class="text-muted">{{ course.description }}</p>
+    <p><strong>Carga:</strong> {{ course.workload_hours }}h &nbsp;|&nbsp;
+       <strong>Período:</strong> {{ course.start_date|date:"d/m" }} a {{ course.end_date|date:"d/m" }}</p>
+
+    {% for module in course.modules.all %}
+    <div class="card mb-4">
+      <div class="card-header bg-light">
+        <h5>Módulo {{ module.order }}: {{ module.title }}</h5>
+        <p class="mb-0 text-muted">{{ module.description }}</p>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for lesson in module.lessons.all %}
+        <li class="list-group-item">
+          <a href="{% url 'lesson_detail' lesson.id %}" class="text-decoration-none">
+            <strong>{{ lesson.title }}</strong>
+            <span class="badge bg-secondary float-end">{{ lesson.duration_minutes }} min</span>
+          </a>
+          {% if lesson.materials.all %}
+          <div class="mt-1">
+            {% for material in lesson.materials.all %}
+            <a href="{{ material.file.url }}" class="text-decoration-none" target="_blank">
+              <small><i class="bi bi-paperclip"></i> {{ material.title }}</small>
+            </a><br>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5>Professores</h5>
+        {% for prof in course.professors.all %}
+        <p class="mb-1">{{ prof.get_full_name|default:prof.username }}</p>
+        {% empty %}
+        <p class="text-muted">Não definidos</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

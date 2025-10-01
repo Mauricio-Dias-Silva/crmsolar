@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card mx-auto" style="max-width: 600px;">
+  <div class="card-body text-center">
+    <h2>✅ Certificado Válido</h2>
+    <p><strong>Nome:</strong> {{ cert.student.user.get_full_name }}</p>
+    <p><strong>Curso:</strong> {{ cert.course.name }}</p>
+    <p><strong>ID:</strong> <code>{{ cert.certificate_id }}</code></p>
+    <p><strong>Emitido em:</strong> {{ cert.issue_date|date:"d/m/Y" }}</p>
+    <p class="text-success">Este certificado é autêntico e foi emitido pela EduFuturo.</p>
+  </div>
+</div>
+{% endblock %}

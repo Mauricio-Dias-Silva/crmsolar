@@ -1,0 +1,1 @@
+from .course_views import course_list, course_detail, lesson_detail

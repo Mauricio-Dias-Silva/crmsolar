@@ -1,0 +1,24 @@
+<div class="border-start ps-3 mt-3">
+  <p>{{ comment.content }}</p>
+  <p class="text-muted small">
+    {{ comment.author.get_full_name|default:comment.author.username }}
+    {% if comment.is_verified %}<span class="badge bg-success">Verificado</span>{% endif %}
+    em {{ comment.created_at|date:"d/m H:i" }}
+  </p>
+  <div class="mb-2">
+    <button id="upvote-btn-{{ comment.id }}" 
+            class="btn btn-sm p-0 bi {% if request.user in comment.votes.all|map:'voter' %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}" 
+            onclick="upvote({{ comment.id }})"></button>
+    <span id="likes-{{ comment.id }}">{{ comment.votes.count }}</span>
+    
+    {% if comment.author.role == 'PROFESSOR' and request.user in comment.topic.lesson.professors.all %}
+      <button class="btn btn-sm btn-link text-success p-0 ms-2" 
+              onclick="verify({{ comment.id }})">Marcar como Verificado</button>
+    {% endif %}
+  </div>
+
+  <!-- Respostas -->
+  {% for reply in comment.replies.all %}
+    {% include "forum/_comment.html" with comment=reply %}
+  {% endfor %}
+</div> 

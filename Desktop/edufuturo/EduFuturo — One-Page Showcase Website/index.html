@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EduFuturo — Plataforma de Cursos Inteligente</title>
+  <meta name="description" content="EduFuturo: Uma plataforma de ensino online com IA, correção automática, certificados e gamificação. O futuro da educação já começou.">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Google Fonts (Poppins) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      overflow-x: hidden;
+    }
+    .hero {
+      background: linear-gradient(135deg, #1a3c6e 0%, #2c5fa2 100%);
+      color: white;
+      padding: 100px 0;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+    }
+    .hero p {
+      font-size: 1.25rem;
+      opacity: 0.9;
+      max-width: 700px;
+      margin: 0 auto 30px;
+    }
+    .btn-cta {
+      background: #FFD700;
+      border: none;
+      color: #1a3c6e;
+      font-weight: 600;
+      padding: 12px 30px;
+      border-radius: 50px;
+      transition: all 0.3s;
+    }
+    .btn-cta:hover {
+      background: #e6c200;
+      transform: translateY(-2px);
+    }
+    .section {
+      padding: 80px 0;
+    }
+    .section-title {
+      font-weight: 600;
+      color: #1a3c6e;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .feature-card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      transition: transform 0.3s;
+      height: 100%;
+    }
+    .feature-card:hover {
+      transform: translateY(-10px);
+    }
+    .feature-icon {
+      font-size: 3rem;
+      color: #2c5fa2;
+      margin-bottom: 20px;
+    }
+    .demo-video {
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .cta-section {
+      background: linear-gradient(135deg, #2c5fa2 0%, #1a3c6e 100%);
+      color: white;
+      text-align: center;
+      padding: 100px 0;
+    }
+    .footer {
+      background: #1a1a1a;
+      color: #ccc;
+      padding: 40px 0;
+      text-align: center;
+    }
+    .footer a {
+      color: #FFD700;
+    }
+    .animate-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease-out;
+    }
+    .animate-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>EduFuturo</h1>
+      <p>A plataforma de cursos online com inteligência artificial, correção automática e certificados seguros. O futuro da educação já começou.</p>
+      <a href="#contato" class="btn btn-cta btn-lg">Solicite uma Demonstração</a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title animate-in">Recursos Inteligentes</h2>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card animate-in">
+            <i class="bi bi-robot feature-icon"></i>
+            <h4>EduBot: Tutor IA Local</h4>
+            <p>Um assistente com IA open-source que explica erros, responde dúvidas e ajuda a aprender — sem depender de APIs pagas.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card animate-in">
+            <i class="bi bi-code-slash feature-icon"></i>
+            <h4>Correção Automática Segura</h4>
+            <p>Códigos executados em ambiente isolado (Docker). Feedback instantâneo com testes automatizados.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card animate-in">
+            <i class="bi bi-award feature-icon"></i>
+            <h4>Certificados com QR Code</h4>
+            <p>Certificados digitais com validação pública, anti-fraude e compartilháveis em redes sociais.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card animate-in">
+            <i class="bi bi-trophy feature-icon"></i>
+            <h4>Conquistas e Gamificação</h4>
+            <p>Sistema de badges, XP e níveis para manter os alunos motivados durante todo o curso.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card animate-in">
+            <i class="bi bi-graph-up feature-icon"></i>
+            <h4>Analytics Educacional</h4>
+            <p>Dashboard para coordenadores com previsão de evasão, engajamento e desempenho por aluno.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card animate-in">
+            <i class="bi bi-chat-left-text feature-icon"></i>
+            <h4>Fórum por Aula</h4>
+            <p>Dúvidas respondidas por professores com selo "Verificado". Interação real entre alunos e instrutores.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Demo -->
+  <section class="section" style="background: #eee;">
+    <div class="container">
+      <h2 class="section-title animate-in">Veja como Funciona</h2>
+      <div class="ratio ratio-16x9 shadow">
+        <iframe class="demo-video" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Vídeo do EduFuturo" allowfullscreen></iframe>
+      </div>
+      <p class="text-center mt-3">*(Substitua por seu vídeo real no futuro)*</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" id="contato">
+    <div class="container">
+      <h2>Pronto para Transformar Seu Ensino?</h2>
+      <p>Agende uma demonstração gratuita e veja como o EduFuturo pode elevar sua instituição.</p>
+      <a href="mailto:contato@edufuturo.pro" class="btn btn-cta btn-lg mt-3">Fale Conosco</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 EduFuturo. Todos os direitos reservados.</p>
+      <p>Desenvolvido com Django, Docker e IA Open-Source.</p>
+      <p><a href="mailto:contato@edufuturo.pro">contato@edufuturo.pro</a></p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // Animação ao rolar
+    const animateElements = document.querySelectorAll('.animate-in');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    animateElements.forEach(el => {
+      observer.observe(el);
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
