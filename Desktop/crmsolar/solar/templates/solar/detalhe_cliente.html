@@ -1,0 +1,49 @@
+{% extends 'solar/base.html' %}
+
+{% block title %}Detalhes do Cliente{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Detalhes do Cliente</h2>
+
+    <div class="card p-4">
+        <p><strong>Nome:</strong> {{ cliente.nome }}</p>
+        <p><strong>E-mail:</strong> {{ cliente.email }}</p>
+
+        {% if cliente.cnpj %}
+            <p><strong>CNPJ:</strong> {{ cliente.cnpj }}</p>
+        {% elif cliente.cpf %}
+            <p><strong>CPF:</strong> {{ cliente.cpf }}</p>
+        {% endif %}
+
+        <p><strong>Telefone:</strong> {{ cliente.telefone }}</p>
+
+        <p><strong>Endereço:</strong> 
+            {{ cliente.rua }}, nº {{ cliente.numero }} — 
+            CEP {{ cliente.cep }} — 
+            {{ cliente.cidade }}/{{ cliente.estado }}
+        </p>
+
+        <p><strong>Possui WhatsApp:</strong> 
+            {% if cliente.possui_whatsapp %}
+                Sim
+            {% else %}
+                Não
+            {% endif %}
+        </p>
+
+        <p><strong>ID de Acesso:</strong> {{ cliente.id_acesso }}</p>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <a href="{% url 'crm:lista_clientes' %}" class="btn btn-secondary">Voltar</a>
+        <a href="{% url 'crm:editar_cliente' cliente.id %}" class="btn btn-warning">Editar</a>
+        <form method="POST" action="{% url 'crm:excluir_cliente' cliente.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este cliente?');">
+                Excluir
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

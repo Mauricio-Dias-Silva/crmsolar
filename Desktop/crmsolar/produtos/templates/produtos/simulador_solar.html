@@ -1,0 +1,96 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Simulador de Economia Solar{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+                <h1 class="text-center fw-bold text-success mb-4"><i class="bi bi-calculator-fill me-2"></i> Calcule Sua Economia</h1>
+                <p class="text-center text-muted mb-5">Insira seu consumo médio de energia para descobrir a economia e o tamanho ideal do seu projeto solar. Os resultados são enviados para seu e-mail.</p>
+
+                <!-- Formulário de Input -->
+                <form method="post" action="{% url 'produtos:simulador_solar' %}" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if error %}
+                        <div class="alert alert-danger mb-4">{{ error }}</div>
+                    {% endif %}
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="consumo_kwh" class="form-label fw-bold">Consumo Médio Mensal (kWh)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-lg" id="consumo_kwh" name="consumo_kwh" 
+                                       required placeholder="Ex: 242 (kWh)">
+                                <span class="input-group-text">kWh</span>
+                                <div class="invalid-feedback">
+                                    Por favor, insira seu consumo em kWh.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cep" class="form-label fw-bold">Seu CEP (para cálculo de irradiação)</label>
+                            <input type="text" class="form-control form-control-lg" id="cep" name="cep" required placeholder="Apenas números">
+                            <div class="invalid-feedback">
+                                Por favor, insira um CEP.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nome" class="form-label fw-bold">Seu Nome</label>
+                            <input type="text" class="form-control form-control-lg" id="nome" name="nome" required placeholder="Nome Completo">
+                            <div class="invalid-feedback">
+                                Por favor, insira seu nome.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label fw-bold">Seu Melhor E-mail</label>
+                            <input type="email" class="form-control form-control-lg" id="email" name="email" required placeholder="seu@email.com">
+                            <div class="invalid-feedback">
+                                Por favor, insira um e-mail válido.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-5">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold rounded-pill shadow-sm"><i class="bi bi-lightning-charge-fill me-2"></i> Calcular e Receber Proposta</button>
+                    </div>
+                </form>
+
+                <!-- Tabela de Resultados da Simulação -->
+                {% if resultado %}
+                    <hr class="my-5">
+                    <h3 class="fw-bold text-center mb-4">Resultado da Sua Simulação</h3>
+                    
+                    <div class="row text-center justify-content-center g-4">
+                        
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded-3 bg-light h-100">
+                                <p class="small text-muted mb-1">Potência Estimada</p>
+                                <h4 class="fw-bold text-success">{{ resultado.potencia_kwp|floatformat:2 }} kWp</h4>
+                                <p class="small mb-0">Sistema ideal para seu consumo de {{ resultado.consumo_kwh }} kWh.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded-3 bg-light h-100">
+                                <p class="small text-muted mb-1">Economia Mensal</p>
+                                <h4 class="fw-bold text-success">R$ {{ resultado.economia_mensal|floatformat:2|intcomma }}</h4>
+                                <p class="small mb-0">Redução projetada na sua conta de luz.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="alert alert-warning mt-5 text-center small">
+                        Seu resultado completo, incluindo custo do sistema e opções de financiamento, foi enviado para **{{ resultado.email }}**. Um de nossos especialistas entrará em contato!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Simulador de Financiamento Solar{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+                <h1 class="text-center fw-bold text-primary mb-4"><i class="bi bi-cash-stack me-2"></i> Simulação de Financiamento</h1>
+                <p class="text-center text-muted mb-5">Insira o valor total do seu projeto para cotar as parcelas com nossos parceiros, sem compromisso.</p>
+
+                <!-- Formulário de Input -->
+                <form method="post" action="{% url 'produtos:simular_financiamento' %}" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 mb-4">
+                            <label for="valor_total" class="form-label fw-bold">Valor Total do Projeto (R$)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="text" class="form-control form-control-lg" id="valor_total" name="valor_total" 
+                                       required placeholder="Ex: 8838,81" 
+                                       value="{{ valor_total|default_if_none:'' }}" 
+                                       pattern="[0-9]+([\.,][0-9]+)?">
+                                <div class="invalid-feedback">
+                                    Por favor, insira um valor numérico válido (use ponto ou vírgula).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-pill shadow-sm">Simular Parcelas</button>
+                    </div>
+                </form>
+
+                {% if erro_mensagem %}
+                    <div class="alert alert-danger mt-5 text-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ erro_mensagem }}
+                    </div>
+                {% endif %}
+
+                <!-- Tabela de Resultados da Simulação -->
+                {% if simulacoes %}
+                    <hr class="my-5">
+                    <h3 class="fw-bold text-center mb-4">Opções de Financiamento (Parceiro Losango)</h3>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover rounded-4 overflow-hidden">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th scope="col">Parcelas (Mês)</th>
+                                    <th scope="col" class="text-end">Valor da Parcela (R$)</th>
+                                    <th scope="col" class="text-end">Total Pago (R$)</th>
+                                    <th scope="col" class="text-center">Taxa Mensal Estimada</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sim in simulacoes %}
+                                <tr>
+                                    <td class="fw-bold">{{ sim.parcelas }}x</td>
+                                    <td class="text-end">R$ {{ sim.valor_parcela|floatformat:2|intcomma }}</td>
+                                    <td class="text-end fw-bold text-success">R$ {{ sim.total_pago|floatformat:2|intcomma }}</td>
+                                    <td class="text-center">{{ sim.taxa_mensal|floatformat:2 }}% a.m.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4 text-center small">
+                        <strong>Atenção:</strong> Os valores são simulações. A contratação final está sujeita à análise e aprovação de crédito.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

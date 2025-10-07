@@ -1,0 +1,174 @@
+{% extends "produtos/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Solar Hub - Seu Parceiro em Energia Solar{% endblock %}
+
+{% block content %}
+<main>
+    
+    <!-- 1. SEÇÃO DE CHAMADA PRINCIPAL (Com ênfase no CRM/Serviço) -->
+    <section class="container my-5 text-center p-4 p-md-5 rounded-4 bg-light shadow-sm">
+        <h1 class="display-5 fw-bold text-success mb-3">Transforme a Luz do Sol em Economia ☀️</h1>
+        <p class="lead text-muted mb-5">Soluções completas de ponta a ponta: do cálculo de economia ao rastreamento do projeto.</p>
+        
+        <!-- Bloco de Ações e Simulações (CRM e Vendas em Destaque) -->
+        <div class="row row-cols-1 row-cols-md-4 g-4 justify-content-center">
+            
+            <!-- Card 1: SIMULADOR DE ECONOMIA -->
+            <div class="col">
+                <a href="{% url 'produtos:simulador_solar' %}" class="text-decoration-none">
+                    <div class="card h-100 p-3 border-0 shadow-lg service-card-highlight">
+                        <i class="bi bi-calculator-fill text-success display-6 mb-2"></i>
+                        <h5 class="fw-bold text-dark">Calcule sua Economia</h5>
+                        <p class="text-muted small mb-0">Descubra a potência ideal e o valor da sua nova conta de luz.</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Card 2: SIMULADOR DE FINANCIAMENTO (NOVA FUNCIONALIDADE) -->
+            <div class="col">
+                <a href="{% url 'produtos:simular_financiamento' %}" class="text-decoration-none">
+                    <div class="card h-100 p-3 border-0 shadow-lg service-card-highlight">
+                        <i class="bi bi-currency-dollar text-success display-6 mb-2"></i>
+                        <h5 class="fw-bold text-dark">Simule Parcelas</h5>
+                        <p class="text-muted small mb-0">Cote o valor total do seu sistema em diferentes prazos de financiamento.</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Card 3: RASTREIO DE PROPOSTA (CRM) -->
+            <div class="col">
+                <a href="{% url 'produtos:rastreio_proposta' %}" class="text-decoration-none">
+                    <div class="card h-100 p-3 border-0 shadow-lg service-card-highlight">
+                        <i class="bi bi-geo-alt-fill text-success display-6 mb-2"></i>
+                        <h5 class="fw-bold text-dark">Rastrear Proposta</h5>
+                        <p class="text-muted small mb-0">Acompanhe o status do seu projeto: da homologação à instalação.</p>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Card 4: ACESSO À LOJA (E-COMMERCE) -->
+            <div class="col">
+                <a href="{% url 'produtos:home' %}" class="text-decoration-none">
+                    <div class="card h-100 p-3 border-0 shadow-lg service-card-highlight">
+                        <i class="bi bi-box-seam text-success display-6 mb-2"></i>
+                        <h5 class="fw-bold text-dark">Loja de Componentes</h5>
+                        <p class="text-muted small mb-0">Encontre módulos, inversores, cabos e acessórios de grandes marcas.</p>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </section>
+    
+    <!-- 2. VITRINE DE PROJETOS EXECUTADOS (Credibilidade) -->
+    <section class="container my-5 py-4">
+        <h2 class="text-center display-5 fw-bold mb-4 text-success">Portfólio de Sucesso</h2>
+        <p class="text-center text-muted mb-5">Qualidade e experiência comprovadas. Veja os projetos que entregamos.</p>
+            
+        <div class="row g-4 justify-content-center">
+            {% for projeto in projetos_em_destaque %}
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 border-0 shadow-lg rounded-4 overflow-hidden">
+                    <img src="{{ projeto.imagem_capa.url }}" class="card-img-top" alt="{{ projeto.titulo }}" style="height: 180px; object-fit: cover;">
+                    <div class="card-body p-3">
+                        <h5 class="card-title fw-bold text-truncate mb-0">{{ projeto.titulo }}</h5>
+                        <p class="card-text mb-1 text-muted small">{{ projeto.localidade }}</p>
+                        <span class="badge bg-success fw-bold p-2 mt-2">
+                            {{ projeto.potencia_kwp }} kWp
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Nenhum projeto em destaque. Adicione projetos no painel de administração!</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'produtos:portfolio_completo' %}" class="btn btn-outline-success btn-lg fw-bold rounded-pill">Ver Portfólio Completo</a>
+        </div>
+    </section>
+    
+    <div class="container my-5"><hr></div>
+    
+    <!-- 3. SEÇÃO DE DESTAQUE DE VALORES (Herança do seu código antigo) -->
+    <section class="container my-5">
+        <h2 class="text-center display-5 fw-bold mb-5">Por que escolher a Solar Hub?</h2>
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm p-4">
+                    <i class="bi bi-currency-dollar text-success display-4 mb-3"></i>
+                    <h5 class="fw-bold">Redução Imediata de Custos</h5>
+                    <p class="text-muted">Gere sua própria energia e elimine até 95% dos seus gastos mensais com eletricidade.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm p-4">
+                    <i class="bi bi-tree text-success display-4 mb-3"></i>
+                    <h5 class="fw-bold">Compromisso Sustentável</h5>
+                    <p class="text-muted">Utilize uma fonte limpa e renovável, contribuindo ativamente para um futuro mais verde.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm p-4">
+                    <i class="bi bi-house-check text-success display-4 mb-3"></i>
+                    <h5 class="fw-bold">Valorização do Imóvel</h5>
+                    <p class="text-muted">Sistemas solares são um investimento que aumenta o valor de mercado e o apelo do seu imóvel.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- Seção: PRODUTOS EM DESTAQUE (com barra de rolagem) -->
+    <section class="container my-5">
+        <h2 class="text-center display-5 fw-bold mb-5 text-success">Produtos em Destaque</h2>
+        
+        <!-- Container com Rolagem Vertical (para economizar espaço na Home) -->
+        <div class="scrollable-products" style="max-height: 550px; overflow-y: auto; padding-right: 15px;">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                
+                {% for produto in produtos_em_destaque %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+                        
+                        {% comment %} Assumindo que o modelo Produto tem uma relação 'images' {% endcomment %}
+                        {% with main_image=produto.images.first %}
+                            <div style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: #fff;">
+                                <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ produto.name }}" style="max-height: 100%; width: auto; object-fit: contain;">
+                            </div>
+                        {% endwith %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-truncate">{{ produto.name }}</h5>
+                            
+                            <!-- ÍCONES DE GARANTIA (Seção 4) -->
+                            {% if produto.garantia_anos_equipamento %}
+                                <span class="badge bg-primary mb-2">
+                                    <i class="bi bi-shield-check me-1"></i> Garantia: {{ produto.garantia_anos_equipamento }} Anos
+                                </span>
+                            {% endif %}
+                            
+                            <div class="mt-auto pt-2">
+                                <p class="h5 text-success fw-bold">R$ {{ produto.preco|floatformat:2 }}</p>
+                                <a href="{% url 'produtos:produto_detalhe' produto.id %}" class="btn btn-primary w-100 mt-2 btn-sm">Ver Detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted lead">Nenhum produto em destaque encontrado. Adicione produtos ativos.</p>
+                    <a href="{% url 'produtos:home' %}" class="btn btn-outline-secondary mt-3">Ir para a Loja Completa</a>
+                </div>
+                {% endfor %}
+                
+            </div>
+        </div>
+    </section>
+
+</main>
+{% endblock %}

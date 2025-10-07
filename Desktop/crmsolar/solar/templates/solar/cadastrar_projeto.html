@@ -1,0 +1,258 @@
+{% extends 'solar/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Cadastrar Projeto{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Cadastrar Novo Projeto</h4>
+        </div>
+        <div class="card-body">
+            
+            {# --- EXIBIÇÃO DE ERROS GERAIS --- #}
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <strong>Erro ao cadastrar projeto. Verifique os campos abaixo.</strong>
+                </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" novalidate id="form_projeto">
+                {% csrf_token %}
+                
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 1: INFORMAÇÕES BÁSICAS E DOCUMENTOS #}
+                {# ---------------------------------------------------- #}
+                
+                {# Informações Básicas (Nome, Descrição, Datas, Status) #}
+                <div class="mb-3">
+                    <label for="{{ form.nome.id_for_label }}" class="form-label">Nome do Projeto</label>
+                    {{ form.nome|add_class:"form-control" }}
+                    {% for error in form.nome.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.descricao.id_for_label }}" class="form-label">Descrição</label>
+                    {{ form.descricao|add_class:"form-control"|attr:"rows:2" }}
+                    {% for error in form.descricao.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                {# Linha de 3 Colunas: Datas e Status #}
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.data_inicio.id_for_label }}" class="form-label">Data de Início</label>
+                        {{ form.data_inicio|add_class:"form-control"|attr:"placeholder:dd/mm/aaaa" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.data_fim.id_for_label }}" class="form-label">Data de Fim</label>
+                        {{ form.data_fim|add_class:"form-control"|attr:"placeholder:dd/mm/aaaa" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                        {{ form.status|add_class:"form-control" }}
+                    </div>
+                </div>
+
+                {# Cliente e Endereço #}
+                <div class="mb-3">
+                    <label for="{{ form.cliente.id_for_label }}" class="form-label">Cliente</label>
+                    {{ form.cliente|add_class:"form-control" }}
+                </div>
+                <h5 class="mt-4">Endereço da Instalação</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.rua.id_for_label }}" class="form-label">Rua</label>
+                        {{ form.rua|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.numero.id_for_label }}" class="form-label">Número</label>
+                        {{ form.numero|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.bairro.id_for_label }}" class="form-label">Bairro</label>
+                        {{ form.bairro|add_class:"form-control" }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.cidade.id_for_label }}" class="form-label">Cidade</label>
+                        {{ form.cidade|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.estado.id_for_label }}" class="form-label">Estado</label>
+                        {{ form.estado|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.cep.id_for_label }}" class="form-label">CEP</label>
+                        {{ form.cep|add_class:"form-control" }}
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 2: ANÁLISE DE RADIAÇÃO (Cálculo da API) 🛑 #}
+                {# ---------------------------------------------------- #}
+                
+                <h5 class="mb-3">Configuração do Telhado para Irradiação</h5>
+                <p class="text-muted">Insira as coordenadas e orientação do telhado para o cálculo do potencial solar.</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude</label>
+                        {{ form.latitude|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude</label>
+                        {{ form.longitude|add_class:"form-control" }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.inclinacao_telhado.id_for_label }}" class="form-label">Inclinação do Telhado (Ângulo)</label>
+                        {{ form.inclinacao_telhado|add_class:"form-control" }}
+                        <div class="form-text">Ângulo de inclinação em graus (ex: 20).</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.azimute_telhado.id_for_label }}" class="form-label">Azimute (Orientação)</label>
+                        {{ form.azimute_telhado|add_class:"form-control" }}
+                        <div class="form-text">0° = Norte; 180° = Sul.</div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 3: EQUIPAMENTOS E PAGAMENTO #}
+                {# ---------------------------------------------------- #}
+
+                <h5 class="mb-3">Equipamentos e Valores</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.potencia_kwp.id_for_label }}" class="form-label">Potência (kWp)</label>
+                        {{ form.potencia_kwp|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.quantidade_modulos.id_for_label }}" class="form-label">Qtd. Módulos</label>
+                        {{ form.quantidade_modulos|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.inversor.id_for_label }}" class="form-label">Modelo Inversor</label>
+                        {{ form.inversor|add_class:"form-control" }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.fornecedor.id_for_label }}" class="form-label">Fornecedor</label>
+                    {{ form.fornecedor|add_class:"form-control" }}
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.valor_total.id_for_label }}" class="form-label">Valor Total (R$)</label>
+                        {{ form.valor_total|add_class:"form-control"|attr:"placeholder:R$ 0,00" }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.forma_pagamento.id_for_label }}" class="form-label">Forma de Pagamento</label>
+                        {{ form.forma_pagamento|add_class:"form-control" }}
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 4: DOCUMENTOS (Upload) #}
+                {# ---------------------------------------------------- #}
+                
+                <h5 class="mb-3">Documentos para Anexar</h5>
+                <p class="text-muted">Anexe documentos como Conta de Luz, Foto do Poste, etc.</p>
+
+                <div class="row mb-3">
+                    {% for doc_label in documentos_labels %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ doc_label }}</label>
+                            <input type="file" name="documento_arquivo_{{ forloop.counter }}" class="form-control mb-1">
+                            <div class="form-check">
+                                <input type="checkbox" name="documento_visivel_{{ forloop.counter }}" class="form-check-input" id="visivel_{{ forloop.counter }}">
+                                <label class="form-check-label" for="visivel_{{ forloop.counter }}">
+                                    Visível ao cliente
+                                </label>
+                            </div>
+                            <input type="hidden" name="documento_nome_{{ forloop.counter }}" value="{{ doc_label }}">
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg mt-3">Cadastrar Projeto</button>
+                <a href="{% url 'crm:lista_projetos' %}" class="btn btn-secondary btn-lg mt-3 ms-2">Voltar</a>
+            </form>
+        </div>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+
+{# --- SCRIPTS DE MÁSCARA (Mantidos) --- #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // ... Seu código de máscaras JavaScript aqui (Mantido do seu código anterior)
+    
+    function aplicarMascaraData(input) {
+        if (!input) return;
+        input.addEventListener('input', function () {
+            let valor = input.value.replace(/\D/g, '').slice(0, 8);
+            if (valor.length >= 5) {
+                input.value = valor.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
+            } else if (valor.length >= 3) {
+                input.value = valor.replace(/(\d{2})(\d{1,2})/, '$1/$2');
+            } else {
+                input.value = valor;
+            }
+        });
+    }
+
+    function aplicarMascaraReais(input) {
+        if (!input) return;
+        input.addEventListener('input', function (e) {
+            let valor = e.target.value.replace(/\D/g, '');
+            if (valor === "") {
+                e.target.value = '';
+                return;
+            }
+            valor = (parseInt(valor, 10) || 0).toString().padStart(3, '0');
+            let reais = valor.slice(0, -2);
+            let centavos = valor.slice(-2);
+            reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            e.target.value = `R$ ${reais},${centavos}`;
+        });
+        input.addEventListener('focus', function (e) {
+            if (!e.target.value) { e.target.value = 'R$ 0,00'; }
+        });
+        input.addEventListener('click', function (e) {
+            let len = e.target.value.length;
+            e.target.setSelectionRange(len, len);
+        });
+    }
+
+    // Aplicação das máscaras aos campos (Ajustado para IDs dinâmicos)
+    const campoDataInicio = document.getElementById('{{ form.data_inicio.id_for_label }}');
+    const campoDataFim = document.getElementById('{{ form.data_fim.id_for_label }}');
+    const campoValorTotal = document.getElementById('{{ form.valor_total.id_for_label }}');
+
+    if (campoDataInicio) {
+        campoDataInicio.placeholder = 'dd/mm/aaaa';
+        aplicarMascaraData(campoDataInicio);
+    }
+    if (campoDataFim) {
+        campoDataFim.placeholder = 'dd/mm/aaaa';
+        aplicarMascaraData(campoDataFim);
+    }
+    if (campoValorTotal) {
+        campoValorTotal.placeholder = 'R$ 0,00';
+        aplicarMascaraReais(campoValorTotal);
+    }
+});
+</script>
+{% endblock %}

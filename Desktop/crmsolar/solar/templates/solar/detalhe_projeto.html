@@ -1,0 +1,130 @@
+{% extends 'solar/base.html' %}
+{% load static %} <!-- Garanta que você tem o load static se usar ícones/css locais -->
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <!-- CABEÇALHO COM TÍTULO E BOTÕES DE AÇÃO PRINCIPAIS -->
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Projeto: {{ projeto.nome }}</h2>
+            <div>
+                <!-- BOTÃO DE GERAR PROPOSTA MOVEMOS PARA CÁ PARA DAR DESTAQUE -->
+                <a href="{% url 'crm:gerar_proposta_pdf' pk=projeto.pk %}" class="btn btn-success btn-sm me-2" target="_blank">
+                    <i class="fas fa-file-pdf"></i> Gerar Proposta
+                </a>
+                <a href="{% url 'crm:editar_projeto' projeto.id %}" class="btn btn-warning btn-sm me-2">
+                    <i class="fas fa-pencil-alt"></i> Editar
+                </a>
+                <a href="{% url 'crm:excluir_projeto' projeto.id %}" class="btn btn-danger btn-sm"
+                   onclick="return confirm('Tem certeza que deseja excluir este projeto?');">
+                   <i class="fas fa-trash-alt"></i> Excluir
+                </a>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO POR ABAS -->
+        <div class="card-body">
+            <ul class="nav nav-tabs mb-3" id="projectDetailsTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="true">Detalhes Gerais</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="etapas-tab" data-bs-toggle="tab" data-bs-target="#etapas" type="button" role="tab" aria-controls="etapas" aria-selected="false">Etapas</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button" role="tab" aria-controls="documentos" aria-selected="false">Documentos</button>
+                </li>
+            </ul>
+
+            <!-- CONTEÚDO DAS ABAS -->
+            <div class="tab-content" id="projectDetailsTabContent">
+
+                <!-- ABA 1: DETALHES GERAIS -->
+                <div class="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
+                    <dl class="row">
+                        <dt class="col-sm-3">Status:</dt>
+                        <dd class="col-sm-9"><span class="badge bg-info text-dark">{{ projeto.status }}</span></dd>
+
+                        <dt class="col-sm-3">Cliente:</dt>
+                        <dd class="col-sm-9">{{ projeto.cliente }}</dd>
+
+                        <dt class="col-sm-3">Endereço da Instalação:</dt>
+                        <dd class="col-sm-9">
+                            {{ projeto.rua }}, nº {{ projeto.numero }}, {{ projeto.bairro }}<br>
+                            {{ projeto.cidade }} - {{ projeto.estado }}, CEP {{ projeto.cep }}
+                        </dd>
+
+                        <dt class="col-sm-3">Data de Início:</dt>
+                        <dd class="col-sm-9">{{ projeto.data_inicio|date:"d/m/Y" }}</dd>
+
+                        <dt class="col-sm-3">Data de Conclusão:</dt>
+                        <dd class="col-sm-9">{{ projeto.data_fim|date:"d/m/Y"|default:"-" }}</dd>
+
+                        <dt class="col-sm-3">Potência Instalada:</dt>
+                        <dd class="col-sm-9">{{ projeto.potencia_kwp }} kWp</dd>
+
+                        <dt class="col-sm-3">Valor Total:</dt>
+                        <dd class="col-sm-9">R$ {{ projeto.valor_total|floatformat:2 }}</dd>
+                        
+                        <!-- Outros campos técnicos se necessário -->
+                        <dt class="col-sm-3">Quantidade de Módulos:</dt>
+                        <dd class="col-sm-9">{{ projeto.quantidade_modulos }}</dd>
+                        <dt class="col-sm-3">Inversor:</dt>
+                        <dd class="col-sm-9">{{ projeto.inversor }}</dd>
+                        <dt class="col-sm-3">Fornecedor:</dt>
+                        <dd class="col-sm-9">{{ projeto.fornecedor }}</dd>
+                        <dt class="col-sm-3">Forma de Pagamento:</dt>
+                        <dd class="col-sm-9">{{ projeto.forma_pagamento }}</dd>
+                    </dl>
+                </div>
+
+                <!-- ABA 2: ETAPAS -->
+                <div class="tab-pane fade" id="etapas" role="tabpanel" aria-labelledby="etapas-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Etapas de Implantação</h4>
+                        <a href="{% url 'crm:cadastrar_etapa' projeto.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus-circle"></i> Cadastrar Nova Etapa
+                        </a>
+                    </div>
+                    <ul class="list-group">
+                        {% for etapa in projeto.etapas.all %}
+                        <li class="list-group-item">
+                            <strong>{{ etapa.nome }}</strong> (Status: {{ etapa.get_status_display }})<br>
+                            <span class="text-muted">{{ etapa.descricao }}</span><br>
+                            <small>Início: {{ etapa.data_inicio|date:"d/m/Y" }} | Fim: {{ etapa.data_fim|date:"d/m/Y"|default:"-" }}</small>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">Nenhuma etapa cadastrada.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- ABA 3: DOCUMENTOS -->
+                <div class="tab-pane fade" id="documentos" role="tabpanel" aria-labelledby="documentos-tab">
+                    <h4>Documentos do Projeto</h4>
+                    <ul class="list-group">
+                        {% for doc in projeto.documentos.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{{ doc.arquivo.url }}" download><i class="fas fa-download"></i> {{ doc.nome }}</a>
+                                {% if doc.visivel_cliente %}
+                                    <span class="badge bg-success ms-2">Visível ao cliente</span>
+                                {% else %}
+                                    <span class="badge bg-secondary ms-2">Interno</span>
+                                {% endif %}
+                                <span class="text-muted small ms-3">Enviado em {{ doc.data_upload|date:"d/m/Y H:i" }}</span>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">Nenhum documento anexado.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+{% endblock %}
+

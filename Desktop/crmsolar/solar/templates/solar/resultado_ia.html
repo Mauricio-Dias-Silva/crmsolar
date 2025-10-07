@@ -1,0 +1,84 @@
+{% extends 'solar/base.html' %}
+{% block title %}Resultados da Análise com IA{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Resultados da Análise de {{ resultados|length }} Imagens</h3>
+        </div>
+        <div class="card-body">
+            <p>A análise foi concluída. Revise os produtos identificados e salve-os no sistema.</p>
+
+            <ul class="list-group" id="lista-resultados">
+                {% for resultado in resultados %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        
+                        <div>
+                            {% if resultado.sucesso %}
+                                <i class="fas fa-check-circle me-2 text-success"></i>
+                                <strong>{{ resultado.nome_arquivo }}</strong> - Produto: 
+                                <span class="fw-bold status-text">{{ resultado.dados.name }}</span>
+                            {% else %}
+                                <i class="fas fa-times-circle me-2 text-danger"></i>
+                                <strong>{{ resultado.nome_arquivo }}</strong> - Falha:
+                                <span class="text-muted status-text">{{ resultado.erro }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if resultado.sucesso %}
+                            <a href="{% url 'crm:adicionar_produto_ecommerce' %}?{{ resultado.query_string }}&next={{ request.path }}" 
+                            class="btn btn-sm btn-primary review-btn" 
+                            target="_blank">
+                                Revisar e Salvar
+                            </a>
+                        {% endif %}
+
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">Nenhum resultado para exibir.</li>
+                {% endfor %}
+            </ul>
+
+            <div class="mt-4">
+                <a href="{% url 'crm:adicionar_produto_ia' %}" class="btn btn-secondary">
+                    <i class="fas fa-plus me-2"></i> Enviar mais imagens
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Pega todos os botões de "Revisar e Salvar"
+    const reviewButtons = document.querySelectorAll('.review-btn');
+
+    // 2. Adiciona um "escutador" de clique para cada botão
+    reviewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // 3. Quando um botão é clicado...
+
+            // Desabilita o botão para não ser clicado de novo
+            button.disabled = true;
+            
+            // Muda a aparência do botão
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-secondary');
+            button.textContent = 'Revisado';
+
+            // Pega o elemento de texto do status (o nome do produto)
+            const listItem = button.closest('.list-group-item');
+            const statusText = listItem.querySelector('.status-text');
+            
+            // Adiciona uma marca visual de que foi revisado
+            if (statusText) {
+                statusText.innerHTML += ' <span class="badge bg-info">✔ Revisado</span>';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

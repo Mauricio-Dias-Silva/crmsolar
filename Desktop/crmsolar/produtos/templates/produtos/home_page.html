@@ -1,0 +1,99 @@
+{% extends "produtos/base.html" %}
+{% load static %}
+
+{% block title %}Solar Hub - Sua Plataforma de Energia Solar{% endblock %}
+
+{% block content %}
+    <main class="container-fluid p-0">
+        <!-- Seção 1: Banner de Apresentação com foco no CRM -->
+        <section class="jumbotron jumbotron-fluid bg-success text-white text-center d-flex align-items-center justify-content-center py-5">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-3">Soluções Completas em Energia Solar</h1>
+                <p class="lead fw-light mb-4">Gerencie seus projetos e compre produtos com o máximo de eficiência.</p>
+                <div class="d-flex justify-content-center flex-wrap">
+                    <a href="{% url 'crm:cliente_dashboard' %}" class="btn btn-warning btn-lg me-md-2 mb-2 mb-md-0 fw-bold rounded-pill shadow-sm">
+                        <i class="bi bi-graph-up me-2"></i>Acompanhe seu Projeto (CRM)
+                    </a>
+                    <a href="{% url 'produtos:home' %}" class="btn btn-outline-light btn-lg fw-bold rounded-pill shadow-sm">
+                        <i class="bi bi-cart me-2"></i>Navegar na Loja (e-commerce)
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção 2: Destaque de Serviços (Cards de Informação) -->
+        <section class="container my-5">
+            <h2 class="text-center mb-4 fw-bold text-success">O que oferecemos</h2>
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="card p-4 h-100 border-0 shadow-sm rounded-4">
+                        <i class="bi bi-person-lines-fill fs-1 text-success mb-3"></i>
+                        <h5 class="fw-bold">Gestão Completa (CRM)</h5>
+                        <p class="text-muted">Acompanhe cada etapa dos seus projetos, desde o orçamento até a instalação, tudo em um só lugar.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 h-100 border-0 shadow-sm rounded-4">
+                        <i class="bi bi-basket fs-1 text-success mb-3"></i>
+                        <h5 class="fw-bold">E-commerce de Produtos</h5>
+                        <p class="text-muted">Encontre painéis, inversores e acessórios com facilidade, garantia e os melhores preços do mercado.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 h-100 border-0 shadow-sm rounded-4">
+                        <i class="bi bi-lightbulb fs-1 text-success mb-3"></i>
+                        <h5 class="fw-bold">Soluções Personalizadas</h5>
+                        <p class="text-muted">Nossa equipe de especialistas está pronta para dimensionar o projeto ideal para a sua necessidade.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção 3: Carrossel (Você já tem esse código) -->
+        <!-- Substitua este comentário pelo seu carrossel de imagens se desejar -->
+        <div class="container my-5">
+            <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    {% for image in carousel_images %}
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="true" aria-label="Slide {{ forloop.counter }}"></button>
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner rounded-4 shadow-lg">
+                    {% for image in carousel_images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ image.title }}" style="object-fit: cover; max-height: 500px;">
+                        {% if image.title or image.description %}
+                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                            <h5>{{ image.title }}</h5>
+                            <p>{{ image.description }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 4: Produtos em Destaque (ou Novidades) -->
+        <section class="container my-5">
+            <h2 class="text-center mb-4 fw-bold text-success">Produtos em Destaque</h2>
+            <div class="row g-4">
+                {% for produto in produtos_em_destaque %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm border-0 rounded-4">
+                        <a href="{% url 'produtos:detalhe_produto' produto.pk %}" class="d-block text-decoration-none text-dark">
+                            <img src="{{ produto.imagem.url }}" class="card-img-top product-card-img p-3" alt="{{ produto.nome }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title text-truncate">{{ produto.nome }}</h5>
+                                <p class="card-text fw-bold text-success mt-auto">R$ {{ produto.preco }}</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'produtos:adicionar_ao_carrinho' produto.pk %}" class="btn btn-success w-100 rounded-0 rounded-bottom">Adicionar ao Carrinho</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
+{% endblock %}

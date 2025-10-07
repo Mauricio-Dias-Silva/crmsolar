@@ -1,0 +1,67 @@
+{% extends 'solar/base.html' %}
+{% load static %}
+{% block title %}Usuários{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Usuários</h2>
+        <a href="{% url 'crm:cadastrar_usuario' %}" class="btn btn-primary">
+            <img src="{% static 'images/icons/add-user-group-man-man.png' %}" alt="Novo" class="me-1">
+            Novo Usuário
+        </a>
+    </div>
+    {% if usuarios %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Departamento</th>
+                    <th>Último Login</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.get_full_name }}</td>
+                    <td>{{ usuario.username }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>{{ usuario.departamento }}</td>
+                    <td>
+                        {% if usuario.last_login %}
+                            {{ usuario.last_login|date:"d/m/Y H:i" }}
+                        {% else %}
+                            <span class="text-muted">Nunca</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'crm:editar_usuario' usuario.id %}" class="btn btn-sm btn-outline-warning me-1">
+                            <img src="{% static 'images/icons/edit.png' %}" alt="Editar" class="me-1">
+                            Editar
+                        </a>
+                        <a href="{% url 'crm:resetar_senha_usuario' usuario.id %}" class="btn btn-sm btn-outline-secondary me-1">
+                            <img src="{% static 'images/icons/refresh.png' %}" alt="Senha" class="me-1">
+                            Resetar Senha
+                        </a>
+                        <a href="{% url 'crm:excluir_usuario' usuario.id %}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Tem certeza que deseja excluir este usuário?');">
+                            <img src="{% static 'images/icons/filled-trash.png' %}" alt="Excluir" class="me-1">
+                            Excluir
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="alert alert-info">
+            Nenhum usuário cadastrado ainda.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

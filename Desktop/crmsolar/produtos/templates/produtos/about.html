@@ -1,0 +1,144 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Sobre Nós - Sua Marca Energia Solar{% endblock %}
+
+{% block content %}
+
+{# Hero Section / Banner #}
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light">
+    <div class="col-md-8 p-lg-5 mx-auto my-5">
+        <h1 class="display-4 fw-bold text-dark mb-3">Impulsionando o Futuro com Energia Solar</h1>
+        <p class="lead fw-normal text-muted mb-4">
+            Desde a nossa fundação, somos apaixonados por soluções sustentáveis e eficientes para o seu lar e negócio.
+        </p>
+        <a class="btn btn-primary btn-lg" href="{% url 'produtos:contact' %}">Fale Conosco</a>
+    </div>
+    {# Você pode adicionar uma imagem de fundo aqui via CSS no style.css para esta div #}
+    {# Exemplo: style="background: url('{% static 'img/solar_panel_bg.jpg' %}') no-repeat center center; background-size: cover;" #}
+</div>
+
+{# Seção: Nossa História #}
+<div class="container my-5">
+    <div class="row featurette d-flex justify-content-center align-items-center">
+        <div class="col-md-7 order-md-2">
+            <h2 class="featurette-heading display-6 fw-bold">Nossa História. <span class="text-muted">Inovação e Crescimento.</span></h2>
+            <p class="lead">
+                Fundada em [Ano de Fundação], a [Sua Marca] nasceu da visão de um futuro mais verde e energético. Começamos como uma pequena equipe de entusiastas, focada em trazer a energia solar para todos. Ao longo dos anos, expandimos nossos serviços e portfólio de produtos, sempre mantendo o compromisso com a qualidade, a inovação e, acima de tudo, a satisfação dos nossos clientes.
+            </p>
+            <p class="lead">
+                Hoje, somos referência no mercado de energia solar, atendendo desde projetos residenciais a grandes instalações comerciais, e oferecendo uma vasta gama de produtos fotovoltaicos e acessórios através de nosso e-commerce.
+            </p>
+        </div>
+        <div class="col-md-5 order-md-1">
+            <img class="img-fluid rounded shadow-sm" src="{% static 'images\usina_solar.jpg' %}" alt="Nossa História">
+            {# Certifique-se de ter uma imagem em static/img/about_history.jpg #}
+        </div>
+    </div>
+</div>
+
+{# Seção: Missão, Visão, Valores #}
+<div class="bg-primary text-white py-5"> {# Fundo azul primário para contraste #}
+    <div class="container">
+        <h2 class="text-center display-5 fw-bold mb-5">Nossos Pilares</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+                <div class="card h-100 text-center border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <i class="bi bi-star-fill text-warning fs-1 mb-3"></i> {# Ícone Bootstrap #}
+                        <h5 class="card-title fw-bold">Missão</h5>
+                        <p class="card-text text-muted">
+                            Promover o acesso à energia limpa e sustentável, oferecendo produtos e soluções inovadoras que impulsionam a eficiência e o bem-estar de nossos clientes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 text-center border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <i class="bi bi-eye-fill text-info fs-1 mb-3"></i> {# Ícone Bootstrap #}
+                        <h5 class="card-title fw-bold">Visão</h5>
+                        <p class="card-text text-muted">
+                            Ser a empresa líder e mais confiável em soluções de energia solar, reconhecida pela excelência no atendimento, inovação tecnológica e impacto positivo no meio ambiente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 text-center border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <i class="bi bi-award-fill text-success fs-1 mb-3"></i> {# Ícone Bootstrap #}
+                        <h5 class="card-title fw-bold">Valores</h5>
+                        <p class="card-text text-muted">
+                            Sustentabilidade, Inovação, Integridade, Compromisso com o Cliente, Qualidade e Excelência.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Seção: Por Que Escolher-nos #}
+<div class="container my-5">
+    <h2 class="text-center display-5 fw-bold mb-5">Por Que Escolher a Sua Marca?</h2>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm p-3 bg-white">
+                <div class="card-body d-flex align-items-start">
+                    <i class="bi bi-check-circle-fill text-success fs-4 me-3"></i>
+                    <div>
+                        <h5 class="card-title fw-bold">Qualidade Assegurada</h5>
+                        <p class="card-text text-muted">Trabalhamos apenas com produtos de alta qualidade, garantindo durabilidade e performance superior em todos os nossos projetos e vendas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm p-3 bg-white">
+                <div class="card-body d-flex align-items-start">
+                    <i class="bi bi-lightbulb-fill text-warning fs-4 me-3"></i>
+                    <div>
+                        <h5 class="card-title fw-bold">Inovação Constante</h5>
+                        <p class="card-text text-muted">Estamos sempre em busca das últimas tecnologias e tendências em energia solar para oferecer as soluções mais eficientes e modernas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm p-3 bg-white">
+                <div class="card-body d-flex align-items-start">
+                    <i class="bi bi-people-fill text-info fs-4 me-3"></i>
+                    <div>
+                        <h5 class="card-title fw-bold">Atendimento Personalizado</h5>
+                        <p class="card-text text-muted">Nossa equipe está pronta para oferecer suporte e consultoria, entendendo suas necessidades e propondo as melhores soluções para você.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm p-3 bg-white">
+                <div class="card-body d-flex align-items-start">
+                    <i class="bi bi-wallet-fill text-danger fs-4 me-3"></i>
+                    <div>
+                        <h5 class="card-title fw-bold">Preços Competitivos</h5>
+                        <p class="card-text text-muted">Oferecemos o melhor custo-benefício do mercado, com produtos e serviços de alta qualidade a preços justos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Seção: Call to Action (Opcional) #}
+<div class="text-center py-5 bg-light">
+    <div class="container">
+        <h2 class="display-6 fw-bold mb-3">Pronto para dar o próximo passo?</h2>
+        <p class="lead text-muted mb-4">
+            Entre em contato hoje mesmo e descubra como podemos ajudar a impulsionar seu futuro com energia solar.
+        </p>
+        <a class="btn btn-success btn-lg" href="{% url 'produtos:contact' %}">Fale com um Especialista</a>
+    </div>
+</div>
+
+{% endblock %}

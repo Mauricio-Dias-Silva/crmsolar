@@ -1,0 +1,104 @@
+{% extends 'solar/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">{{ titulo }}</h2>
+
+    {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# --- ÁREA: imagens atuais --- #}
+    {% if produto %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <strong>Imagens atuais</strong>
+            <small class="text-muted">{{ produto.images.count }} imagem(ns)</small>
+        </div>
+        <div class="card-body">
+            {% if produto.images.all %}
+                <div class="row g-3">
+                    {% for img in produto.images.all %}
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                            <div class="card h-100">
+                                <img src="{{ img.image.url }}" class="card-img-top" style="height:120px; object-fit:cover;" alt="Imagem do produto">
+                                <div class="card-body p-2 text-center">
+                                    <form method="post" action="{% url 'crm:remover_imagem_produto' img.id %}" onsubmit="return confirm('Confirma exclusão desta imagem?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                            <i class="fas fa-trash-alt"></i> Excluir
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Este produto ainda não tem imagens.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# --- FORMULÁRIO PRINCIPAL --- #}
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white">
+                Detalhes do Produto
+            </div>
+            <div class="card-body">
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="mb-3">
+                    <label for="id_images" class="form-label">Adicionar Imagens</label>
+                    <input type="file" name="images" id="id_images" multiple class="form-control">
+                    <div class="form-text">
+                        Você pode selecionar <strong>uma ou mais imagens</strong> para adicionar ao produto.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <div>
+                <button type="submit" class="btn btn-primary me-2" id="btn-salvar">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+                <a href="{% url 'crm:lista_produtos_ecommerce' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+            {% if produto %}
+            <div>
+                <a href="{% url 'crm:criar_editar_produto' %}" class="btn btn-outline-success">
+                    <i class="fas fa-plus"></i> Novo Produto
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

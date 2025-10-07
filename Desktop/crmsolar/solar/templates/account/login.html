@@ -1,0 +1,166 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Solar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5fafd 60%, #e3effd 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-container {
+            background: #fff;
+            padding: 2.5rem 2rem 2rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(44,62,80,.12);
+            width: 100%;
+            max-width: 390px;
+            text-align: center;
+        }
+        .login-logo {
+            height: 60px;
+            margin-bottom: 1.3rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .login-title {
+            color: #0966f2;
+            font-weight: 800;
+            font-size: 1.55rem;
+            margin-bottom: 0.25em;
+        }
+        .login-subtitle {
+            color: #7a8799;
+            font-size: 1.08rem;
+            margin-bottom: 1.2em;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #34495e;
+        }
+        .input-group-text {
+            background: #f5f7fa;
+            border: 1px solid #dde3ec;
+            border-radius: 8px 0 0 8px;
+        }
+        .form-control {
+            background: #f5f7fa;
+            border: 1px solid #dde3ec;
+            border-radius: 0 8px 8px 0;
+            transition: border-color .2s;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            background: #fff;
+            box-shadow: none;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 12px 0;
+            margin-top: 6px;
+            font-size: 1.11rem;
+            box-shadow: 0 2px 12px 0 rgba(13,110,253,.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary:focus, .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .alert {
+            margin-top: 10px;
+        }
+        .help-link {
+            display: block;
+            margin: 10px 0 0 0;
+            font-size: 0.96rem;
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        .help-link:hover {
+            text-decoration: underline;
+        }
+        .footer-support {
+            margin-top: 24px;
+            font-size: 0.95rem;
+            color: #8e9eb2;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="{% static 'images/crm_logo_big.png' %}" alt="Logo Solar" class="login-logo">
+
+        <h2 class="login-title">Bem-vindo ao CRM Solar</h2>
+        <div class="login-subtitle">Gerencie projetos de energia solar de forma simples e segura.</div>
+        
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger py-2">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            
+            {% for field in form %}
+                {% if field.field.widget.input_type == "checkbox" %}
+                    <div class="form-check mb-3 text-start">
+                        {{ field|add_class:"form-check-input" }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="mb-3 text-start">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        <div class="input-group">
+                            {% if field.label|lower == "usuário" or field.label|lower == "username" %}
+                                <span class="input-group-text">
+                                    <img src="https://img.icons8.com/ios-filled/22/7a8799/user--v1.png" alt="Usuário"/>
+                                </span>
+                            {% elif field.label|lower == "senha" or field.label|lower == "password" %}
+                                <span class="input-group-text">
+                                    <img src="https://img.icons8.com/ios-filled/22/7a8799/lock--v1.png" alt="Senha"/>
+                                </span>
+                            {% endif %}
+                            {{ field|add_class:"form-control" }}
+                        </div>
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary w-100">
+                <img src="https://img.icons8.com/ios-filled/20/ffffff/login-rounded-right.png" alt="Entrar"/>
+                Entrar
+            </button>
+            <a href="mailto:suporte@solar.com" class="help-link">Esqueceu a senha?</a>
+        </form>
+
+        {% if error %}
+            <div class="alert alert-danger mt-3 py-2">{{ error }}</div>
+        {% endif %}
+
+        <div class="footer-support">
+            Precisa de ajuda? <a href="mailto:suporte@solar.com" class="help-link" style="display:inline;font-size:inherit;">Fale com o suporte</a>.
+        </div>
+    </div>
+</body>
+</html>

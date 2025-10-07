@@ -1,0 +1,84 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Rastreio de Proposta CRM{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+                <h1 class="text-center fw-bold text-success mb-4">Acompanhe seu Projeto Solar</h1>
+                <p class="text-center text-muted mb-4">Insira o número da proposta que você recebeu e o CPF/CNPJ para verificar o status em tempo real.</p>
+
+                <!-- Formulário de Busca -->
+                <form method="post" action="{% url 'produtos:rastreio_proposta' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="numero_proposta" class="form-label fw-bold">Número da Proposta:</label>
+                        <input type="text" class="form-control" id="numero_proposta" name="numero_proposta" required placeholder="Ex: P24735">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="cpf_cnpj" class="form-label fw-bold">CPF ou CNPJ:</label>
+                        <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" required placeholder="Somente números">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">Rastrear <i class="bi bi-search"></i></button>
+                </form>
+
+                {% if erro_mensagem %}
+                    <div class="alert alert-danger mt-4 text-center" role="alert">
+                        <i class="bi bi-x-circle me-2"></i>{{ erro_mensagem }}
+                    </div>
+                {% endif %}
+
+                <!-- Seção de Resultado da Proposta (Timeline) -->
+                {% if proposta %}
+                    <hr class="my-5">
+                    <h3 class="fw-bold text-center mb-4">Detalhes da Proposta #{{ proposta.numero }}</h3>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-0 text-muted small">Cliente:</p>
+                            <p class="fw-bold mb-0">{{ proposta.cliente_nome }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-0 text-muted small">Potência:</p>
+                            <p class="fw-bold mb-0 text-success">{{ proposta.potencia_kwp|floatformat:2 }} kWp</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-0 text-muted small">Valor Total:</p>
+                            <p class="fw-bold mb-0">R$ {{ proposta.valor_total|floatformat:2|intcomma }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-0 text-muted small">Válida até:</p>
+                            <p class="fw-bold mb-0">{{ proposta.data_validade|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <h4 class="fw-bold mt-4 mb-3">Status do Processo:</h4>
+                    
+                    <!-- Timeline Simples do Status (Baseado no STATUS_CHOICES do modelo Proposta) -->
+                    <ul class="list-group list-group-flush timeline">
+                        {% for status_code, status_label in proposta.STATUS_CHOICES %}
+                            {% if status_code <= proposta.status_crm %}
+                                <li class="list-group-item list-group-item-success fw-bold">
+                                    <i class="bi bi-check-circle-fill me-2"></i> {{ status_label }}
+                                </li>
+                            {% else %}
+                                <li class="list-group-item list-group-item-light text-muted">
+                                    <i class="bi bi-clock me-2"></i> {{ status_label }}
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

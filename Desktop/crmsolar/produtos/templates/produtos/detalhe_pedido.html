@@ -1,0 +1,61 @@
+{% extends 'produtos/base.html' %}
+
+{% block title %}Detalhes do Pedido{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Detalhes do Pedido #{{ pedido.id }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Status do Pedido:</strong> <span class="badge bg-primary">{{ pedido.status|title }}</span></p>
+                    <p><strong>Método de Pagamento:</strong> {{ pedido.metodo_pagamento|title }}</p>
+                    <p><strong>Criado em:</strong> {{ pedido.criado_em|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Data de Pagamento:</strong> 
+                        {% if pedido.data_pagamento %}
+                            {{ pedido.data_pagamento|date:"d/m/Y H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h5>Itens do Pedido</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th class="text-end">Quantidade</th>
+                        <th class="text-end">Preço Unitário</th>
+                        <th class="text-end">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in pedido.itens.all %}
+                        <tr>
+                            <td>{{ item.nome }}</td>
+                            <td class="text-end">{{ item.quantidade }}</td>
+                            <td class="text-end">R$ {{ item.preco_unitario|floatformat:2 }}</td>
+                            <td class="text-end">R$ {{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div class="text-end mt-4">
+                <p class="h5">Total do Pedido: R$ {{ pedido.total|floatformat:2 }}</p>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'produtos:lista_pedidos' %}" class="btn btn-secondary">Voltar para Pedidos</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

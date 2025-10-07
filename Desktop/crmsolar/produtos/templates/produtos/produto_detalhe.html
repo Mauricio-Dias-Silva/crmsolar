@@ -1,0 +1,74 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Detalhes de {{ produto.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row align-items-start">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-0">
+                    {% if imagem_para_exibir %} 
+                        <img src="{{ imagem_para_exibir.image.url }}" alt="{{ imagem_para_exibir.alt_text|default:produto.name }}" class="img-fluid rounded">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center bg-light text-muted" style="min-height: 400px;">
+                            <p>Imagem não disponível</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="produto-info-container">
+                <h4 class="fw-semibold mb-2">{{ produto.name }}</h4>
+
+                <p class="mb-2">
+                    <span class="text-muted text-decoration-line-through me-2">
+                        R$ {{ preco_original|floatformat:2 }}
+                    </span>
+                    <span class="text-success fw-bold fs-5">
+                        R$ {{ preco_com_desconto|floatformat:2 }}
+                    </span>
+                </p>
+
+                <h6 class="mt-3">Descrição:</h6>
+                <p class="text-muted small">{{ produto.description|default:"Nenhuma descrição disponível." }}</p>
+
+                <form method="POST" action="{% url 'produtos:adicionar_ao_carrinho' produto.id %}" class="mt-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="produto_id" value="{{ produto.id }}">
+                    <div class="mb-2">
+                        <label for="quantidade" class="form-label">Quantidade:</label>
+                        <input type="number" name="quantidade" id="quantidade" value="1" min="1" class="form-control w-50" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Adicionar ao Carrinho</button>
+                </form>
+
+                <div class="mt-3 d-flex justify-content-start gap-2">
+                    <a href="{% url 'produtos:home' %}" class="btn btn-outline-secondary btn-sm">Continuar Comprando</a>
+                    <a href="{% url 'produtos:ver_carrinho' %}" class="btn btn-info btn-sm">Ver Carrinho</a>
+                </div>
+
+                <!-- Cálculo de Frete -->
+                <div class="mt-4">
+                    <h6 class="mb-2">Calcular Frete</h6>
+                    <form method="POST" action="{% url 'produtos:calcular_frete' produto.id %}" class="d-flex flex-column flex-md-row gap-2 align-items-start">
+                        {% csrf_token %}
+                        <input type="text" name="cep" class="form-control w-auto" placeholder="Digite seu CEP" maxlength="9" required>
+                        <button type="submit" class="btn btn-outline-primary">Calcular</button>
+                    </form>
+
+                    {% if frete_disponivel %}
+                        <p class="mt-2 text-success fw-semibold">Frete: R$ {{ valor_frete }} — Entrega em {{ prazo }} dias</p>
+                    {% elif frete_indisponivel %}
+                        <p class="mt-2 text-danger">Desculpe, ainda não entregamos nesta região.</p>
+                    {% endif %}
+                </div>
+                <!-- Fim do bloco de frete -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

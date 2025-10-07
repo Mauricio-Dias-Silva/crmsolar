@@ -1,0 +1,47 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Meus Pedidos{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">Meus Pedidos</h1>
+    <p class="lead">Acompanhe o status e o histórico de suas compras.</p>
+
+    {% if pedidos %}
+        <div class="list-group">
+            {% for pedido in pedidos %}
+                {% if pedido.itens.exists %}
+                    {% with primeiro_item=pedido.itens.first %}
+                        <a href="{% url 'produtos:detalhe_pedido' pedido_id=pedido.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                            <div class="d-flex align-items-center">
+                                {% with produto=primeiro_item.produto %}
+                                    {% with imagem_do_produto=produto.images.first %}
+                                        <img src="{% if imagem_do_produto %}{{ imagem_do_produto.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}"
+                                             alt="{{ primeiro_item.nome }}" 
+                                             class="img-thumbnail rounded-circle me-4" 
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                    {% endwith %}
+                                {% endwith %}
+                                
+                                <div>
+                                    <h5 class="mb-1">Pedido #{{ pedido.id }}</h5>
+                                    <small class="text-muted">Criado em: {{ pedido.criado_em|date:"d/m/Y H:i" }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge rounded-pill bg-success me-2">{{ pedido.status|title }}</span>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                    {% endwith %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center mt-4" role="alert">
+            Você não tem nenhum pedido recente. <a href="{% url 'produtos:home' %}" class="alert-link">Ir para a Loja</a>.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

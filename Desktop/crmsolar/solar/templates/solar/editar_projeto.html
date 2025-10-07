@@ -1,0 +1,311 @@
+{% extends 'solar/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Projeto{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos essenciais para a barra lateral e layout */
+    .document-row { 
+        margin-bottom: 15px; 
+        padding: 12px; 
+        background: #f9f9f9; 
+        border: 1px solid #e9ecef; 
+        border-radius: 6px; 
+        display: flex; 
+        align-items: center;
+        gap: 10px;
+    }
+    .document-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 150px;
+    }
+    .section-header {
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #0d6efd;
+        padding-bottom: 5px;
+        margin: 20px 0 15px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Editar Projeto: {{ projeto.nome }}</h4>
+        </div>
+        <div class="card-body">
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {# --- FORMULÁRIO PRINCIPAL DE EDIÇÃO --- #}
+            <form method="POST" enctype="multipart/form-data" novalidate id="projeto-form">
+                {% csrf_token %}
+                
+                {# Define os campos a serem MOVIDOS para as seções de Radiação e Equipamentos (string simples) #}
+                {% with fields_to_exclude='latitude,longitude,inclinacao_telhado,azimute_telhado,irradiacao_media_diaria,cliente,potencia_kwp,quantidade_modulos,inversor,fornecedor,valor_total,forma_pagamento,status,rua,numero,bairro,cidade,estado,cep,data_inicio,data_fim,descricao,nome' %}
+                
+                
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 1: DETALHES GERAIS E ENDEREÇO #}
+                {# ---------------------------------------------------- #}
+                
+                <div class="section-header">Detalhes Gerais</div>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        {# Linha 1: Nome do Projeto e Status #}
+                        <div class="row">
+                            <div class="col-md-9 mb-3">
+                                <label class="form-label">{{ form.nome.label }}</label>
+                                {{ form.nome|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.status.label }}</label>
+                                {{ form.status|add_class:"form-control" }}
+                            </div>
+                        </div>
+
+                        {# Linha 2: Cliente e Descrição #}
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.cliente.label }}</label>
+                            {{ form.cliente|add_class:"form-control" }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.descricao.label }}</label>
+                            {{ form.descricao|add_class:"form-control"|attr:"rows:2" }}
+                        </div>
+
+                        <hr class="my-3">
+                        <h5 class="mb-3">Endereço de Instalação e Prazos</h5>
+                        
+                        {# Endereço - Linha 1: Rua, Número, Bairro #}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.rua.label }}</label>
+                                {{ form.rua|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.numero.label }}</label>
+                                {{ form.numero|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.bairro.label }}</label>
+                                {{ form.bairro|add_class:"form-control" }}
+                            </div>
+                        </div>
+                        {# Endereço - Linha 2: Cidade, Estado, CEP #}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.cidade.label }}</label>
+                                {{ form.cidade|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.estado.label }}</label>
+                                {{ form.estado|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.cep.label }}</label>
+                                {{ form.cep|add_class:"form-control" }}
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        
+                        {# Prazos #}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.data_inicio.label }}</label>
+                                {{ form.data_inicio|add_class:"form-control"|attr:"placeholder:DD/MM/AAAA" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.data_fim.label }}</label>
+                                {{ form.data_fim|add_class:"form-control"|attr:"placeholder:DD/MM/AAAA" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 2: ANÁLISE DE RADIAÇÃO (Cálculo da API) #}
+                {# ---------------------------------------------------- #}
+                
+                <div class="section-header">Análise de Irradiação Solar</div>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text mb-4 text-muted">Insira as coordenadas exatas e a orientação do telhado.</p>
+                        
+                        {# CAMPOS DE ENTRADA (Lat/Long) #}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.latitude.label }}</label>
+                                {{ form.latitude|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.longitude.label }}</label>
+                                {{ form.longitude|add_class:"form-control" }}
+                            </div>
+                        </div>
+                        
+                        {# CAMPOS DE ENTRADA (Ângulos) #}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.inclinacao_telhado.label }}</label>
+                                {{ form.inclinacao_telhado|add_class:"form-control" }}
+                                <div class="form-text">Ângulo de inclinação do telhado (em graus).</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.azimute_telhado.label }}</label>
+                                {{ form.azimute_telhado|add_class:"form-control" }}
+                                <div class="form-text">0° = Norte; 180° = Sul.</div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+
+                        {# CAMPO DE RESULTADO (Somente Leitura) #}
+                        <h5 class="mt-4 mb-3">Resultado da Última Análise</h5>
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.irradiacao_media_diaria.label }}</label>
+                            <input type="text" 
+                                   class="form-control irradiacao-display" 
+                                   value="{% if projeto.irradiacao_media_diaria %}{{ projeto.irradiacao_media_diaria|floatformat:3 }} kWh/m²/dia{% else %}Aguardando cálculo...{% endif %}" 
+                                   readonly>
+                            <div class="form-text">Este valor será atualizado automaticamente após salvar (API PVGIS).</div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 3: EQUIPAMENTOS E FINANCEIRO #}
+                {# ---------------------------------------------------- #}
+
+                <div class="section-header">Equipamentos e Valores</div>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        
+                        {# Linha 1: Informações Técnicas (3 Colunas) #}
+                        <h5 class="mb-3">Detalhes do Equipamento</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.potencia_kwp.label }}</label>
+                                {{ form.potencia_kwp|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.quantidade_modulos.label }}</label>
+                                {{ form.quantidade_modulos|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.inversor.label }}</label>
+                                {{ form.inversor|add_class:"form-control" }}
+                            </div>
+                        </div>
+
+                        {# Linha 2: Fornecedor #}
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.fornecedor.label }}</label>
+                            {{ form.fornecedor|add_class:"form-control" }}
+                        </div>
+                        
+                        <hr class="my-3">
+
+                        {# Linha 3: Detalhes Financeiros #}
+                        <h5 class="mb-3">Valores e Pagamento</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.valor_total.label }}</label>
+                                {{ form.valor_total|add_class:"form-control"|attr:"placeholder:R$ 0,00" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.forma_pagamento.label }}</label>
+                                {{ form.forma_pagamento|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {# ---------------------------------------------------- #}
+                {# 🛑 SEÇÃO 4: DOCUMENTOS (Upload e Anexados) #}
+                {# ---------------------------------------------------- #}
+                
+                <div class="section-header">Documentos</div>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5>Documentos já anexados</h5>
+                        <ul class="list-group mb-3">
+                            {# Loop de documentos existentes #}
+                            {% for doc in documentos %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a href="{{ doc.arquivo.url }}" download>{{ doc.nome }}</a>
+                                    <span class="badge bg-secondary ms-2">{{ doc.visivel_cliente|yesno:"Visível,Interno" }}</span>
+                                    <span class="text-muted small ms-3">Enviado em {{ doc.data_upload|date:"d/m/Y H:i" }}</span>
+                                </div>
+                                <form method="post" action="{% url 'crm:excluir_documento_projeto' projeto.id doc.id %}" style="margin:0;display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir documento"
+                                            onclick="return confirm('Tem certeza que deseja excluir este documento?');">
+                                        &#128465; Excluir
+                                    </button>
+                                </form>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item text-muted">Nenhum documento anexado ainda.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <hr class="my-4">
+                        
+                        {# 💡 SEÇÃO DE UPLOAD DE NOVOS DOCUMENTOS (Correção de estrutura) #}
+                        <h5>Adicionar Novos Documentos</h5>
+                        <p class="text-muted">Anexe documentos como Conta de Luz, Foto do Poste, etc.</p>
+
+                        <div class="row mb-3">
+                            {% for doc_label in documentos_labels %}
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ doc_label }}</label>
+                                    <input type="file" name="documento_arquivo_{{ forloop.counter }}" class="form-control mb-1">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check d-flex align-items-center h-100">
+                                        <input type="checkbox" name="documento_visivel_{{ forloop.counter }}" class="form-check-input me-2" id="visivel_{{ forloop.counter }}">
+                                        <label class="form-check-label" for="visivel_{{ forloop.counter }}">
+                                            Visível ao cliente
+                                        </label>
+                                    </div>
+                                    <input type="hidden" name="documento_nome_{{ forloop.counter }}" value="{{ doc_label }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                
+                {# ---------------------------------------------------- #}
+                {# --- FIM DOS CAMPOS PRINCIPAIS DO FORMULÁRIO --- #}
+                {# ---------------------------------------------------- #}
+                
+                {# ---------------------------------------------------- #}
+                {# --- BOTÕES DE AÇÃO (FINAL) --- #}
+                <div class="d-flex justify-content-between mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg me-2">
+                        <i class="fas fa-save"></i> Salvar e Calcular
+                    </button>
+                    <a href="{% url 'crm:detalhe_projeto' projeto.id %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Voltar (Sem Salvar)
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div style="height: 60px;"></div>
+{% endblock %}

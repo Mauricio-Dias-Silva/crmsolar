@@ -1,0 +1,88 @@
+{% extends 'solar/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">{{ titulo }}</h2>
+
+    {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                Informações do Produto
+            </div>
+            <div class="card-body">
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                Gerenciar Imagens do Produto
+            </div>
+            <div class="card-body">
+                <h4>Imagens Atuais</h4>
+                {% if imagens_existentes %}
+                    <div class="row">
+                        {% for img in imagens_existentes %}
+                            <div class="col-md-3 mb-3">
+                                <div class="card">
+                                    <img src="{{ img.image.url }}" class="card-img-top" alt="{{ img.alt_text|default:produto.name }}" style="height: 150px; object-fit: cover;">
+                                    <div class="card-body text-center p-2">
+                                        <form action="{% url 'crm:excluir_imagem_produto' image_id=img.id %}" method="post" style="display:inline-block;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger mt-1" title="Excluir esta imagem" onclick="return confirm('Tem certeza que deseja excluir esta imagem?');">
+                                                <i class="fas fa-times-circle"></i> Excluir
+                                            </button>
+                                        </form>
+                                        {% if img.is_main %}
+                                            <span class="badge bg-primary mt-1">Principal</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Nenhuma imagem cadastrada para este produto.</p>
+                {% endif %}
+                <hr>
+
+                <h4>Adicionar Novas Imagens</h4>
+                <div class="mb-3">
+                    <label for="id_images" class="form-label">Selecionar arquivos</label>
+                    <input type="file" name="images" id="id_images" multiple class="form-control" style="margin-bottom: 10px;">
+                    <div class="form-text">Selecione uma ou mais imagens para carregar.</div>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary me-2"><i class="fas fa-save"></i> Salvar Alterações</button>
+        <a href="{% url 'crm:lista_produtos_ecommerce' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar para a Lista</a>
+    </form>
+</div>
+{% endblock %}

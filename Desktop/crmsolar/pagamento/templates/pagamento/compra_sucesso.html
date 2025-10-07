@@ -1,0 +1,39 @@
+{% extends 'produtos/base.html' %}
+{% load static %}
+
+{% block title %}Compra Concluída{% endblock %}
+
+{% block content %}
+<div class="container my-5 text-center">
+    <div class="card p-5 shadow-sm">
+        <h1 class="display-4 text-success mb-4">Compra Concluída com Sucesso!</h1>
+        
+        <p class="lead">Seu pedido #{{ pedido.id }} foi registrado.</p>
+        <p>Realizado em: {{ pedido.criado_em|date:"d/m/Y H:i" }}</p>
+        <p>Agradecemos sua preferência! Um e-mail de confirmação com os detalhes da compra será enviado para **{{ pedido.email_cliente }}** em breve.</p>
+        
+        <hr class="my-4">
+        
+        <div class="text-start">
+            <h3 class="h4 text-info mb-3">Detalhes do Seu Pedido</h3>
+            <p><strong>Pedido ID:</strong> {{ pedido.id }}</p>
+            <p><strong>Total do Pedido:</strong> R$ {{ pedido.total|floatformat:2 }}</p>
+            <p><strong>Status do Pagamento:</strong> {{ pedido.status|capfirst }}</p>
+            
+            <h4 class="mt-4">Itens da Compra:</h4>
+            <ul class="list-group">
+                {% for item in pedido.itens.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ item.nome }}
+                        <span class="badge bg-primary rounded-pill">R$ {{ item.subtotal|floatformat:2 }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="mt-5">
+            <a href="{% url 'produtos:home' %}" class="btn btn-primary btn-lg">Voltar à Loja</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

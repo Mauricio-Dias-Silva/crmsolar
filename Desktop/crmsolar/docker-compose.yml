@@ -1,0 +1,61 @@
+# Define a versão da especificação Docker Compose a ser usada
+# version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+    container_name: django_app
+      
+    entrypoint: sh -c "./entrypoint.sh"
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - .:/app
+      - media_data:/app/media # Adiciona um volume para persistir arquivos de mídia
+      - static_data:/app/staticfiles
+    environment:
+      SECRET_KEY: 'django-insecure-k^#8#26p1!^!_tk+f!gcxezrnri2e#m)9+o@=#&0iu^%8848au'
+      DEBUG: "True"
+      DATABASE_URL: 'mysql://user:password@db:3306/mydb'
+      EMAIL_HOST_USER: 'mauriciodiassilva@hotmail.com'
+      EMAIL_HOST_PASSWORD: 'emvhqoemjqxfqpvv'
+      ALLOWED_HOSTS: 'localhost,127.0.0.1'
+
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - media_data:/app/media # <--- O Nginx precisa acessar os arquivos de mídia
+      - static_data:/app/staticfiles 
+    depends_on:
+      - web
+
+volumes:
+  db_data:
+  media_data: # Adiciona o volume de mídia
+  static_data:
