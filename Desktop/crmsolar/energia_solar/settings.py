@@ -131,9 +131,9 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='')
 
 
 
-# DATABASES = {
-#     'default': env.db_url('DATABASE_URL')
-# }
+DATABASES = {
+    'default': env.db_url('DATABASE_URL')
+}
 
 # Validação de senha
 AUTH_PASSWORD_VALIDATORS = [
@@ -183,9 +183,9 @@ MERCADO_PAGO_CLIENT_SECRET = env('MERCADO_PAGO_CLIENT_SECRET', default='')
 
 # The commented out section `# DATABASES = { ... }` is an example configuration for setting up a
 # SQLite database in a Django project.
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), # This is the corrected line
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), # This is the corrected line
+#     }
+# }
