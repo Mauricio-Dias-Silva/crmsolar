@@ -2,23 +2,34 @@
 {% load static %} <!-- Garanta que você tem o load static se usar ícones/css locais -->
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card shadow-sm">
-        <!-- CABEÇALHO COM TÍTULO E BOTÕES DE AÇÃO PRINCIPAIS -->
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div class="container mt-4">
+            <div class="card shadow-sm">
+                <!-- CABEÇALHO COM TÍTULO E BOTÕES DE AÇÃO PRINCIPAIS -->
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h2 class="mb-0">Projeto: {{ projeto.nome }}</h2>
+            
             <div>
-                <!-- BOTÃO DE GERAR PROPOSTA MOVEMOS PARA CÁ PARA DAR DESTAQUE -->
-                <a href="{% url 'crm:gerar_proposta_pdf' pk=projeto.pk %}" class="btn btn-success btn-sm me-2" target="_blank">
-                    <i class="fas fa-file-pdf"></i> Gerar Proposta
+
+                <a href="{% url 'crm:gerar_proposta_pdf' pk=projeto.pk %}" class="btn btn-info btn-sm me-2" target="_blank" title="Gera uma prévia do PDF sem criar um número oficial.">
+                    <i class="fas fa-eye"></i> Visualizar Prévia do PDF
                 </a>
+
+                <form action="{% url 'crm:gerar_proposta_oficial' projeto.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm me-2" 
+                            onclick="return confirm('Tem certeza? Esta ação irá gerar um número oficial para a proposta e não pode ser desfeita.');" 
+                            title="Cria um registro oficial da proposta com um número único e baixa o PDF final.">
+                        <i class="fas fa-check-circle"></i> Finalizar e Gerar PDF Oficial
+                    </button>
+                </form>
+
                 <a href="{% url 'crm:editar_projeto' projeto.id %}" class="btn btn-warning btn-sm me-2">
                     <i class="fas fa-pencil-alt"></i> Editar
                 </a>
-                <a href="{% url 'crm:excluir_projeto' projeto.id %}" class="btn btn-danger btn-sm"
-                   onclick="return confirm('Tem certeza que deseja excluir este projeto?');">
-                   <i class="fas fa-trash-alt"></i> Excluir
+                <a href="{% url 'crm:excluir_projeto' projeto.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este projeto?');">
+                    <i class="fas fa-trash-alt"></i> Excluir
                 </a>
+
             </div>
         </div>
 

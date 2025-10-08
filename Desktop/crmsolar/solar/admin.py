@@ -1,12 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import (
-    Cliente, Projeto, Usuario, Departamento, MenuPermissao,
-    # 💡 Adicionei o ItemProposta aqui para podermos usá-lo
-    ItemProposta,
-    Portfolio, DocumentoProjeto
-    # Removi Proposta e ProjetoExecutado se não estiverem nos seus models atuais
-    # para evitar erros. Adicione-os de volta se eles existirem.
+    Cliente, Projeto, Usuario, Departamento, MenuPermissao, Proposta, ProjetoExecutado,
+    ItemProposta, Portfolio, DocumentoProjeto
+   
 )
 from .forms import ClienteForm
 
@@ -75,13 +72,6 @@ class ProjetoAdmin(admin.ModelAdmin):
     # 💡 AQUI A MÁGICA ACONTECE!
     inlines = [ItemPropostaInline, DocumentoProjetoInline]
 
-# Mantive seus outros registros do admin.
-# Se Proposta e ProjetoExecutado não existirem no seu models.py,
-# comente ou remova os blocos abaixo para evitar erros.
-
-# @admin.register(Proposta) ...
-# @admin.register(ProjetoExecutado) ...
-
 @admin.register(Departamento)
 class DepartamentoAdmin(admin.ModelAdmin):
     list_display = ('nome',)
@@ -92,3 +82,26 @@ class MenuPermissaoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'rota')
     search_fields = ('nome', 'rota')
 
+@admin.register(Proposta)
+class PropostaAdmin(admin.ModelAdmin):
+    list_display = ('numero', 'projeto', 'cliente_nome', 'valor_total', 'status_crm')
+    list_filter = ('status_crm',)
+    search_fields = ('numero', 'cliente_nome', 'projeto__nome')
+    # Estes campos serão preenchidos sozinhos, então deixamos como "apenas leitura"
+    readonly_fields = ('numero', 'cliente_nome', 'cpf_cnpj', 'potencia_kwp', 'valor_total')
+    
+    # Organiza o formulário para ficar mais limpo
+    fieldsets = (
+        ('Informações Gerais', {
+            'fields': ('projeto', 'vendedor', 'status_crm', 'data_validade')
+        }),
+        ('Dados Gerados Automaticamente', {
+            'fields': ('numero', 'cliente_nome', 'cpf_cnpj', 'potencia_kwp', 'valor_total')
+        }),
+    )
+
+@admin.register(ProjetoExecutado)
+class ProjetoExecutadoAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'localidade', 'potencia_kwp', 'tipo_projeto', 'is_active')
+    list_filter = ('tipo_projeto', 'is_active')
+    search_fields = ('titulo', 'localidade')

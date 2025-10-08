@@ -1361,6 +1361,7 @@ def gerar_proposta_pdf(request, pk):
 
     context = {
         'projeto': projeto,
+        'proposta': getattr(projeto, 'proposta', None),
         'data_atual': data_atual,
         'data_validade': data_validade,
         'finance_metrics': finance_metrics,
@@ -1376,3 +1377,72 @@ def gerar_proposta_pdf(request, pk):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Proposta_{projeto.nome}_{timezone.now().strftime("%Y%m%d")}.pdf"'
     return response
+
+
+# Em seu_app/views.py
+
+def gerar_proposta_oficial(request, projeto_id):
+    """
+    Oficializa uma proposta criando o registro no banco de dados,
+    e em seguida, redireciona para o download do PDF final.
+    """
+    if request.method == 'POST':
+        projeto = get_object_or_404(Projeto, pk=projeto_id)
+
+        # Verifica se a proposta já foi oficializada para não criar duplicatas
+        if hasattr(projeto, 'proposta'):
+            messages.warning(request, f"Este projeto já possui a proposta oficial número {projeto.proposta.numero}.")
+            # AQUI: Corrigido para a URL de detalhe do seu CRM
+            return redirect('crm:detalhe_projeto', pk=projeto.id)
+
+        # Cria o registro da Proposta no banco.
+        # A lógica no models.py vai gerar o número e copiar os dados.
+        nova_proposta = Proposta.objects.create(projeto=projeto)
+
+        # Atualiza o status do projeto
+        projeto.status = 'Proposta Enviada'
+        projeto.save()
+
+        messages.success(request, f"Proposta oficial {nova_proposta.numero} gerada com sucesso! O download começará em breve.")
+
+        # --- A GRANDE INTEGRAÇÃO ---
+        # Em vez de voltar para a página de detalhes, nós redirecionamos
+        # o usuário diretamente para a sua view de gerar o PDF!
+        # Assumindo que o nome da URL para gerar_proposta_pdf seja 'crm:gerar_proposta_pdf'
+        return redirect('crm:gerar_proposta_pdf', pk=projeto.id)
+
+    # Se alguém tentar acessar esta URL sem ser por um botão (método GET),
+    # redirecionamos para a lista de projetos.
+    # Assumindo que o nome da URL para a lista seja 'crm:listar_projetos'
+    return redirect('crm:listar_projetos')
+
+# Em seu_app/views.py
+
+def listar_propostas(request):
+    # .select_related() otimiza a busca, pegando os dados do projeto e cliente de uma vez
+    propostas = Proposta.objects.all().select_related('projeto', 'projeto__cliente').order_by('-id')
+    context = {
+        'propostas': propostas,
+    }
+    return render(request, 'solar/propostas_lista.html', context)
+
+def detalhe_proposta(request, pk):
+    proposta = get_object_or_404(Proposta, pk=pk)
+
+    # Lógica para atualizar o status
+    if request.method == 'POST':
+        novo_status = request.POST.get('status_crm')
+        if novo_status:
+            proposta.status_crm = novo_status
+            proposta.save()
+            messages.success(request, 'Status da proposta atualizado!')
+            return redirect('crm:detalhe_proposta', pk=proposta.pk)
+
+    context = {
+        'proposta': proposta,
+    }
+    return render(request, 'solar/proposta_detalhe.html', context)
+
+# Em seu_app/views.py
+def manual_usuario(request):
+    return render(request, 'solar/manual_usuario.html')

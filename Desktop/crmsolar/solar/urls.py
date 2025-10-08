@@ -46,7 +46,7 @@ urlpatterns = [
     path('projetos/<int:pk>/proposta-pdf/', views.gerar_proposta_pdf, name='gerar_proposta_pdf'), 
     path('projetos/novo/', views.projeto_create_update, name='cadastrar_projeto'),
     path('projetos/<int:pk>/editar/', views.projeto_create_update, name='editar_projeto'),
-    
+    path('projeto/<int:projeto_id>/gerar-proposta/', views.gerar_proposta_oficial, name='gerar_proposta_oficial'),
 
     # Materiais (CRM)
     path('materiais/', views.lista_materiais, name='lista_materiais'),
@@ -82,6 +82,11 @@ urlpatterns = [
     path('produtos-ecommerce/excluir-imagem/<int:image_id>/', views.excluir_imagem_produto, name='excluir_imagem_produto'),
     path('produtos-ecommerce/para-revisar/', views.lista_produtos_para_revisao, name='lista_produtos_para_revisao'),
     path('produtos-ecommerce/revisao-ia/', views.resultados_ia, name='pagina_de_resultados_ia'), 
+
+    path('propostas/', views.listar_propostas, name='listar_propostas'),
+    path('proposta/<int:pk>/', views.detalhe_proposta, name='detalhe_proposta'),
+
+    path('manual/', views.manual_usuario, name='manual_usuario'),
 ]
 
 

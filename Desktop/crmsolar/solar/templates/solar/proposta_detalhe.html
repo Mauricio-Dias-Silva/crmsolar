@@ -1,0 +1,58 @@
+{% extends 'solar/base.html' %} {# Ou o nome do seu template base #}
+
+{% block content %}
+<div class="container mt-4">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Detalhes da Proposta: {{ proposta.numero }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-7">
+                    <h4>Informações Principais</h4>
+                    <p><strong>Cliente:</strong> {{ proposta.cliente_nome }}</p>
+                    <p><strong>CPF/CNPJ:</strong> {{ proposta.cpf_cnpj }}</p>
+                    <p><strong>Valor Congelado:</strong> R$ {{ proposta.valor_total|floatformat:2 }}</p>
+                    <p><strong>Potência:</strong> {{ proposta.potencia_kwp }} kWp</p>
+                    <p><strong>Vendedor:</strong> {{ proposta.vendedor }}</p>
+                    <hr>
+                    <a href="{% url 'crm:detalhe_projeto' proposta.projeto.pk %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-tools"></i> Ver Detalhes Técnicos do Projeto
+                    </a>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h4 class="card-title">Acompanhamento (CRM)</h4>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="status_crm" class="form-label"><strong>Status Atual:</strong></label>
+                                    <select name="status_crm" id="status_crm" class="form-select">
+                                        {% for value, display_name in proposta.STATUS_CHOICES %}
+                                            <option value="{{ value }}" {% if proposta.status_crm == value %}selected{% endif %}>
+                                                {{ display_name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save"></i> Salvar Novo Status
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

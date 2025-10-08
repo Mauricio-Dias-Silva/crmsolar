@@ -1,0 +1,117 @@
+{% extends 'solar/base.html' %}
+{% load static %}
+
+{% block title %}Guia Visual do CRM Solar{% endblock %}
+
+{% block content %}
+<style>
+    /* CSS para o manual visual e interativo */
+    :root {
+        --solar-blue: #0d6efd;
+        --solar-yellow: #ffc107;
+        --solar-green: #198754;
+        --solar-dark: #212529;
+    }
+    .manual-header {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?solar-panels,roof');
+        background-size: cover;
+        background-position: center;
+        color: white;
+    }
+    .workflow-steps { display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+    .workflow-step { display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 1rem; }
+    .workflow-step .icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 4px solid white; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.1); transition: all 0.3s ease; }
+    .workflow-step .icon-circle i { font-size: 2rem; color: white; }
+    .workflow-step p { font-weight: bold; color: var(--solar-dark); }
+    .workflow-arrow { font-size: 2.5rem; color: #adb5bd; margin: 0 1rem; }
+    .workflow-link { text-decoration: none; color: inherit; }
+    .workflow-link:hover { color: inherit; }
+    .workflow-link:hover .workflow-step .icon-circle { transform: scale(1.1); box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.2); }
+    .step1-color { background-color: var(--solar-blue); }
+    .step2-color { background-color: var(--solar-yellow); }
+    .step3-color { background-color: var(--solar-green); }
+    .step4-color { background-color: #6c757d; }
+    .section-title { border-left: 5px solid var(--solar-blue); padding-left: 1rem; scroll-margin-top: 20px; }
+    .feature-card { border: 1px solid #e3e6f0; border-top: 4px solid var(--solar-yellow); border-radius: 0.75rem; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+    .feature-card:hover { transform: translateY(-5px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); }
+    .feature-card-img { height: 180px; width: 100%; object-fit: cover; border-radius: 0.5rem; }
+</style>
+
+<div class="container-fluid mt-4">
+
+    <div class="text-center p-5 mb-5 rounded-3 manual-header shadow-lg">
+        <h1 class="display-4 fw-bold">Guia Visual do CRM</h1>
+        <p class="fs-4">Aprenda a usar as principais ferramentas de forma rápida e intuitiva.</p>
+    </div>
+
+    <div class="card shadow-sm mb-5">
+        <div class="card-header text-center"><h3 class="mb-0">O Fluxo Principal de Vendas</h3></div>
+        <div class="card-body p-4">
+            <div class="workflow-steps">
+                <a href="#modulo-clientes" class="workflow-link">
+                    <div class="workflow-step">
+                        <div class="icon-circle step1-color"><i class="fas fa-user-plus"></i></div>
+                        <p>1. Cadastrar Cliente</p>
+                    </div>
+                </a>
+                <div class="workflow-arrow">&rightarrow;</div>
+                <a href="#modulo-projetos" class="workflow-link">
+                    <div class="workflow-step">
+                        <div class="icon-circle step2-color"><i class="fas fa-pencil-ruler"></i></div>
+                        <p>2. Criar Projeto</p>
+                    </div>
+                </a>
+                <div class="workflow-arrow">&rightarrow;</div>
+                <a href="#modulo-propostas" class="workflow-link">
+                    <div class="workflow-step">
+                        <div class="icon-circle step3-color"><i class="fas fa-stamp"></i></div>
+                        <p>3. Gerar Proposta</p>
+                    </div>
+                </a>
+                <div class="workflow-arrow">&rightarrow;</div>
+                <a href="#modulo-acompanhamento" class="workflow-link">
+                    <div class="workflow-step">
+                        <div class="icon-circle step4-color"><i class="fas fa-chart-line"></i></div>
+                        <p>4. Acompanhar</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <h2 id="modulo-clientes" class="mb-4 border-bottom pb-2 pt-5 section-title">1. Módulo de Clientes</h2>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card feature-card h-100"><div class="card-body"><h5 class="card-title fw-bold"><i class="fas fa-list-ul me-2 text-primary"></i>Listar Clientes</h5><div class="row align-items-center mt-3"><div class="col-md-7"><p>Acesse uma visão geral de todos os seus clientes cadastrados.</p><ol><li>No menu, clique em <strong>Clientes</strong>.</li><li>Use a busca para encontrar um cliente.</li><li>Clique no nome para ver os detalhes.</li></ol></div><div class="col-md-5"><img src="https://source.unsplash.com/400x300/?contact-list,crm" class="feature-card-img" alt="Exemplo de lista de clientes"></div></div></div></div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card feature-card h-100"><div class="card-body"><h5 class="card-title fw-bold"><i class="fas fa-user-plus me-2 text-primary"></i>Adicionar Novo Cliente</h5><div class="row align-items-center mt-3"><div class="col-md-7"><p>Cadastre novos leads e clientes para iniciar o processo de vendas.</p><ol><li>No menu, clique em <strong>Novo Cliente</strong>.</li><li>Preencha o formulário completo.</li><li>Clique em <strong>Salvar</strong>.</li></ol></div><div class="col-md-5"><img src="https://source.unsplash.com/400x300/?form,application" class="feature-card-img" alt="Exemplo de formulário de cliente"></div></div></div></div>
+        </div>
+    </div>
+
+    <h2 id="modulo-projetos" class="mb-4 mt-5 border-bottom pb-2 pt-5 section-title">2. Módulo de Projetos (Orçamentos)</h2>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card feature-card h-100"><div class="card-body"><h5 class="card-title fw-bold"><i class="fas fa-file-alt me-2 text-warning"></i>Criar e Editar Projetos</h5><div class="row align-items-center mt-3"><div class="col-md-7"><p>Sua área de trabalho para montar o orçamento técnico e financeiro.</p><ol><li>Vá em <strong>Projetos > Novo Projeto</strong>.</li><li>Associe um cliente e preencha os dados.</li><li>Adicione equipamentos e serviços em "Itens".</li></ol></div><div class="col-md-5"><img src="https://source.unsplash.com/400x300/?blueprint,planning" class="feature-card-img" alt="Exemplo de formulário de projeto"></div></div></div></div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card feature-card h-100"><div class="card-body"><h5 class="card-title fw-bold"><i class="fas fa-eye me-2 text-info"></i>Visualizar Prévia do PDF</h5><div class="row align-items-center mt-3"><div class="col-md-7"><p>Antes de oficializar, veja como o documento final ficará para o cliente.</p><ol><li>Acesse os detalhes de um projeto.</li><li>Clique em <span class="badge bg-info">Visualizar Prévia</span>.</li><li>Revise o PDF gerado em uma nova aba.</li></ol></div><div class="col-md-5"><img src="https://source.unsplash.com/400x300/?document,preview" class="feature-card-img" alt="Exemplo de preview de documento"></div></div></div></div>
+        </div>
+    </div>
+    
+    <h2 id="modulo-propostas" class="mb-4 mt-5 border-bottom pb-2 pt-5 section-title">3. Módulo de Propostas (Oficialização)</h2>
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card feature-card h-100" style="border-top-color: var(--solar-green);"><div class="card-body"><h5 class="card-title fw-bold"><i class="fas fa-check-circle me-2 text-success"></i>Finalizar e Gerar Proposta Oficial</h5><div class="row align-items-center mt-3"><div class="col-md-7"><p>Este é o passo final que cria um registro permanente e um número rastreável para o cliente.</p><ol><li>Com o projeto 100% revisado, clique em <span class="badge bg-success">Finalizar e Gerar PDF</span>.</li><li>Confirme a ação.</li><li>O sistema criará o registro e iniciará o download do PDF final.</li></ol></div><div class="col-md-5"><img src="https://source.unsplash.com/400x300/?signature,contract" class="feature-card-img" alt="Exemplo de assinatura de contrato"></div></div></div></div>
+        </div>
+    </div>
+    
+    <h2 id="modulo-acompanhamento" class="mb-4 mt-5 border-bottom pb-2 pt-5 section-title">4. Módulo de Acompanhamento (CRM)</h2>
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card feature-card h-100" style="border-top-color: #6c757d;"><div class="card-body"><h5 class="card-title fw-bold"><i class="fas fa-tasks me-2 text-secondary"></i>Gerenciar Propostas</h5><div class="row align-items-center mt-3"><div class="col-md-7"><p>Após o envio, acompanhe o ciclo de vida de cada negociação nesta tela centralizada.</p><ol><li>No menu, clique em <strong>Propostas > Gerenciar</strong>.</li><li>Clique no número da proposta para ver os detalhes.</li><li>Use o formulário lateral para <strong>atualizar o status</strong>.</li></ol></div><div class="col-md-5"><img src="https://source.unsplash.com/400x300/?kanban,board" class="feature-card-img" alt="Exemplo de painel de gerenciamento"></div></div></div></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

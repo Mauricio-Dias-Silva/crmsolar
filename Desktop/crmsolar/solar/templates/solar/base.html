@@ -194,6 +194,20 @@
                 </div>
             </div>
 
+            <div class="menu-item" onclick="toggleSubMenu('propostas')">
+                <img src="{% static 'images/icons/contract.png' %}" alt="Propostas" class="icon"> {# ⚠️ Ícone novo #}
+                <span>Propostas</span>
+                <img src="{% static 'images/icons/expand-arrow.png' %}" alt="Expandir" class="icon">
+            </div>
+            <div id="propostas" class="submenu">
+                <div class="menu-item">
+                    <a href="{% url 'crm:listar_propostas' %}">
+                        <img src="{% static 'images/icons/task.png' %}" alt="Gerenciar Propostas" class="icon">
+                        <span>Gerenciar Propostas</span>
+                    </a>
+                </div>
+            </div>
+
             <div class="menu-item" onclick="toggleSubMenu('materiais')">
                 <img src="{% static 'images/icons/box.png' %}" alt="Materiais" class="icon">
                 <span>Materiais</span>
@@ -313,6 +327,12 @@
                 <a href="#">
                     <img src="{% static 'images/icons/settings.png' %}" alt="Licença" class="icon">
                     <span>Licença</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="{% url 'crm:manual_usuario' %}"> {# Link para a nova página do manual #}
+                    <i class="fas fa-question-circle icon"></i> {# Ícone de ajuda #}
+                    <span>Manual de Uso</span>
                 </a>
             </div>
 

@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.conf import settings
-
+from django.utils import timezone
 # --- VALIDADORES ---
 def validar_cnpj(cnpj):
     cnpj = re.sub(r'[^0-9]', '', cnpj)
@@ -226,15 +226,30 @@ class Financeiro(models.Model):
 
 # =========================================================
 # MODELOS DE SERVIÇO (Movidos do app 'produtos')
-# =========================================================
+# =========================================================2
+
+# Em models.py
 
 class Proposta(models.Model):
-    # MOCK para Rastreamento de Proposta (Funcionalidade 1)
-    numero = models.CharField(max_length=10, unique=True)
+    # --- MUDANÇAS AQUI ---
+
+    # 1. NOVO: Conexão com o projeto que originou esta proposta.
+    # CÓDIGO CORRIGIDO
+    projeto = models.OneToOneField(Projeto, on_delete=models.CASCADE, related_name='proposta', null=True)
+
+    # 2. ALTERADO: Ajustamos o campo 'numero' para ser gerado automaticamente.
+    numero = models.CharField(
+        max_length=20, 
+        unique=True, 
+        blank=True, # Permite que o campo fique em branco no admin antes de salvar
+        help_text="Será gerado automaticamente ao salvar."
+    )
+    
+    # --- SEUS CAMPOS EXISTENTES (sem alteração) ---
     cliente_nome = models.CharField(max_length=150)
     cpf_cnpj = models.CharField(max_length=18)
     vendedor = models.CharField(max_length=100)
-    potencia_kwp = models.DecimalField(max_digits=5, decimal_places=2)
+    potencia_kwp = models.DecimalField(max_digits=8, decimal_places=2)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     
     STATUS_CHOICES = [
@@ -247,8 +262,30 @@ class Proposta(models.Model):
     status_crm = models.CharField(max_length=20, choices=STATUS_CHOICES, default='1_ACEITE')
     data_validade = models.DateField(null=True, blank=True)
     
+    # 3. NOVO MÉTODO: A lógica para gerar o número e preencher dados.
+    def save(self, *args, **kwargs):
+        # Se for uma proposta nova (ainda não tem um ID/pk)
+        if not self.pk:
+            # Preenche os dados da proposta buscando do projeto vinculado
+            self.cliente_nome = self.projeto.cliente.nome
+            self.cpf_cnpj = self.projeto.cliente.cpf or self.projeto.cliente.cnpj
+            self.potencia_kwp = self.projeto.potencia_kwp
+            self.valor_total = self.projeto.valor_total
+        
+        # Salva o objeto no banco de dados (isso cria o ID da proposta)
+        super().save(*args, **kwargs)
+
+        # Agora que temos um ID, podemos gerar o número se ele ainda não existir
+        if not self.numero:
+            ano_atual = timezone.now().year
+            # Cria um número único, ex: "2025-123"
+            self.numero = f"{ano_atual}-{self.id}"
+            # Salva o objeto novamente, mas de uma forma que evita loops
+            Proposta.objects.filter(pk=self.pk).update(numero=self.numero)
+
     def __str__(self):
-        return f"Proposta {self.numero} - {self.cliente_nome}"
+        # Usa o 'self.numero' que agora será preenchido
+        return f"Proposta {self.numero or '(a ser gerado)'} - {self.cliente_nome}"
 
     class Meta:
         verbose_name = "Proposta de Cliente"
