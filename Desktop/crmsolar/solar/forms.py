@@ -1,12 +1,14 @@
-# solar/forms.py
-
 from django import forms
+# 💡 IMPORT NECESSÁRIO PARA O FORMSET
+from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from .models import (
     Usuario, Cliente, Projeto, Etapa, Material, Fornecedor,
-    LancamentoFinanceiro, DocumentoProjeto, Departamento, MenuPermissao
+    LancamentoFinanceiro, DocumentoProjeto, Departamento, MenuPermissao,
+    # 💡 IMPORT DO NOSSO NOVO MODELO
+    ItemProposta
 )
 from produtos.models import Produto
 import re
@@ -14,38 +16,22 @@ import re
 User = get_user_model()
 
 
-# Lista oficial de estados do Brasil (sigla, nome)
+# Lista oficial de estados do Brasil (mantida)
 ESTADOS_BRASIL = [
-    ('AC', 'Acre'),
-    ('AL', 'Alagoas'),
-    ('AP', 'Amapá'),
-    ('AM', 'Amazonas'),
-    ('BA', 'Bahia'),
-    ('CE', 'Ceará'),
-    ('DF', 'Distrito Federal'),
-    ('ES', 'Espírito Santo'),
-    ('GO', 'Goiás'),
-    ('MA', 'Maranhão'),
-    ('MT', 'Mato Grosso'),
-    ('MS', 'Mato Grosso do Sul'),
-    ('MG', 'Minas Gerais'),
-    ('PA', 'Pará'),
-    ('PB', 'Paraíba'),
-    ('PR', 'Paraná'),
-    ('PE', 'Pernambuco'),
-    ('PI', 'Piauí'),
-    ('RJ', 'Rio de Janeiro'),
-    ('RN', 'Rio Grande do Norte'),
-    ('RS', 'Rio Grande do Sul'),
-    ('RO', 'Rondônia'),
-    ('RR', 'Roraima'),
-    ('SC', 'Santa Catarina'),
-    ('SP', 'São Paulo'),
-    ('SE', 'Sergipe'),
-    ('TO', 'Tocantins'),
+    ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
+    ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'), ('ES', 'Espírito Santo'),
+    ('GO', 'Goiás'), ('MA', 'Maranhão'), ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
+    ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'), ('PR', 'Paraná'),
+    ('PE', 'Pernambuco'), ('PI', 'Piauí'), ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
+    ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'), ('SC', 'Santa Catarina'),
+    ('SP', 'São Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins'),
 ]
 
+# --- SEUS FORMULÁRIOS EXISTENTES (Mantidos 100%) ---
+
 class ProjetoForm(forms.ModelForm):
+    # Seu ProjetoForm está ótimo e completo, vamos mantê-lo.
+    # Ele será o formulário principal na nossa nova tela.
     data_inicio = forms.DateField(
         widget=forms.DateInput(format='%d/%m/%Y', attrs={'class': 'form-control'}),
         input_formats=['%d/%m/%Y', '%Y-%m-%d'],
@@ -56,7 +42,6 @@ class ProjetoForm(forms.ModelForm):
         input_formats=['%d/%m/%Y', '%Y-%m-%d'],
         required=False
     )
-    
     estado = forms.ChoiceField(
         choices=ESTADOS_BRASIL,
         widget=forms.Select(attrs={'class': 'form-control'}),
@@ -70,11 +55,7 @@ class ProjetoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # Torna cidade obrigatória
         self.fields['cidade'].required = True
-
-        # Aplica 'form-control' a todos os campos (exceto datas, já tratadas)
         for fname, field in self.fields.items():
             if fname not in ['data_inicio', 'data_fim']:
                 if isinstance(field.widget, (forms.TextInput, forms.NumberInput, forms.Textarea, forms.Select)):
@@ -82,7 +63,29 @@ class ProjetoForm(forms.ModelForm):
                 elif isinstance(field.widget, forms.CheckboxInput):
                     field.widget.attrs.setdefault('class', 'form-check-input')
 
+
+# --- 💡 A GRANDE NOVIDADE: O FORMSET PARA O ORÇAMENTO ---
+# Este é o "sub-formulário" que permitirá adicionar múltiplos itens ao projeto.
+
+ItemPropostaFormSet = inlineformset_factory(
+    Projeto,                  # O modelo "pai"
+    ItemProposta,             # O modelo "filho" que queremos adicionar várias vezes
+    fields=('descricao', 'unidade', 'quantidade', 'valor_unitario'), # Os campos que aparecerão na tela
+    extra=1,                  # Começa mostrando 1 linha de item vazia
+    can_delete=True,          # Permite ao usuário marcar itens para deletar
+    widgets={                 # Estilização para deixar bonito
+        'descricao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Descrição do Equipamento/Serviço'}),
+        'unidade': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'unid.'}),
+        'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Qtd'}),
+        'valor_unitario': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Valor Unit. R$'}),
+    }
+)
+
+
+
+
 class ClienteForm(forms.ModelForm):
+    # (Seu ClienteForm... sem alterações)
     class Meta:
         model = Cliente
         fields = '__all__'

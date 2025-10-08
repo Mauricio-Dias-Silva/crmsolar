@@ -1288,64 +1288,91 @@ def lista_produtos_para_revisao(request):
 from .services import (
     calculate_financial_metrics, 
     generate_savings_chart_base64,
-    generate_sales_pitch,
-    get_solar_irradiation # Importamos para garantir que o projeto tenha a irradiação correta
+    get_solar_irradiation,generate_savings_chart_base64,  # Importamos para garantir que o projeto tenha a irradiação correta
 )
 
+from .services import calculate_financial_metrics, generate_savings_chart_base64, generate_ai_analysis 
+from .models import Projeto, Portfolio 
+from datetime import timedelta # 💡 Importa o timedelta
+
+from .forms import ProjetoForm, ItemPropostaFormSet
+
+# ... (suas outras views como 'listar_projetos', 'detalhe_projeto', etc. devem estar aqui) ...
+
+# 💡 A NOVA VIEW PARA CRIAR E EDITAR PROJETOS
+def projeto_create_update(request, pk=None):
+    if pk:
+        # Se um 'pk' foi passado na URL, estamos editando um projeto existente.
+        projeto = get_object_or_404(Projeto, pk=pk)
+        title = f'Editando Projeto: {projeto.nome}'
+    else:
+        # Se não, estamos criando um novo projeto.
+        projeto = None
+        title = 'Cadastrar Novo Projeto'
+
+    if request.method == 'POST':
+        form = ProjetoForm(request.POST, instance=projeto)
+        formset = ItemPropostaFormSet(request.POST, instance=projeto)
+        
+        if form.is_valid() and formset.is_valid():
+            novo_projeto = form.save()
+            
+            # Precisamos associar o formset ao projeto salvo
+            formset.instance = novo_projeto
+            formset.save()
+            
+            # Redireciona para a página de detalhes do projeto que acabamos de salvar
+            return redirect('crm:detalhe_projeto', pk=novo_projeto.pk)
+    else:
+        form = ProjetoForm(instance=projeto)
+        formset = ItemPropostaFormSet(instance=projeto)
+
+    context = {
+        'form': form,
+        'formset': formset,
+        'title': title
+    }
+    return render(request, 'solar/projeto_form.html', context)
+
+
+# --- SUA VIEW DE GERAR PDF (JÁ ESTÁ PERFEITA) ---
 def gerar_proposta_pdf(request, pk):
     projeto = get_object_or_404(Projeto, pk=pk)
-    
-    # 1. GARANTE A IRRADIAÇÃO CORRETA ANTES DOS CÁLCULOS
-    # Se o projeto não tiver uma irradiação definida, busca pelo município.
-    if not projeto.irradiacao_media_diaria:
-        projeto.irradiacao_media_diaria = get_solar_irradiation(
-            cidade=projeto.cidade, 
-            uf=projeto.estado
-        )
-        # Opcional: salvar no banco de dados para não ter que buscar de novo
-        # projeto.save()
-
-    # 2. Calcula as métricas financeiras usando SUA função
     finance_metrics = calculate_financial_metrics(projeto)
-    
+
     if not finance_metrics:
-        return HttpResponse("Erro: Dados essenciais (potência, valor, irradiação) estão faltando no projeto.", status=400)
+        return HttpResponse("Erro: Dados essenciais para cálculo financeiro estão faltando no projeto.", status=400)
 
-    # 3. Gera o gráfico de economia usando SUA função
-    # Passamos a economia mensal calculada para a função do gráfico
     img_base64 = generate_savings_chart_base64(finance_metrics['economia_mensal'])
+    
+    fotos_projeto = projeto.documentos.filter(incluir_na_proposta=True)
+    projetos_portfolio = Portfolio.objects.filter(destaque=True).order_by('-data_conclusao')[:6]
 
-    # 4. (NOVO) Gera o texto persuasivo com a IA
-    # Montamos um dicionário simples para a função de IA
-    dados_ia = {
+    data_para_ia = {
+        'cliente': projeto.cliente.nome if projeto.cliente else "Valioso Cliente",
         'kwp': projeto.potencia_kwp,
         'economia': finance_metrics['economia_mensal'],
-        'cliente': projeto.cliente.nome,
+        'payback': finance_metrics['payback_anos']
     }
-    texto_persuasivo_ia = generate_sales_pitch(dados_ia)
+    analise_ia = generate_ai_analysis(data_para_ia)
 
-    # 5. Monta o contexto final para o template
+    data_atual = timezone.now()
+    data_validade = data_atual + timedelta(days=7)
+
     context = {
         'projeto': projeto,
-        'data_atual': timezone.now(),
-        
-        # Dados dos seus 'services'
-        'finance_metrics': finance_metrics, # Passamos o dicionário inteiro
+        'data_atual': data_atual,
+        'data_validade': data_validade,
+        'finance_metrics': finance_metrics,
         'grafico_base64': img_base64,
-        'texto_persuasivo_ia': texto_persuasivo_ia, # Adicionamos o texto da IA
+        'analise_ia': analise_ia,
+        'fotos_projeto': fotos_projeto,
+        'projetos_portfolio': projetos_portfolio,
     }
 
-    # 6. Renderiza e converte para PDF
     html_template = get_template('solar/proposta_pdf.html').render(context)
-    pdf_file = HTML(string=html_template).write_pdf(
-        stylesheets=[CSS(string='@page {size: A4; margin: 2cm;}')]
-    )
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
 
-    # 7. Retorna o PDF para download
-    nome_cliente_safe = "".join(filter(str.isalnum, projeto.cliente.nome))
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Proposta_{nome_cliente_safe}_{timezone.now().strftime("%Y%m%d")}.pdf"'
-    
+    response['Content-Disposition'] = f'attachment; filename="Proposta_{projeto.nome}_{timezone.now().strftime("%Y%m%d")}.pdf"'
     return response
-
-

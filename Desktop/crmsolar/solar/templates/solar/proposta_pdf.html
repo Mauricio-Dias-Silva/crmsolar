@@ -1,168 +1,201 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+{% load static %}
 <head>
-    <title>Proposta Comercial - {{ projeto.nome }}</title>
+    <meta charset="UTF-8">
+    <title>Proposta Técnica e Comercial</title>
     <style>
-        /* CONFIGURAÇÃO DE FONTES E PÁGINA */
         @page {
             size: A4;
-            margin: 2cm;
-            @top-center { content: "Proposta SolarHub | Projeto: {{ projeto.nome }}"; font-size: 8pt; color: #888; }
-            @bottom-center { content: "Página " counter(page) " de " counter(pages); font-size: 8pt; color: #888; }
+            margin: 2.5cm 2cm;
         }
-
-        body { 
-            font-family: sans-serif; 
-            font-size: 10pt; 
-            line-height: 1.5;
-            color: #333;
-        }
-        
-        /* ESTILOS DE CABEÇALHO */
-        .header {
-            border-bottom: 3px solid #007bff;
-            padding-bottom: 10px;
-            margin-bottom: 25px;
-        }
-        .header h1 { 
-            color: #007bff;
-            font-size: 18pt; 
+        @page :first {
             margin: 0;
         }
-        .data { 
-            font-size: 9pt; 
-            text-align: right; 
-            color: #555;
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.6;
         }
-
-        /* SEÇÕES E BLOCOS */
-        .section { 
-            margin-top: 30px; 
-            border: 1px solid #eee; 
-            padding: 20px; 
+        .cover-page {
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .cover-page .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 40px;
+        }
+        .cover-page h1 {
+            font-size: 2.5em;
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+        .cover-page h2 {
+            font-size: 1.5em;
+            font-weight: 300;
+            color: #555;
+            margin-bottom: 50px;
+        }
+        .cover-page .details {
+            font-size: 1.1em;
+        }
+        .cover-page .footer {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.9em;
+        }
+        .page-break { page-break-before: always; }
+        h1, h2, h3 { font-weight: normal; color: #0d6efd; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; }
+        .section { margin-bottom: 20px; }
+        .info { margin-bottom: 8px; }
+        .info strong { display: inline-block; width: 220px; }
+        .investment-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .validity-warning {
+            color: #dc3545;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .ia-section { background-color: #f9f9f9; border-left: 5px solid #0d6efd; padding: 15px; margin-top: 30px; }
+        .ia-block { margin-bottom: 20px; }
+        .ia-block h3 { color: #0d6efd; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 1.1em; }
+        .faq { white-space: pre-wrap; }
+        .gallery-section { margin-top: 30px; }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .gallery-item {
+            border: 1px solid #eee;
+            padding: 10px;
+            text-align: center;
             border-radius: 5px;
         }
-        .section h2 {
-            font-size: 14pt;
-            color: #007bff;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-            margin-top: 0;
-            margin-bottom: 15px;
+        .gallery-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
-        .destaque { 
-            font-weight: bold; 
-            color: #34A853; /* Verde Solar */
-            font-size: 11pt;
-        }
-        .box-valor {
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-top: 15px;
-            text-align: center;
-            border-radius: 4px;
-        }
-        .box-valor p { margin: 5px 0; font-size: 12pt; }
-        .box-valor .label { font-size: 9pt; color: #6c757d; }
+        .gallery-item h4 { font-size: 1em; margin: 0; color: #333; }
+        .gallery-item p { font-size: 0.8em; color: #666; }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>Proposta Técnica e Comercial</h1>
-        <p class="data">Gerado em: {{ data_atual|date:"d/m/Y H:i" }}</p>
-    </div>
-    
-    {# ---------------------------------------------------------------- #}
-    {# SEÇÃO 1: DETALHES GERAIS E CLIENTE #}
-    {# ---------------------------------------------------------------- #}
-    <div class="section">
-        <h2>1. Detalhes do Cliente e Projeto</h2>
-        
-        <p><strong>Cliente:</strong> {{ projeto.cliente.nome_completo }}</p>
-        <p><strong>Responsável:</strong> {{ projeto.nome }}</p>
-        <p><strong>Localização da Instalação:</strong> {{ projeto.endereco }}, {{ projeto.cidade }} - {{ projeto.estado }}</p>
-        <p><strong>Status do Projeto:</strong> {{ projeto.status }}</p>
+    <!-- PÁGINA 1: CAPA -->
+    <div class="cover-page">
+        <img src="{% static 'images/logo.png' %}" alt="Logo da Empresa" class="logo">
+        <h1>Proposta de Sistema Fotovoltaico</h1>
+        <h2>Uma solução inteligente para o seu futuro energético</h2>
+        <div class="details">
+            <p><strong>Preparado para:</strong> {{ projeto.cliente.nome|default:"Cliente" }}</p>
+            <p><strong>Projeto:</strong> {{ projeto.nome }}</p>
+            <p><strong>Data:</strong> {{ data_atual|date:"d \d\e F \d\e Y" }}</p>
+        </div>
+        <div class="footer">
+            <p>SolarHub | Seu Parceiro em Energia Solar</p>
+        </div>
     </div>
 
-
-    {# ---------------------------------------------------------------- #}
-    {# SEÇÃO 2: ANÁLISE TÉCNICA E CÁLCULO #}
-    {# ---------------------------------------------------------------- #}
-    <div class="section">
-        <h2>2. Análise Técnica e Geração Estimada</h2>
-        
-        <p>A viabilidade do seu projeto é determinada pela irradiação solar na sua região e pelo dimensionamento técnico:</p>
-        
-        <ul>
-            <li><strong>Potência do Sistema (kWp):</strong> {{ projeto.potencia_kwp }} kWp</li>
-            <li><strong>Módulos/Inversor:</strong> {{ projeto.quantidade_modulos }} módulos | Inversor: {{ projeto.inversor }}</li>
-            <li><strong>Irradiação Média Diária (PVGIS):</strong> <span class="destaque">{{ irradiacao_media_diaria }} kWh/m²/dia</span></li>
-            <li><strong>Ângulos de Instalação:</strong> Inclinação de {{ projeto.inclinacao_telhado }}° e Azimute de {{ projeto.azimute_telhado }}°</li>
-        </ul>
+    <!-- PÁGINAS SEGUINTES: CONTEÚDO -->
+    <div class="page-break">
+        <div class="section">
+            <h2>1. Detalhes do Projeto</h2>
+            <div class="info"><strong>Cliente:</strong> {{ projeto.cliente.nome|default:"Não informado" }}</div>
+            <div class="info"><strong>Localização:</strong> {{ projeto.cidade }} - {{ projeto.estado }}</div>
+            <div class="info"><strong>Potência do Sistema:</strong> {{ projeto.potencia_kwp }} kWp</div>
+        </div>
+        <div class="section">
+            <h2>2. Análise Financeira e Retorno</h2>
+            <div class="info"><strong>Economia Mensal Estimada:</strong> R$ {{ finance_metrics.economia_mensal|floatformat:2 }}</div>
+            <div class="info"><strong>Retorno do Investimento (Payback):</strong> Aprox. {{ finance_metrics.payback_anos }} anos</div>
+            {% if grafico_base64 %}
+                <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Gráfico de Economia" style="width: 100%; margin-top: 20px;">
+            {% endif %}
+        </div>
     </div>
 
-
-    {# ---------------------------------------------------------------- #}
-    {# SEÇÃO 3: RETORNO FINANCEIRO E GRÁFICO #}
-    {# ---------------------------------------------------------------- #}
-    <div class="section" style="break-after: page;">
-        <h2>3. Projeção de Retorno e Payback</h2>
-        
-        <div style="display: flex; justify-content: space-around; width: 100%; margin-bottom: 20px;">
-            <div class="box-valor" style="width: 48%;">
-                <p class="label">Economia Mensal Estimada</p>
-                <p style="font-size: 16pt;">R$ <span class="destaque">{{ economia_mensal|floatformat:2 }}</span></p>
+    <!-- ANÁLISE DA IA -->
+    <div class="page-break">
+        <div class="section ia-section">
+            <h2>3. Análise Inteligente do Seu Investimento</h2>
+            <div class="ia-block">
+                <h3>Resumo Executivo</h3>
+                <p>{{ analise_ia.resumo|linebreaks }}</p>
             </div>
-            <div class="box-valor" style="width: 48%;">
-                <p class="label">Payback Estimado (Retorno do Investimento)</p>
-                <p style="font-size: 16pt;"><span class="destaque">{{ payback_anos }}</span> Anos</p>
+            <div class="ia-block">
+                <h3>Traduzindo os Números</h3>
+                <p>{{ analise_ia.explicacao|linebreaks }}</p>
+            </div>
+            <div class="ia-block">
+                <h3>Perguntas Frequentes</h3>
+                <div class="faq">{{ analise_ia.faq|linebreaks }}</div>
             </div>
         </div>
-
-        {# 💡 INCORPORAÇÃO DO GRÁFICO MATPLOTLIB (Base64) #}
-        {% if grafico_base64 %}
-            <div style="margin-top: 30px; text-align: center;">
-                <p><strong>Projeção de Economia Acumulada em R$:</strong></p>
-                <img src="data:image/png;base64,{{ grafico_base64 }}" style="width: 90%; max-width: 650px;">
-            </div>
-        {% endif %}
-
     </div>
-    
-    
-    {# ---------------------------------------------------------------- #}
-    {# SEÇÃO 4: TEXTO PERSUASIVO IA (Se a chave API estiver ok) #}
-    {# ---------------------------------------------------------------- #}
-    {% if texto_persuasivo_ia %}
-        <div class="section" style="background-color: #f0fff0; border-color: #34A853;">
-            <h2>4. Vantagem Competitiva: Seu Investimento</h2>
-            {# O texto da IA é injetado aqui #}
-            <p style="font-style: italic; color: #1e7040;">{{ texto_persuasivo_ia }}</p>
+
+    <!-- 💡 SEÇÃO DE FOTOS DO PROJETO ATUAL -->
+    {% if fotos_projeto %}
+    <div class="gallery-section page-break">
+        <h2>4. Imagens do Local da Instalação</h2>
+        <p>Abaixo estão as fotos do local, utilizadas para o planejamento técnico do seu sistema.</p>
+        <div class="gallery-grid">
+            {% for foto in fotos_projeto %}
+            <div class="gallery-item">
+                <!-- Usamos .url que é a forma correta para web -->
+                <img src="{{ foto.arquivo.url }}">
+                <h4>{{ foto.nome }}</h4>
+            </div>
+            {% endfor %}
         </div>
+    </div>
     {% endif %}
 
-    {# ---------------------------------------------------------------- #}
-    {# SEÇÃO 5: INFORMAÇÕES COMERCIAIS E PAGAMENTO #}
-    {# ---------------------------------------------------------------- #}
-    <div class="section">
-        <h2>5. Investimento e Condições</h2>
-        
-        <p style="font-size: 14pt; margin-top: 20px;"><strong>Valor Total do Sistema:</strong> <span class="destaque" style="font-size: 16pt;">R$ {{ projeto.valor_total|floatformat:2 }}</span></p>
-        
-        <hr>
-        
-        <p><strong>Forma de Pagamento Sugerida:</strong> {{ projeto.forma_pagamento }}</p>
-        <p><strong>Fornecedor Principal:</strong> {{ projeto.fornecedor }}</p>
-        
-        <h3 style="font-size: 12pt; margin-top: 20px; color: #555;">Próximos Passos:</h3>
-        <ol>
-            <li>Aceite da Proposta e Assinatura do Contrato.</li>
-            <li>Início do Processo de Homologação junto à concessionária.</li>
-            <li>Aquisição dos Equipamentos e Agendamento da Instalação.</li>
-        </ol>
+    <!-- 💡 SEÇÃO DE PORTFÓLIO -->
+    {% if projetos_portfolio %}
+    <div class="gallery-section {% if not fotos_projeto %}page-break{% endif %}">
+        <h2>5. Nosso Portfólio: Qualidade Comprovada</h2>
+        <p>Veja alguns dos nossos projetos de sucesso e imagine o seu entre eles.</p>
+        <div class="gallery-grid">
+            {% for item in projetos_portfolio %}
+            <div class="gallery-item">
+                <img src="{{ item.imagem.url }}">
+                <h4>{{ item.titulo }}</h4>
+                <p>{{ item.descricao }}</p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
+    {% endif %}
 
+    <!-- SEÇÃO FINAL: INVESTIMENTO -->
+    <div class="section page-break">
+        <h2>6. Investimento e Condições</h2>
+        <div class="investment-box">
+            <div class="info"><strong>Valor Total do Projeto:</strong> R$ {{ projeto.valor_total|floatformat:2 }}</div>
+            <div class="info"><strong>Forma de Pagamento:</strong> {{ projeto.forma_pagamento|default:"A combinar" }}</div>
+            <p class="validity-warning">
+                Esta proposta é válida até: {{ data_validade|date:"d/m/Y" }}
+            </p>
+        </div>
+    </div>
 </body>
 </html>
+

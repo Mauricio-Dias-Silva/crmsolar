@@ -66,7 +66,7 @@ class Cliente(models.Model):
     usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='perfil_cliente')
     nome = models.CharField(max_length=200)
     email = models.EmailField()
-    telefone = models.CharField(max_length=20)
+    telefone = models.CharField(max_length=20, blank=True, null=True)
     rua = models.CharField(max_length=200, null=True, blank=True)
     numero = models.CharField(max_length=20, null=True, blank=True)
     bairro = models.CharField(max_length=100, null=True, blank=True)
@@ -104,6 +104,9 @@ class Projeto(models.Model):
     ])
     cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True)
     responsavel = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='projetos_responsavel')
+    tipo_estrutura = models.CharField("Tipo de Estrutura do Telhado", max_length=100, blank=True, null=True, help_text="Ex: Cerâmico, Fibrocimento, Metálico")
+    area_necessaria_m2 = models.DecimalField("Área Necessária (m²)", max_digits=6, decimal_places=2, blank=True, null=True)
+    consumo_medio_kwh = models.PositiveIntegerField("Consumo Médio Mensal (kWh)", blank=True, null=True)
     rua = models.CharField(max_length=200, null=True, blank=True)
     numero = models.CharField(max_length=20, null=True, blank=True)
     bairro = models.CharField(max_length=100, null=True, blank=True)
@@ -133,9 +136,14 @@ class DocumentoProjeto(models.Model):
     arquivo = models.FileField('Arquivo', upload_to='projetos/%Y/%m/%d/')
     data_upload = models.DateTimeField(auto_now_add=True)
     visivel_cliente = models.BooleanField('Visível para o cliente?', default=False)
+    
+    # 💡 CAMPO NOVO: Para controlar o que vai no PDF
+    incluir_na_proposta = models.BooleanField("Incluir na Proposta PDF?", default=False,
+                                              help_text="Marque se este arquivo for uma imagem a ser mostrada na proposta.")
 
     def __str__(self):
         return f'{self.nome} ({self.projeto.nome})'
+
     
 class Etapa(models.Model):
     projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name='etapas')
@@ -246,6 +254,21 @@ class Proposta(models.Model):
         verbose_name = "Proposta de Cliente"
         verbose_name_plural = "Propostas de Clientes"
 
+# 💡 NOVO MODELO PARA O ORÇAMENTO DETALHADO
+class ItemProposta(models.Model):
+    projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name='itens_proposta')
+    descricao = models.CharField("Descrição do Item", max_length=255)
+    unidade = models.CharField(max_length=20, default='unid.')
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_unitario = models.DecimalField("Valor Unit. (R$)", max_digits=12, decimal_places=2)
+
+    @property
+    def valor_total(self):
+        return self.quantidade * self.valor_unitario
+
+    def __str__(self):
+        return f"{self.quantidade}x {self.descricao} para {self.projeto.nome}"
+
 
 class ProjetoExecutado(models.Model):
     # Modelo para o Portfólio de Projetos (Funcionalidade 3)
@@ -264,3 +287,17 @@ class ProjetoExecutado(models.Model):
         verbose_name_plural = "Projetos Executados"
         ordering = ['-potencia_kwp']
 
+
+class Portfolio(models.Model):
+    titulo = models.CharField("Título do Projeto", max_length=200)
+    descricao = models.TextField("Breve Descrição", blank=True)
+    imagem = models.ImageField("Foto Principal", upload_to='portfolio/%Y/')
+    data_conclusao = models.DateField("Data de Conclusão")
+    destaque = models.BooleanField("Destacar na Proposta?", default=False, 
+                                    help_text="Marque para incluir este projeto nas propostas geradas.")
+
+    class Meta:
+        ordering = ['-data_conclusao'] # Ordena pelos mais recentes primeiro
+
+    def __str__(self):
+        return self.titulo

@@ -44,7 +44,10 @@ urlpatterns = [
     path('projetos/<int:projeto_id>/excluir_documento/<int:doc_id>/', views.excluir_documento_projeto, name='excluir_documento_projeto'),
     path('projeto/<int:pk>/recalcular-irradiacao/', views.recalcular_irradiacao, name='recalcular_irradiacao'),
     path('projetos/<int:pk>/proposta-pdf/', views.gerar_proposta_pdf, name='gerar_proposta_pdf'), 
+    path('projetos/novo/', views.projeto_create_update, name='cadastrar_projeto'),
+    path('projetos/<int:pk>/editar/', views.projeto_create_update, name='editar_projeto'),
     
+
     # Materiais (CRM)
     path('materiais/', views.lista_materiais, name='lista_materiais'),
     path('materiais/cadastrar/', views.cadastrar_material, name='cadastrar_material'),

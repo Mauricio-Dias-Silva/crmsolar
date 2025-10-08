@@ -4,32 +4,21 @@ import decimal
 import logging
 import io
 import base64
-from collections import defaultdict
+import requests
+from django.conf import settings
 
-# Imports opcionais para garantir que o app não quebre se não estiverem instalados
-try:
-    import google.generai as genai
-    import matplotlib.pyplot as plt
-    import numpy as np
-except ImportError:
-    genai = None
-    plt = None
-    np = None
-
+# --- CONFIGURAÇÕES ---
 logger = logging.getLogger(__name__)
+PERDA_SISTEMA = decimal.Decimal('0.78')
+TARIFA_MEDIA_KWH = decimal.Decimal('0.90')
 
-# --- 1. LÓGICA DE CARREGAMENTO DE DADOS DE IRRADIAÇÃO (CSV) ---
-
+# --- 1. LÓGICA DE CARREGAMENTO CSV (IRRADIAÇÃO) ---
 IRRADIAÇÃO_POR_MUNICIPIO = {}
-
 def _carregar_irradiacao():
-    """Carrega dados de irradiação de um CSV para a memória, executando apenas uma vez."""
     global IRRADIAÇÃO_POR_MUNICIPIO
     if IRRADIAÇÃO_POR_MUNICIPIO:
         return
-
     caminho_csv = os.path.join(os.path.dirname(__file__), 'dados_irradiacao.csv')
-    
     try:
         with open(caminho_csv, encoding='utf-8') as f:
             reader = csv.DictReader(f)
@@ -37,51 +26,34 @@ def _carregar_irradiacao():
                 cidade = row['cidade'].strip().upper()
                 uf = row['uf'].strip().upper()
                 IRRADIAÇÃO_POR_MUNICIPIO[(cidade, uf)] = decimal.Decimal(row['irradiacao'])
-    except FileNotFoundError:
-        logger.error(f"Arquivo 'dados_irradiacao.csv' não encontrado em {caminho_csv}")
     except Exception as e:
         logger.error(f"Erro ao carregar CSV de irradiacao: {e}")
 
 def get_solar_irradiation(cidade=None, uf=None):
-    """Retorna irradiação solar média diária (kWh/m²/dia) com base na cidade/UF."""
     _carregar_irradiacao()
-    
     def safe_str(value):
-        return "" if value is None else str(value).strip()
-
+        if value is None: return ""
+        if isinstance(value, (float, decimal.Decimal)): return str(value)
+        return str(value).strip()
     cidade_str = safe_str(cidade).upper()
     uf_str = safe_str(uf).upper()
-
     if cidade_str and uf_str:
-        chave = (cidade_str, uf_str)
-        return IRRADIAÇÃO_POR_MUNICIPIO.get(chave, decimal.Decimal('5.0'))
-    
-    return decimal.Decimal('5.0')
+        return IRRADIAÇÃO_POR_MUNICIPIO.get((cidade_str, uf_str), decimal.Decimal(5.0))
+    return decimal.Decimal(5.0)
 
-
-# --- 2. LÓGICA DE CÁLCULOS FINANCEIROS ---
-
-PERDA_SISTEMA = decimal.Decimal('0.78') 
-TARIFA_MEDIA_KWH = decimal.Decimal('0.90')
-
+# --- 2. LÓGICA FINANCEIRA ---
 def calculate_financial_metrics(projeto):
-    """Calcula a geração mensal, economia e payback do projeto."""
-    if not all([projeto.irradiacao_media_diaria, projeto.potencia_kwp, projeto.valor_total]):
-        return None 
-        
+    if not projeto.irradiacao_media_diaria or not projeto.potencia_kwp or not projeto.valor_total:
+        return None
     try:
-        irradiacao = decimal.Decimal(projeto.irradiacao_media_diaria)
-        potencia = decimal.Decimal(projeto.potencia_kwp)
-        valor_total = decimal.Decimal(projeto.valor_total)
-        
+        irradiacao = projeto.irradiacao_media_diaria
+        potencia = projeto.potencia_kwp
+        valor_total = projeto.valor_total
         geracao_diaria = potencia * irradiacao * PERDA_SISTEMA
-        geracao_mensal = geracao_diaria * decimal.Decimal('30.5') 
-        
+        geracao_mensal = geracao_diaria * decimal.Decimal(30.5)
         economia_mensal = geracao_mensal * TARIFA_MEDIA_KWH
         economia_anual = economia_mensal * 12
-        
-        payback_anos = valor_total / economia_anual if economia_anual > 0 else decimal.Decimal('0')
-        
+        payback_anos = valor_total / economia_anual if economia_anual > 0 else decimal.Decimal(0)
         return {
             'geracao_mensal': geracao_mensal.quantize(decimal.Decimal('0.1')),
             'economia_mensal': economia_mensal.quantize(decimal.Decimal('0.01')),
@@ -91,66 +63,87 @@ def calculate_financial_metrics(projeto):
         logger.error(f"ERRO CÁLCULO FINANCEIRO: {e}")
         return None
 
-
-# --- 3. LÓGICA DE GERAÇÃO DE GRÁFICO ---
-
+# --- 3. LÓGICA DE GRÁFICO (MATPLOTLIB) ---
 def generate_savings_chart_base64(economia_mensal):
-    """Cria um gráfico de barras de economia acumulada e o retorna como Base64."""
-    if not all([plt, np, economia_mensal]):
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+    except ImportError:
         return None
-        
     try:
         anos = np.arange(1, 6)
-        economia_acumulada = [float(economia_mensal * 12 * ano) for ano in anos]
-
+        economia_acumulada = [(economia_mensal * 12 * ano) for ano in anos]
         plt.style.use('ggplot')
-        fig, ax = plt.subplots(figsize=(8, 4))
-        
-        bars = ax.bar(anos, economia_acumulada, color='#34A853')
-        ax.set_title('Projeção de Economia Acumulada (5 Anos)', fontsize=12)
-        ax.set_xlabel('Ano do Investimento')
+        fig, ax = plt.subplots(figsize=(6, 3))
+        ax.bar(anos, economia_acumulada, color='#34A853')
+        ax.set_title('Economia Acumulada Estimada (5 Anos)', fontsize=10)
+        ax.set_xlabel('Ano')
         ax.set_ylabel('Economia Acumulada (R$)')
-        ax.set_xticks(anos)
         ax.ticklabel_format(style='plain', axis='y')
-        
         buffer = io.BytesIO()
-        plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+        plt.savefig(buffer, format='png', bbox_inches='tight')
         plt.close(fig)
-        
         buffer.seek(0)
-        img_base64 = base64.b64encode(buffer.read()).decode()
-        return img_base64
+        return base64.b64encode(buffer.read()).decode()
     except Exception as e:
         logger.error(f"ERRO NA GERAÇÃO DO GRÁFICO: {e}")
         return None
 
+# --- 4. LÓGICA DE TEXTO IA (VERSÃO FINAL POLIDA) ---
+def generate_ai_analysis(projeto_data):
+    """Gera uma análise completa e persuasiva, limpando os títulos da resposta."""
+    api_key = settings.GEMINI_API_KEY
+    if not api_key:
+        return {'resumo': "A IA não está configurada (API Key não encontrada).", 'explicacao': "", 'faq': ""}
 
-# --- 4. LÓGICA DE GERAÇÃO DE TEXTO COM IA ---
+    model_name = "models/gemini-2.5-flash-preview-05-20"
+    url = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={api_key}"
 
-def generate_sales_pitch(projeto_data):
-    """Gera um texto de vendas persuasivo usando a API Gemini."""
-    if not genai:
-        return "A integração com a IA para geração de texto não está configurada neste ambiente."
-
-    # Prompt melhorado para um texto mais completo e personalizado
     prompt = f"""
-    Aja como um especialista em vendas de energia solar.
-    Escreva um parágrafo curto e persuasivo para uma proposta comercial para o cliente '{projeto_data.get('cliente', 'Valioso Cliente')}'.
-    Destaque os seguintes benefícios de forma clara e direta:
-    - O sistema solar tem {projeto_data.get('kwp', 'uma potência ideal')} kWp.
-    - A economia mensal estimada é de R$ {projeto_data.get('economia', 'um valor significativo')}.
-    - O retorno sobre o investimento (ROI) é excelente.
-    Use uma linguagem positiva, focada em independência energética e valorização do imóvel.
-    Seja conciso e profissional.
+    Aja como um consultor sênior de energia solar criando uma análise para uma proposta comercial.
+    O cliente é '{projeto_data.get('cliente', 'Valioso Cliente')}'.
+    Os dados do projeto são:
+    - Potência: {projeto_data.get('kwp', 'N/A')} kWp
+    - Economia Mensal Estimada: R$ {projeto_data.get('economia', 'N/A')}
+    - Payback (Retorno do Investimento): {projeto_data.get('payback', 'N/A')} anos
+
+    Gere o conteúdo para as seguintes seções, usando os títulos exatamente como estão, separados por '---'.
+
+    # RESUMO EXECUTIVO
+    (Escreva um parágrafo conciso e impactante resumindo o projeto como um excelente investimento financeiro e sustentável para o cliente.)
+    ---
+    # TRADUZINDO OS NÚMEROS
+    (Explique de forma simples o que significa a 'Potência em kWp' e o 'Payback', focando nos benefícios práticos para o dia a dia do cliente.)
+    ---
+    # PERGUNTAS FREQUENTES
+    (Crie 2 perguntas que um cliente provavelmente faria sobre este projeto e responda-as de forma clara. Ex: 'E em dias nublados?' ou 'A manutenção é cara?')
     """
     
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+
     try:
-        # Lembre-se de configurar sua API Key do Gemini nas variáveis de ambiente
-        # genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(prompt)
-        return response.text
+        response = requests.post(url, json=payload, timeout=45)
+        response.raise_for_status()
+        data = response.json()
+        full_text = data['candidates'][0]['content']['parts'][0]['text']
+
+        # 💡 LÓGICA DE LIMPEZA MELHORADA E FINAL
+        parts = full_text.split('---')
+        
+        # Pega a primeira parte, remove o título e limpa espaços em branco
+        resumo = parts[0].replace("# RESUMO EXECUTIVO", "").strip()
+        
+        # Faz o mesmo para as outras partes, com verificação para evitar erros
+        explicacao = parts[1].replace("# TRADUZINDO OS NÚMEROS", "").strip() if len(parts) > 1 else ""
+        faq = parts[2].replace("# PERGUNTAS FREQUENTES", "").strip() if len(parts) > 2 else ""
+
+        return {'resumo': resumo, 'explicacao': explicacao, 'faq': faq}
+
     except Exception as e:
-        logger.error(f"ERRO API GEMINI: {e}")
-        return "Investir em energia solar é dar um passo rumo à independência energética e à sustentabilidade. Com este sistema, você reduzirá drasticamente sua conta de luz e valorizará seu imóvel, garantindo um futuro mais econômico e ecológico."
+        logger.error(f"ERRO API GEMINI (Análise Completa): {e}")
+        return {
+            'resumo': "Não foi possível gerar a análise inteligente neste momento.",
+            'explicacao': "Por favor, verifique se todos os dados do projeto (potência, valor, irradiação) estão preenchidos corretamente.",
+            'faq': ""
+        }
 
