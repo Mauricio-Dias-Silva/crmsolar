@@ -42,3 +42,4 @@ EXPOSE 8080
 
 # Define o ponto de entrada para o nosso script
 ENTRYPOINT ["sh", "./entrypoint.sh"]
+
