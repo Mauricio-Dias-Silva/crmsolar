@@ -177,26 +177,31 @@ MERCADO_PAGO_CLIENT_SECRET = env('MERCADO_PAGO_CLIENT_SECRET', default='')
 
 
 # ==============================================================================
-# BANCO DE DADOS (A CORREÇÃO DO LOOPING)
+# BANCO DE DADOS (CONFIGURAÇÃO ROBUSTA PARA CLOUD RUN)
 # ==============================================================================
 
-# 1. Padrão: Começa com SQLite (para desenvolvimento local funcionar sempre)
+# O Cloud Run define automaticamente a DATABASE_URL ou você a passa via --set-env-vars.
+# Esta lógica é crucial para o sucesso da migração.
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    # 1. Padrão: SQLite para desenvolvimento local (se DATABASE_URL não for encontrado)
+    'default': env.db_url(
+        'DATABASE_URL', 
+        default=f'sqlite:///{BASE_DIR}/db.sqlite3'
+    )
 }
 
-# 2. Produção: Se existir DATABASE_URL, substitui pelo PostgreSQL
-# Isso acontece automaticamente no Cloud Run se você configurar a variável lá.
-database_url = os.environ.get('DATABASE_URL')
+# 2. Correção de SSL e Otimização para PostgreSQL no Cloud Run:
+# O Cloud Run injeta a conexão do Cloud SQL. Precisamos garantir SSL/socket correto.
 
-if database_url:
-    DATABASES['default'] = dj_database_url.config(
-        default=database_url,
-        conn_max_age=600,    # Mantém a conexão viva por 10 min (performance)
-        conn_health_checks=True,
-        ssl_require=True
-    )
+if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+    # O dj-database-url (via env.db_url) tenta configurar o SSL, 
+    # mas o Cloud SQL via socket pode ter problemas com `ssl_require=True`.
+    # Adicionamos otimizações que funcionam bem em contêineres:
+    DATABASES['default']['CONN_MAX_AGE'] = 600
+    DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+    
+    # Se você não está usando o Proxy do Cloud SQL, o Django se conecta ao socket.
+    # Esta linha garante que a engine está configurada corretamente:
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 
