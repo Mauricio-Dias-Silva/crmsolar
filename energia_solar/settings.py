@@ -115,6 +115,43 @@ TEMPLATES = [
     },
 ]
 
+# --- A LÓGICA DE CONEXÃO FINAL ---
+# Este bloco deve substituir o bloco DATABASES atual no seu settings.py
+
+# CLOUD_SQL_CONNECTION_NAME é a variável que o Cloud Run injeta
+# se a flag --add-cloudsql-instances for usada no deploy.
+CLOUD_SQL_CONNECTION_NAME = env('CLOUD_SQL_CONNECTION_NAME', default=None)
+
+# 1. Definir o fallback e a leitura inicial
+DATABASES = {
+    'default': env.db_url(
+        # Tenta ler DATABASE_URL (se existir) ou usa o fallback SQLite
+        'DATABASE_URL', 
+        default=f'sqlite:///{BASE_DIR}/db.sqlite3'
+    )
+}
+
+# 2. SE ESTIVER NO CLOUD RUN (via flag --add-cloudsql-instances):
+# FORÇAMOS o HOST para o caminho do Socket UNIX.
+if CLOUD_SQL_CONNECTION_NAME:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        
+        # O HOST DEVE ser o caminho do socket UNIX no contêiner.
+        # Isto é a correção crítica para a falha de inicialização.
+        'HOST': f'/cloudsql/{CLOUD_SQL_CONNECTION_NAME}',
+        
+        # As credenciais são lidas das variáveis injetadas (DB_NAME, DB_USER, DB_PASSWORD)
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        
+        # A porta é desnecessária ao usar o socket
+        'PORT': '', 
+        'CONN_MAX_AGE': 600,
+        'CONN_HEALTH_CHECKS': True,
+    }
+
 
 
 WSGI_APPLICATION = 'energia_solar.wsgi.application'
@@ -176,32 +213,4 @@ MERCADO_PAGO_CLIENT_SECRET = env('MERCADO_PAGO_CLIENT_SECRET', default='')
 
 
 
-# ==============================================================================
-# BANCO DE DADOS (CONFIGURAÇÃO ROBUSTA PARA CLOUD RUN)
-# ==============================================================================
-
-# O Cloud Run define automaticamente a DATABASE_URL ou você a passa via --set-env-vars.
-# Esta lógica é crucial para o sucesso da migração.
-
-DATABASES = {
-    # 1. Padrão: SQLite para desenvolvimento local (se DATABASE_URL não for encontrado)
-    'default': env.db_url(
-        'DATABASE_URL', 
-        default=f'sqlite:///{BASE_DIR}/db.sqlite3'
-    )
-}
-
-# 2. Correção de SSL e Otimização para PostgreSQL no Cloud Run:
-# O Cloud Run injeta a conexão do Cloud SQL. Precisamos garantir SSL/socket correto.
-
-if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
-    # O dj-database-url (via env.db_url) tenta configurar o SSL, 
-    # mas o Cloud SQL via socket pode ter problemas com `ssl_require=True`.
-    # Adicionamos otimizações que funcionam bem em contêineres:
-    DATABASES['default']['CONN_MAX_AGE'] = 600
-    DATABASES['default']['CONN_HEALTH_CHECKS'] = True
-    
-    # Se você não está usando o Proxy do Cloud SQL, o Django se conecta ao socket.
-    # Esta linha garante que a engine está configurada corretamente:
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 
