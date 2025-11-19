@@ -1,45 +1,43 @@
-# Dockerfile
-# Use uma imagem base Python com ferramentas de desenvolvimento
+# ==============================================================================
+# DOCKERFILE PADRÃO PARA PROJETOS DJANGO (PYTHONJET)
+# ==============================================================================
 FROM python:3.11-slim
 
-# Variáveis de ambiente para otimização
+# Otimizações do Python
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PORT 8080
 
 WORKDIR /app
 
-# Instala pacotes do sistema necessários para:
-# 1. build-essential (para compilação)
-# 2. libpq-dev (para psycopg2-binary/PostgreSQL)
-# 3. libjpeg-dev/zlib1g-dev (para Pillow/imagens)
-RUN apt-get update && apt-get install -y \
-    gcc \
-    pkg-config \
+# 1. Instalação de Dependências de Sistema (A "Vacina" para erros de build)
+# Inclui suporte para Postgres (libpq), Imagens (libjpeg/zlib) e Criptografia (ssl/ffi)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libssl-dev \
-    libffi-dev \
+    pkg-config \
     libpq-dev \
     libjpeg-dev \
     zlib1g-dev \
+    libssl-dev \
+    openssl \
+    libffi-dev \
     netcat-openbsd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copia o requirements.txt e instala as dependências Python
-# Esta etapa AGORA deve funcionar, desde que você tenha removido 'mysqlclient'
+# 2. Instalação de Dependências do Projeto
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# Copia o restante do projeto (inclui o entrypoint.sh)
+# 3. Cópia do Código
 COPY . .
 
-# Dá permissão de execução para o entrypoint.sh
+# 4. Preparação do Script de Inicialização
+COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
-# A porta que o Gunicorn vai ouvir. O Cloud Run precisa da porta 8080.
+# 5. Exposição da Porta
 EXPOSE 8080
 
-# Define o ponto de entrada para o nosso script
+# 6. Comando de Entrada
 ENTRYPOINT ["sh", "./entrypoint.sh"]
-
