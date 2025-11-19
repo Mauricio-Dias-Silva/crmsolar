@@ -25,12 +25,23 @@ SECRET_KEY = env('SECRET_KEY', default='sua-chave-secreta-padrao-para-desenvolvi
 # ALLOWED_HOSTS: Permite hosts específicos ou '*' em ambientes controlados
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
+
+# Lógica para adicionar dinamicamente o domínio do Cloud Run à lista de confiáveis
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME') # Exemplo genérico
+CLOUD_RUN_SERVICE_URL = os.environ.get('CLOUD_RUN_SERVICE_URL') # Se você injetar essa variável
 # CSRF: Domínios confiáveis para evitar bloqueios de formulário
+
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     'https://solarhub.com.br',
     'https://www.solarhub.com.br',
     'https://loja.solarhub.com.br',
 ])
+
+# Adiciona automaticamente a URL do serviço se ela estiver disponível no ambiente
+# (Você precisaria garantir que essa variável seja setada no deploy)
+SERVICE_URL = os.environ.get('SERVICE_URL')
+if SERVICE_URL:
+    CSRF_TRUSTED_ORIGINS.append(SERVICE_URL)
 
 # --- APPS E MIDDLEWARE ---
 
