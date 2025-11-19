@@ -1,38 +1,25 @@
-#!/bin/sh
+#!/bin/bash
+# entrypoint.sh - Script de inicialização para o Cloud Run
 
-echo "Aguardando o MySQL iniciar..."
-# 'nc -z' verifica se a porta 3306 do serviço 'db' está aberta
-# Se não estiver, o loop continua e o script espera por 2 segundos
-while ! nc -z db 3306; do
-  sleep 2
-done
-echo "MySQL iniciado!"
+# Sair imediatamente se um comando falhar
+set -e
 
-# Garante que o diretório de trabalho está certo
-cd /app
+echo "Iniciando script de entrypoint..."
 
-# Aplica as migrações existentes. É o comando correto para ambientes de produção.
-echo "Aplicando migrações..."
-python manage.py migrate --noinput
+# 1. Coletar arquivos estáticos (resolve o CSS do Admin)
+echo "1. Coletando arquivos estáticos..."
+python manage.py collectstatic --no-input
 
-# Executa o seu script de populamento de dados
-# Este script deve conter a lógica para criar todos os usuários de teste,
-# incluindo o superusuário.
-echo "Executando script de populamento de dados..."
-python manage.py populate_usuarios_e_departamentos
-python manage.py populate_clientes_pf
-python manage.py populate_clientes_pj
-python manage.py populate_produtos
-python manage.py populate_fornecedores
-python manage.py populate_materiais
-python manage.py populate_projetos_pedidos
+# 2. Executar migrações do banco de dados
+echo "2. Executando migrações do banco de dados..."
+# Usamos o comando 'migrate' aqui. Se a aplicação não puder se conectar ao
+# Cloud SQL imediatamente, você pode adicionar um loop de espera usando nc (netcat)
+# ou a ferramenta 'wait-for-it', mas para o Cloud Run geralmente a migração funciona
+# se o Cloud SQL estiver configurado corretamente.
+python manage.py migrate --no-input
 
-
-echo "Coletando arquivos estáticos..."
-python manage.py collectstatic --noinput
-
-# Inicia o servidor Django. O 'exec' garante que o servidor
-# se torne o processo principal do contêiner.
-echo "Iniciando o servidor Django..."
-exec python manage.py runserver 0.0.0.0:8000
-# O comando 'exec' substitui o shell atual pelo comando especificado,
+# 3. Iniciar o servidor Gunicorn
+echo "3. Iniciando servidor Gunicorn..."
+# O Gunicorn precisa escutar a porta definida pelo Cloud Run (padrão é 8080)
+# energia_solar é o nome do seu projeto Django.
+gunicorn energia_solar.wsgi:application --bind 0.0.0.0:$PORT
