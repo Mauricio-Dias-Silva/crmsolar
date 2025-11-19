@@ -8,7 +8,7 @@ import environ
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Lendo variáveis do .env
-env = environ.Env(DEBUG=(bool, False))
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 env.read_env(os.path.join(BASE_DIR, '.env'))
 
 GEMINI_API_KEY = env('GEMINI_API_KEY', default=None) 
@@ -22,7 +22,7 @@ STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY', default='pk_test_SUA_CHAVE_PUBLICA_
 
 # Configurações básicas do Django
 SECRET_KEY = env('SECRET_KEY', default='sua-chave-secreta-padrao-para-desenvolvimento')
-DEBUG = True  # Ajuste conforme necessário
+
 
 # Hosts permitidos
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'loja.solarhub.com.br', 'solarhub.com.br', 'www.solarhub.com.br', 'f08e3a9c8b36.ngrok-free.app']
@@ -128,12 +128,6 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='')
 
 
-
-
-# DATABASES = {
-#     'default': env.db_url('DATABASE_URL')
-# }
-
 # Validação de senha
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
@@ -180,12 +174,27 @@ MERCADO_PAGO_CLIENT_SECRET = env('MERCADO_PAGO_CLIENT_SECRET', default='')
 
 
 
-# The commented out section `# DATABASES = { ... }` is an example configuration for setting up a
-# SQLite database in a Django project.
+# ==============================================================================
+# BANCO DE DADOS (A CORREÇÃO DO LOOPING)
+# ==============================================================================
+
+# 1. Padrão: Começa com SQLite (para desenvolvimento local funcionar sempre)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), # This is the corrected line
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# 2. Produção: Se existir DATABASE_URL, substitui pelo PostgreSQL
+# Isso acontece automaticamente no Cloud Run se você configurar a variável lá.
+database_url = os.environ.get('DATABASE_URL')
+
+if database_url:
+    DATABASES['default'] = dj_database_url.config(
+        default=database_url,
+        conn_max_age=600,    # Mantém a conexão viva por 10 min (performance)
+        conn_health_checks=True,
+        ssl_require=True
+    )
 
