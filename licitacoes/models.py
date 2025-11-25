@@ -105,6 +105,14 @@ class Edital(models.Model): # Mantém o nome 'Edital' para compatibilidade com o
     )
     data_ultima_atualizacao = models.DateTimeField(auto_now=True)
 
+    arquivo_edital = models.FileField(
+        upload_to='editais/%Y/%m/',
+        verbose_name="Arquivo PDF do Edital",
+        help_text="O arquivo PDF original do edital para ser enviado à Audesp.",
+        null=True,  # Permite que registros antigos não tenham um arquivo
+        blank=True  # Torna o campo opcional no formulário
+    )
+    
     # --- NOVOS CAMPOS ADAPTADOS DO JSON SCHEMA DO AUDESP (versão inicial do Edital) ---
     retificacao = models.BooleanField(
         default=False,
@@ -345,11 +353,6 @@ class ResultadoLicitacao(models.Model):
         super().save(*args, **kwargs)
 
 
-# Em licitacoes/models.py
-
-# ... (seus modelos Edital, Lote, ItemLicitado, etc. continuam aqui em cima) ...
-
-# vvv ADICIONE O CÓDIGO ABAIXO vvv
 
 STATUS_PREGAO_CHOICES = [
     ('AGENDADO', 'Agendado'),

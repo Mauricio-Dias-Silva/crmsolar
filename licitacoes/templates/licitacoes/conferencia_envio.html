@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Confira todos os dados que serão enviados para a API da Audesp.</p>
+        </div>
+    </div>
+
+    <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Atenção!</h4>
+        <p>Esta é a sua última oportunidade para revisar as informações. Após clicar em "Confirmar e Enviar", os dados serão transmitidos oficialmente para o Tribunal de Contas. Verifique cada campo com cuidado.</p>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Dados Formatados para Envio (JSON)</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                {% for key, value in dados_formatados.items %}
+                    
+                    {% if key == 'descritor' %}
+                        <dt class="col-sm-3 bg-light p-2 border-top">Bloco Descritor:</dt>
+                        <dd class="col-sm-9 bg-light p-2 border-top"></dd>
+                        {% for sub_key, sub_value in value.items %}
+                            <dt class="col-sm-3 ps-4">- {{ sub_key }}</dt>
+                            <dd class="col-sm-9">{{ sub_value }}</dd>
+                        {% endfor %}
+
+                    {% elif key == 'itensCompra' %}
+                        <dt class="col-sm-3 bg-light p-2 border-top">Itens da Compra:</dt>
+                        <dd class="col-sm-9 bg-light p-2 border-top"></dd>
+                        {% for item in value %}
+                            <dt class="col-sm-3 ps-4">- Item Nº {{ item.numeroItem }}</dt>
+                            <dd class="col-sm-9">{{ item.descricao }} ({{ item.quantidade }} {{ item.unidadeMedida }}) - R$ {{ item.valorUnitarioEstimado|floatformat:2 }}</dd>
+                        {% empty %}
+                            <dd class="col-sm-9 text-muted">Nenhum item encontrado.</dd>
+                        {% endfor %}
+                        
+                    {% else %}
+                        <dt class="col-sm-3 border-top pt-2">{{ key }}</dt>
+                        <dd class="col-sm-9 border-top pt-2">{{ value }}</dd>
+                    {% endif %}
+
+                {% endfor %}
+            </dl>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body text-end">
+            <form method="POST" action="{% url 'licitacoes:enviar_licitacao_audesp' licitacao_id=edital.pk %}" onsubmit="return confirm('Confirmar o envio definitivo dos dados para a Audesp?');">
+                {% csrf_token %}
+                
+                <a href="{% url 'licitacoes:detalhar_edital' pk=edital.pk %}" class="btn btn-secondary me-2">
+                    <i class="fas fa-times me-1"></i> Cancelar e Voltar
+                </a>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check-circle me-2"></i> Confirmar e Enviar para Audesp
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

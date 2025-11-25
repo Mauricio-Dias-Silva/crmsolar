@@ -28,13 +28,17 @@ ItemLicitadoFormSet = inlineformset_factory(Edital, ItemLicitado, form=ItemLicit
 
 @login_required
 def listar_editais(request):
-    editais = Edital.objects.all().order_by('-data_publicacao')
+    # Otimização: .select_related() busca os dados dos modelos
+    # relacionados (com ForeignKey) em uma única query SQL.
+    editais = Edital.objects.select_related(
+        'processo_vinculado', 'responsavel_publicacao'
+    ).all().order_by('-data_publicacao')
+
     context = {
         'editais': editais,
         'titulo_pagina': 'Lista de Editais de Licitação',
     }
     return render(request, 'licitacoes/listar_editais.html', context)
-
 
 @login_required
 def criar_edital(request, processo_id=None):
@@ -114,21 +118,28 @@ def editar_edital(request, pk):
     edital = get_object_or_404(Edital, pk=pk)
 
     if request.method == 'POST':
-        form = EditalForm(request.POST, instance=edital) # Usando o EditalForm original
-        # Se você quiser usar os novos forms do AUDESP, mude para EditalLicitacaoForm
-        # form = EditalLicitacaoForm(request.POST, instance=edital)
-
+        # MUDANÇA 1: Adicionado request.FILES para lidar com o upload do PDF
+        form = EditalForm(request.POST, request.FILES, instance=edital)
+        
         lotes_formset = LoteFormSet(request.POST, instance=edital, prefix='lotes')
         itens_formset = ItemLicitadoFormSet(request.POST, instance=edital, prefix='itens')
 
         if form.is_valid() and lotes_formset.is_valid() and itens_formset.is_valid():
             try:
                 with transaction.atomic():
-                    edital = form.save()
-                    lotes_formset.instance = edital
+                    # MUDANÇA 2: Usando o padrão commit=False para salvamento seguro
+                    
+                    # Salva o formulário principal primeiro para garantir que o objeto 'edital' exista
+                    saved_edital = form.save()
+
+                    # Associa os formsets à instância salva do edital
+                    lotes_formset.instance = saved_edital
+                    itens_formset.instance = saved_edital
+
+                    # Agora salva os formsets
                     lotes_formset.save()
-                    itens_formset.instance = edital
                     itens_formset.save()
+                    
                 messages.success(request, 'Edital atualizado com sucesso!')
                 return redirect('licitacoes:detalhar_edital', pk=edital.pk)
             except Exception as e:
@@ -136,16 +147,15 @@ def editar_edital(request, pk):
                 print(f"Erro na atualização do Edital (bloco try/except): {e}")
         else:
             messages.error(request, 'Erro ao atualizar Edital. Verifique os campos.')
+            # Seus prints de validação aqui...
             print("====================================")
             print("ERRO DE VALIDAÇÃO DO FORMULÁRIO EDITAL (EDIÇÃO):")
             print("Erros do formulário principal (Edital):", form.errors)
-            print("Erros não-campo do formulário principal (Edital):", form.non_field_errors)
             print("Erros do formset de Lotes:", lotes_formset.errors)
             print("Erros do formset de Itens:", itens_formset.errors)
             print("====================================")
     else: # GET request
-        form = EditalForm(instance=edital) # Usando o EditalForm original
-  
+        form = EditalForm(instance=edital)
         lotes_formset = LoteFormSet(instance=edital, prefix='lotes')
         itens_formset = ItemLicitadoFormSet(instance=edital, prefix='itens')
 
@@ -158,14 +168,15 @@ def editar_edital(request, pk):
     }
     return render(request, 'licitacoes/editar_edital.html', context)
 
-
-@login_required
+# licitacoes/views.py
 def detalhar_edital(request, pk):
-    edital = get_object_or_404(Edital, pk=pk)
-    context = {
-        'edital': edital,
-        'titulo_pagina': f'Detalhes do Edital: {edital.numero_edital}'
-    }
+    # Otimização: Busca o edital e já inclui os dados de processo_vinculado
+    # na mesma consulta SQL, evitando acessos extras ao banco.
+    edital = get_object_or_404(
+        Edital.objects.select_related('processo_vinculado'),
+        pk=pk
+    )
+    context = {'edital': edital,}
     return render(request, 'licitacoes/detalhar_edital.html', context)
 
 
@@ -451,3 +462,98 @@ def licitacoes_dashboard(request):
     }
     return render(request, 'licitacoes/dashboard_licitacoes.html', context)
 
+# licitacoes/views.py
+from django.contrib import messages
+from licitacoes.models import Edital # O modelo está como 'Edital' no seu models.py
+from integracao_audesp.mappers import formatar_edital_para_audesp
+from integracao_audesp.client import AudespClient
+from integracao_audesp.exceptions import AudespAPIError
+from django.http import HttpResponse # Adicione esta também, pois é usada na mesma view
+import PyPDF2 # Verifique se já importou esta
+from weasyprint import HTML
+from django.template.loader import render_to_string
+
+@login_required # Adicionar o decorator para segurança
+def enviar_licitacao_view(request, licitacao_id): # <-- CORRIGIDO AQUI
+       
+    # Adicionamos esta verificação para garantir que a view só seja chamada via POST
+    if request.method != 'POST':
+        messages.error(request, "Ação não permitida.")
+        return redirect('licitacoes:detalhar_edital', pk=licitacao_id)
+    
+    edital = get_object_or_404(Edital, id=licitacao_id) # <-- E AQUI também
+    
+    if not edital.arquivo_edital:
+        messages.warning(request, "Não é possível enviar para a Audesp. O arquivo PDF do edital não foi anexado.")
+        return redirect('licitacoes:detalhar_edital', pk=licitacao_id)
+    
+    try:
+        # 1. Mapear os dados
+        print("Mapeando dados do edital...")
+        dados_para_envio = formatar_edital_para_audesp(edital)
+        
+        # 2. Enviar para a Audesp
+        print("Iniciando envio para Audesp...")
+        cliente = AudespClient()
+        resultado = cliente.enviar_edital(dados_para_envio, edital.arquivo_edital.path) # Supondo que o campo é 'arquivo_edital'
+        
+        # 3. Tratar o resultado de SUCESSO
+        protocolo = resultado.get('protocolo')
+        print(f"Envio bem-sucedido! Protocolo: {protocolo}")
+
+        # Salve o protocolo no seu modelo (você precisará criar este campo)
+        # edital.protocolo_audesp = protocolo
+        # edital.status_audesp = 'ENVIADO'
+        # edital.save()
+
+        messages.success(request, f"Edital enviado com sucesso para a Audesp! Protocolo: {protocolo}")
+
+    except AudespAPIError as e:
+        # 4. Tratar o resultado de ERRO
+        print(f"ERRO na integração com Audesp: {e}")
+        # Monta uma mensagem de erro detalhada para o usuário
+        error_message = f"Falha ao enviar para Audesp: {e.message}"
+        if e.status_code:
+            error_message += f" (Status: {e.status_code} - Resposta: {e.response_text})"
+        
+        messages.error(request, error_message)
+
+    except Exception as e:
+        # Pega qualquer outro erro inesperado
+        print(f"ERRO inesperado na view de envio: {e}")
+        messages.error(request, f"Ocorreu um erro inesperado no sistema: {e}")
+
+    # Redireciona de volta para a página de detalhes do edital
+    return redirect('licitacoes:detalhar_edital', pk=edital.pk)
+
+
+# licitacoes/views.py
+
+# ... (seus outros imports no topo do arquivo) ...
+from integracao_audesp.mappers import formatar_edital_para_audesp # Importe seu mapeador
+
+# licitacoes/views.py
+
+# ... outros imports
+from integracao_audesp.views import gerar_edital_audesp_json # IMPORTANTE: Importa sua view
+import json
+
+@login_required
+def conferencia_envio_audesp(request, licitacao_id):
+    edital = get_object_or_404(Edital, pk=licitacao_id)
+
+    try:
+        # Chama a SUA view original para gerar o JSON
+        json_response = gerar_edital_audesp_json(request, edital_id=edital.pk)
+        # Converte o conteúdo do JsonResponse para um dicionário Python
+        dados_formatados_para_audesp = json.loads(json_response.content)
+    except Exception as e:
+        messages.error(request, f"Erro ao preparar os dados para envio: {e}")
+        return redirect('integracao_audesp:painel_audesp')
+
+    context = {
+        'edital': edital,
+        'dados_formatados': dados_formatados_para_audesp,
+        'titulo_pagina': f'Conferência de Envio - Edital {edital.numero_edital}'
+    }
+    return render(request, 'licitacoes/conferencia_envio.html', context)

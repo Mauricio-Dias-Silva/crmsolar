@@ -25,6 +25,9 @@ urlpatterns = [
     
     path('dashboard/', views.licitacoes_dashboard, name='licitacoes_dashboard'),
     path('ia/analise-edital/', views.analise_edital_ia_view, name='ia_analise_edital'),
+    
+    path('<int:licitacao_id>/enviar_audesp/', views.enviar_licitacao_view, name='enviar_licitacao_audesp'),
+    path('<int:licitacao_id>/conferencia_envio/', views.conferencia_envio_audesp, name='conferencia_envio_audesp'),
 
 ]
 

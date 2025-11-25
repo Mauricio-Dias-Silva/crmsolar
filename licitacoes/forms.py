@@ -11,6 +11,9 @@ from .models import (
 from django.db.models import Q # Necessário para filtrar querysets em ResultadoLicitacaoForm
 
 # --- Formulários para Edital ---
+# licitacoes/forms.py
+
+# --- Formulários para Edital ---
 class EditalForm(forms.ModelForm):
     class Meta:
         model = Edital
@@ -24,6 +27,7 @@ class EditalForm(forms.ModelForm):
             'numero_processo_origem_audesp', 'objeto_compra_audesp', 'informacao_complementar',
             'srp', 'data_encerramento_proposta', 'amparo_legal', 'link_sistema_origem',
             'justificativa_presencial',
+            'arquivo_edital', # Este já estava correto
         ]
         widgets = {
             'numero_edital': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: PE 001/2025'}),
@@ -50,6 +54,9 @@ class EditalForm(forms.ModelForm):
             'amparo_legal': forms.Select(attrs={'class': 'form-select'}),
             'link_sistema_origem': forms.URLInput(attrs={'class': 'form-control'}),
             'justificativa_presencial': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            
+            # vvv ADICIONE ESTA LINHA FALTANTE AQUI vvv
+            'arquivo_edital': forms.FileInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'numero_edital': 'Número do Edital', 'titulo': 'Objeto da Licitação',
@@ -65,6 +72,9 @@ class EditalForm(forms.ModelForm):
             'informacao_complementar': 'Informações Complementares', 'srp': 'Sistema de Registro de Preços (SRP)?',
             'data_encerramento_proposta': 'Data/Hora Encerramento Proposta (AUDESP)', 'amparo_legal': 'Amparo Legal (AUDESP)',
             'link_sistema_origem': 'Link Sistema de Origem (AUDESP)', 'justificativa_presencial': 'Justificativa Presencial (AUDESP)',
+
+            # vvv E ADICIONE ESTA LINHA FALTANTE AQUI vvv
+            'arquivo_edital': 'Arquivo PDF do Edital',
         }
 
 # --- Formulários para Lote e ItemLicitado ---

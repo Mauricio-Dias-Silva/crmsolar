@@ -1,0 +1,16 @@
+steps:
+  - name: 'gcr.io/[google.com/cloudsdktool/cloud-sdk](https://google.com/cloudsdktool/cloud-sdk)'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run deploy "$_SERVICE_NAME" \
+          --source . \
+          --region us-east1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --project "$_PROJECT_ID"
+timeout: '1800s'
+substitutions:
+    _SERVICE_NAME: "nome-do-seu-servico" # Será substituído automaticamente
+    _PROJECT_ID: "pythonjet"

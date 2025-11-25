@@ -60,8 +60,16 @@
             </div>
 
             <div class="card shadow-sm mb-4">
-                <div class="card-header"><h5 class="mb-0">Itens e Lotes da Licitação</h5></div>
-                <div class="card-body">
+                <div class="card-header">
+                    <a class="text-decoration-none" data-bs-toggle="collapse" href="#collapseItens" role="button" aria-expanded="false" aria-controls="collapseItens">
+                        <h5 class="mb-0 d-flex justify-content-between">
+                            Itens e Lotes da Licitação
+                            <i class="fas fa-chevron-down"></i>
+                        </h5>
+                    </a>
+                </div>
+                <div class="collapse" id="collapseItens">
+                    <div class="card-body">
                     {% if edital.lotes.all %}
                         {% for lote in edital.lotes.all %}
                             <h6 class="fw-bold">Lote {{ lote.numero_lote }}: {{ lote.descricao }}</h6>
@@ -74,7 +82,7 @@
                             </ul>
                         {% endfor %}
                     {% elif edital.itens_diretos.all %}
-                         <ul class="list-group list-group-flush mb-0">
+                        <ul class="list-group list-group-flush mb-0">
                             {% for item in edital.itens_diretos.all %}
                                 <li class="list-group-item">{{ item.descricao_item }} ({{ item.quantidade }} {{ item.unidade_medida }})</li>
                             {% empty %}
@@ -84,6 +92,7 @@
                     {% else %}
                         <p class="text-muted mb-0">Nenhum item ou lote cadastrado para este edital.</p>
                     {% endif %}
+                </div>
                 </div>
             </div>
 
@@ -112,6 +121,31 @@
                         </table>
                     {% else %}
                         <p class="text-muted mb-0">Nenhum resultado registrado para este edital.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <strong>Integração com Audesp</strong>
+                </div>
+                <div class="card-body">
+                    {% if edital.protocolo_audesp %}
+                        {# CASO 1: O edital JÁ FOI ENVIADO #}
+                        <p class="text-success">
+                            <i class="fas fa-check-circle"></i> Este edital já foi enviado para a Audesp.
+                        </p>
+                        <p><strong>Protocolo:</strong> {{ edital.protocolo_audesp }}</p>
+                        <p><strong>Status:</strong> {{ edital.status_audesp }}</p>
+
+                    {% else %}
+                        {# CASO 2: O edital AINDA NÃO FOI ENVIADO #}
+                        <p class="text-muted">Este edital está pronto para ser enviado para a API da Audesp.</p>
+
+                        <a href="{% url 'licitacoes:conferencia_envio_audesp' licitacao_id=edital.pk %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Ir para Conferência de Envio
+                        </a>
+
                     {% endif %}
                 </div>
             </div>

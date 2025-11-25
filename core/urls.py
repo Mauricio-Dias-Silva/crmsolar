@@ -11,7 +11,7 @@ urlpatterns = [
     path('meus-processos/', views.meus_processos_view, name='meus_processos'),
     path('processos/novo/', views.criar_processo_view, name='criar_processo'),
     path('processos/<int:processo_id>/', views.detalhes_processo_view, name='detalhes_processo'),
-
+    
     # URL para adicionar anexos a um processo
     path('processos/<int:processo_id>/anexos/adicionar/', views.adicionar_anexo_ao_processo, name='adicionar_anexo_ao_processo'),
 

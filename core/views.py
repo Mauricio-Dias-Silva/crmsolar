@@ -452,3 +452,5 @@ def marcar_notificacao_como_lida(request, notificacao_id):
         return redirect(notificacao.link_acao)
     else:
         return redirect('core:home')
+    
+    

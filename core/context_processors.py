@@ -10,21 +10,24 @@ def global_context(request):
     }
 
 
+# core/context_processors.py
+from django.core.cache import cache
+from .models import Notificacao
+
 def notificacoes_nao_lidas(request):
-    """
-    Este processador de contexto verifica se o utilizador está autenticado
-    e, em caso afirmativo, busca as suas notificações não lidas.
-    """
     if request.user.is_authenticated:
-        # Busca todas as notificações do utilizador que ainda não foram lidas
-        notificacoes = Notificacao.objects.filter(usuario_destino=request.user, lida=False)
-        # Conta quantas são
-        count_notificacoes = notificacoes.count()
-        
-        # Retorna um dicionário que será adicionado ao contexto de TODOS os templates
-        return {
-            'notificacoes_nao_lidas_list': notificacoes,
-            'notificacoes_nao_lidas_count': count_notificacoes
-        }
-    # Se o utilizador não estiver logado, retorna um dicionário vazio
+        # Cria uma chave de cache única para este usuário
+        cache_key = f'notificacoes_nao_lidas_{request.user.id}'
+
+        # Tenta pegar os dados do cache primeiro
+        notificacoes = cache.get(cache_key)
+
+        # Se não estiver no cache (miss), busca no banco
+        # Se não estiver no cache (miss), busca no banco
+        if notificacoes is None:
+            notificacoes = Notificacao.objects.filter(usuario_destino=request.user, lida=False) # <- CORRIGIDO
+            # Guarda o resultado no cache por 120 segundos (2 minutos)
+            cache.set(cache_key, notificacoes, 120)
+
+        return {'notificacoes_nao_lidas': notificacoes}
     return {}

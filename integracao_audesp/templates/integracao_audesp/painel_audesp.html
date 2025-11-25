@@ -53,7 +53,9 @@
                             <td>{{ edital.numero_edital }}</td>
                             <td>{{ edital.titulo }}</td>
                             <td class="text-end">
-                                <a href="{% url 'integracao_audesp:gerar_edital_audesp_json' edital_id=edital.pk %}" target="_blank" class="btn btn-sm btn-info"><i class="fas fa-code me-1"></i> Gerar JSON</a>
+                                <a href="#" class="btn btn-sm btn-primary disabled" title="Funcionalidade em desenvolvimento">
+                                    <i class="fas fa-arrow-right me-1"></i> Conferir e Enviar
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -78,9 +80,9 @@
                             <td>{{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</td>
                             <td>{{ contrato.contratado.razao_social }}</td>
                             <td class="text-end">
-                                 <a href="{% url 'integracao_audesp:gerar_contrato_audesp_json' contrato_id=contrato.pk %}" target="_blank" class="btn btn-sm btn-info">
-                                     <i class="fas fa-code me-1"></i> Gerar JSON
-                                 </a>
+                                <a href="#" class="btn btn-sm btn-primary disabled" title="Funcionalidade em desenvolvimento">
+                                    <i class="fas fa-arrow-right me-1"></i> Conferir e Enviar
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
