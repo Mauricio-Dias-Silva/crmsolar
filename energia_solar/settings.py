@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'produtos',
     'pagamento',
-    'django_admin_logs',
+    # 'django_admin_logs', # Removido para evitar erros de build/runtime
     'django.contrib.sites',
     'mp_integracao',
     
