@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Ata da Sessão do Pregão - Edital {{ pregao.edital.numero_edital }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+        }
+        .info-block {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        thead {
+            background-color: #e9ecef;
+        }
+        .signature-block {
+            margin-top: 80px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 300px;
+            margin: 0 auto 5px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <strong>PREFEITURA MUNICIPAL DE BARUERI</strong><br>
+        PROCESSO ADMINISTRATIVO Nº {{ pregao.edital.processo_vinculado.numero_protocolo }}<br>
+        EDITAL DE LICITAÇÃO Nº {{ pregao.edital.numero_edital }}
+    </div>
+
+    <h1>Ata da Sessão Pública do Pregão</h1>
+
+    <div class="info-block">
+        <p>Aos <strong>{{ pregao.data_abertura_sessao|date:"d" }}</strong> dias do mês de <strong>{{ pregao.data_abertura_sessao|date:"F" }}</strong> de <strong>{{ pregao.data_abertura_sessao|date:"Y" }}</strong>, às <strong>{{ pregao.data_abertura_sessao|date:"H:i" }}</strong> horas, reuniu-se a Comissão de Licitação, sob a presidência do(a) Pregoeiro(a) <strong>{{ pregao.pregoeiro.get_full_name|default:pregao.pregoeiro.username }}</strong>, para realizar a sessão de disputa referente ao edital supracitado.</p>
+    </div>
+
+    <h2>1. Objeto da Licitação</h2>
+    <p>{{ pregao.edital.titulo }}</p>
+
+    <h2>2. Fornecedores Credenciados</h2>
+    {% if pregao.participantes.all %}
+        <ul>
+            {% for participante in pregao.participantes.all %}
+                <li>{{ participante.fornecedor.razao_social }} (CNPJ: {{ participante.fornecedor.cnpj }})</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Não houve fornecedores credenciados para esta sessão.</p>
+    {% endif %}
+
+    <h2>3. Resultados por Item</h2>
+    {% for item in pregao.edital.itens_diretos.all %}
+        <h3>Item {{ item.numero_item_audesp|default:item.pk }}: {{ item.descricao_item }}</h3>
+        {% with vencedor=item.lances.filter.aceito|first %}
+            {% if vencedor %}
+                <p>
+                    <strong>Vencedor:</strong> {{ vencedor.participante.fornecedor.razao_social }}<br>
+                    <strong>Valor Homologado:</strong> R$ {{ vencedor.valor_lance|floatformat:2 }}
+                </p>
+            {% else %}
+                 <p><strong>Resultado:</strong> Sem vencedor definido para este item.</p>
+            {% endif %}
+        {% endwith %}
+    {% empty %}
+        <p>Nenhum item foi disputado nesta sessão.</p>
+    {% endfor %}
+
+    <h2>4. Deliberações Finais</h2>
+    <p>
+        Após a fase de lances e análise das propostas, foram declarados vencedores os licitantes acima mencionados para os respetivos itens. Nada mais havendo a tratar, o(a) Pregoeiro(a) declarou encerrada a sessão, da qual foi lavrada a presente ata, que vai assinada pelos membros da comissão e pelos licitantes presentes.
+    </p>
+
+    <div class="signature-block">
+        <div class="signature-line"></div>
+        <p><strong>{{ pregao.pregoeiro.get_full_name|default:pregao.pregoeiro.username }}</strong><br>
+        Pregoeiro(a)</p>
+    </div>
+
+</body>
+</html>

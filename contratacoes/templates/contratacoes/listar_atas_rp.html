@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Visualize e gira todas as Atas de Registro de Preços.</p>
+        </div>
+        <a href="{% url 'core:meus_processos' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nova Ata (a partir de um Processo)
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Número da Ata</th>
+                            <th scope="col">Fornecedor Beneficiário</th>
+                            <th scope="col">Vigência</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ata in atas %}
+                        <tr>
+                            <td>{{ ata.numero_ata }}/{{ ata.ano_ata }}</td>
+                            <td>{{ ata.fornecedor_beneficiario.razao_social }}</td>
+                            <td>{{ ata.data_inicio_vigencia|date:"d/m/Y" }} a {{ ata.data_fim_vigencia|date:"d/m/Y" }}</td>
+                            <td><span class="badge bg-success">{{ ata.get_status_display }}</span></td>
+                            <td>
+                                <a href="{% url 'contratacoes:detalhar_ata_rp' pk=ata.pk %}" class="btn btn-sm btn-outline-primary">Detalhes</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center p-4">
+                                <p class="mb-0">Nenhuma Ata de RP encontrada.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

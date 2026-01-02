@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Redefinir Senha{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="card-title text-center h3 mb-4">Esqueceu a sua senha?</h1>
+                    <p class="text-muted text-center mb-4">Não se preocupe! Insira o seu email abaixo e nós enviaremos as instruções para criar uma nova senha.</p>
+                    
+                    <form method="POST" action="{% url 'account_reset_password' %}" class="password_reset">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email:</label>
+                            {% render_field form.email class="form-control" placeholder="seu.email@exemplo.com" %}
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button class="btn btn-primary btn-lg" type="submit">Redefinir Senha</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

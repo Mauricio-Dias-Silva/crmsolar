@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerar TR - {{ etp.titulo }}{% endblock %}
+{% block main_title %}Gerar Termo de Referência a partir do ETP: {{ etp.titulo }}{% endblock %}
+
+{% block content %}
+    <div style="background-color: #e9ecef; border: 1px solid #dee2e6; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+        <h4>Detalhes do ETP de Origem:</h4>
+        <p><strong>Título do ETP:</strong> {{ etp.titulo }}</p>
+        <p><strong>Número do Processo:</strong> {{ etp.numero_processo }}</p>
+        <p><strong>Setor Demandante:</strong> {{ etp.setor_demandante }}</p>
+        <p><strong>Descrição da Necessidade:</strong> {{ etp.descricao_necessidade|linebreaksbr }}</p>
+        <p><strong>Objetivo da Contratação:</strong> {{ etp.objetivo_contratacao|linebreaksbr }}</p>
+        {# Adicione outros detalhes relevantes do ETP aqui que você queira exibir #}
+        <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" style="font-size: 0.9em;">(Ver ETP Completo)</a>
+    </div>
+
+    <h3>Preencha os Detalhes do Termo de Referência</h3>
+    <form method="post">
+        {% csrf_token %}
+        {# Exibe erros gerais do formulário (se houver) #}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+       {# C:\Users\Mauricio\Desktop\ETP-TR\templates\contratacoes\gerar_tr_a_partir_etp.html #}
+
+{# ... (código antes do loop de campos) ... #}
+
+{% for field in form %}
+    <div class="mb-3">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %} {# <<-- ESTE BLOCO É O QUE MOSTRA OS ERROS DE CAMPO #}
+            <div class="text-danger small">
+                {% for error in field.errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}
+
+{# ... (código depois do loop de campos) ... #}
+
+        <p>
+            <button type="submit" class="button" style="background-color: #28a745;">Gerar TR</button>
+            <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="button" style="background-color: #6c757d;">Cancelar</a>
+        </p>
+    </form>
+
+{% endblock %}

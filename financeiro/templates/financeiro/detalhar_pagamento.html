@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- CABEÇALHO -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Documento Fiscal: <a href="{% url 'financeiro:detalhar_documento_fiscal' pk=pagamento.documento_fiscal.pk %}">{{ pagamento.documento_fiscal.documento_fiscal_numero }}</a></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'financeiro:listar_pagamentos' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>Voltar para a Lista
+            </a>
+            <a href="{% url 'financeiro:editar_pagamento' pk=pagamento.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Editar Pagamento
+            </a>
+        </div>
+
+    </div>
+
+    <!-- CARD DE INFORMAÇÕES DO PAGAMENTO -->
+    <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">Informações do Pagamento</h5></div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Valor Pago</dt>
+                <dd class="col-sm-9"><strong>R$ {{ pagamento.nota_fiscal_valor_pago|floatformat:2 }}</strong></dd>
+
+                <dt class="col-sm-3">Data Efetiva do Pagamento</dt>
+                <dd class="col-sm-9">{{ pagamento.nota_fiscal_pagto_dt|date:"d/m/Y" }}</dd>
+
+                <dt class="col-sm-3">Forma de Pagamento</dt>
+                <dd class="col-sm-9">{{ pagamento.forma_pagamento }}</dd>
+                
+                <hr class="my-3">
+
+                <dt class="col-sm-3">Fornecedor</dt>
+                <dd class="col-sm-9">{{ pagamento.documento_fiscal.fornecedor.razao_social }}</dd>
+                
+                <dt class="col-sm-3">Contrato Vinculado</dt>
+                <dd class="col-sm-9"><a href="{% url 'contratacoes:detalhar_contrato' pk=pagamento.documento_fiscal.contrato_vinculado.pk %}">{{ pagamento.documento_fiscal.contrato_vinculado }}</a></dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

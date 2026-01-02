@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Assistente de IA para ETP{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">Assistente de IA para Geração de ETP</h1>
+        <p class="lead">Descreva sua necessidade de compra ou serviço, e a inteligência artificial criará um rascunho completo para o seu Estudo Técnico Preliminar em segundos.</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-keyboard me-2"></i>1. Descreva a sua necessidade</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="ia-form">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="descricao_necessidade" class="form-label visually-hidden">Qual é a necessidade de contratação?</label>
+                    <textarea class="form-control" 
+                              id="descricao_necessidade" 
+                              name="descricao_necessidade" 
+                              rows="5" 
+                              placeholder="Exemplo: Precisamos comprar 50 notebooks para os professores da rede municipal. As especificações mínimas são: Processador Core i5 ou equivalente, 8GB de RAM e SSD de 256GB."></textarea>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="gerar-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="fas fa-magic me-2 icon"></i>
+                        <span class="btn-text">Gerar Rascunho</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if rascunho_gerado %}
+    <div class="card shadow-sm mt-5">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>2. Rascunho Gerado com Sucesso!</h5>
+        </div>
+        <div class="card-body">
+            <p>Abaixo está o rascunho criado pela IA. Revise o texto, faça os ajustes necessários e depois clique no botão abaixo para iniciar a criação do ETP com estes dados.</p>
+            <hr>
+            <div id="rascunho-texto" class="bg-light p-3 rounded border" style="white-space: pre-wrap;">{{ rascunho_gerado|safe }}</div>
+
+            {% if "Ocorreu um erro" not in rascunho_gerado %}
+            <div class="text-center mt-4 d-grid gap-2">
+                <a href="{% url 'contratacoes:criar_etp' %}" class="btn btn-success btn-lg">
+                    <i class="fas fa-file-import me-2"></i> Usar este Rascunho para Criar ETP
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+// Script para mostrar um "loading" no botão ao enviar o formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const iaForm = document.getElementById('ia-form');
+    const gerarBtn = document.getElementById('gerar-btn');
+    
+    if (iaForm) {
+        iaForm.addEventListener('submit', function() {
+            // Desabilita o botão para evitar múltiplos cliques
+            gerarBtn.disabled = true;
+
+            // Mostra o spinner, esconde o ícone e muda o texto
+            gerarBtn.querySelector('.spinner-border').classList.remove('d-none');
+            gerarBtn.querySelector('.icon').classList.add('d-none');
+            gerarBtn.querySelector('.btn-text').textContent = ' Gerando, por favor aguarde...';
+        });
+    }
+});
+</script>
+{% endblock scripts %}

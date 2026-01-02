@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="display-5 fw-bold text-primary mb-2">{{ titulo_pagina }}</h1>
+    
+    {% if etp %}
+    <p class="lead mb-4">Adicionando anexo para o ETP: "{{ etp.titulo }}"</p>
+    {% elif tr %}
+    <p class="lead mb-4">Adicionando anexo para o TR: "{{ tr.titulo }}"</p>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% render_field field class="form-control" %}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+
+                <div class="mt-4 text-end">
+                    {% if etp %}
+                    <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="btn btn-secondary">Cancelar</a>
+                    {% elif tr %}
+                    <a href="{% url 'contratacoes:detalhar_tr' pk=tr.pk %}" class="btn btn-secondary">Cancelar</a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Salvar Anexo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

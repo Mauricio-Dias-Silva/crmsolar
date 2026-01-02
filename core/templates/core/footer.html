@@ -1,0 +1,68 @@
+{% load static %}
+<footer class="footer-custom text-white py-5 mt-auto">
+    <div class="container">
+        <div class="row">
+            <!-- Coluna 1: Sobre o Sistema -->
+            <div class="col-md-4 mb-4 mb-md-0 text-center text-md-start">
+                <h4 class="fw-bold mb-3"><i class="fas fa-landmark me-2"></i>ProGestor Público</h4>
+                <p class="text-white-50 small">A Plataforma Digital da Prefeitura de Barueri para uma gestão de licitações mais eficiente e transparente.</p>
+            </div>
+
+            <!-- Coluna 2: Links Rápidos (ATUALIZADOS E FUNCIONAIS) -->
+            <div class="col-md-4 mb-4 mb-md-0 text-center">
+                <h5 class="fw-bold mb-3">Links Rápidos</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'core:home' %}" class="text-white text-decoration-none py-1 d-block">Início</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'core:meus_processos' %}" class="text-white text-decoration-none py-1 d-block">Meus Processos</a></li>
+                        <li><a href="{% url 'core:dashboard_gerencial' %}" class="text-white text-decoration-none py-1 d-block">Dashboard Gerencial</a></li>
+                        <li><a href="{% url 'contratacoes:listar_contratos' %}" class="text-white text-decoration-none py-1 d-block">Contratos</a></li>
+                        <li><a href="{% url 'licitacoes:listar_editais' %}" class="text-white text-decoration-none py-1 d-block">Editais</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Coluna 3: Contato -->
+            <div class="col-md-4 mb-4 mb-md-0 text-center text-md-end">
+                <h5 class="fw-bold mb-3">Contato</h5>
+                <address class="mb-0 text-white-50 small fst-normal">
+                    Prefeitura Municipal de Barueri<br>
+                    Rua Prof. João da Matta e Luz, 84 - Centro<br>
+                    Barueri - SP, 06401-160<br>
+                    Telefone: (11) 4199-8000
+                </address>
+            </div>
+        </div>
+        <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.2);">
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="mb-0 small copyright-text">
+                    &copy; {% now "Y" %} SysGov. Todos os direitos reservados.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ESTILOS DO FOOTER (MANTIDOS) -->
+<style>
+    .footer-custom {
+        background: linear-gradient(to right, #1a2a4b, #2a3c68);
+        color: #ffffff;
+    }
+    .footer-custom a, .footer-custom .text-muted {
+        color: rgba(255, 255, 255, 0.8) !important;
+        transition: color 0.2s ease-in-out;
+    }
+    .footer-custom a:hover {
+        color: #ffffff !important;
+        text-decoration: none !important;
+    }
+    .footer-custom .copyright-text {
+        opacity: 0.6;
+    }
+</style>
+    .footer-custom .bi:hover {
+        color: #ffffff !important;
+    }
+</style>

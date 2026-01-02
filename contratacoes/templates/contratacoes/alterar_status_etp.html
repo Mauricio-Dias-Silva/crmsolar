@@ -1,0 +1,54 @@
+{# contratacoes/templates/contratacoes/alterar_status_etp.html #}
+
+{% extends 'base.html' %}
+
+{% block title %}Alterar Status do ETP{% endblock %}
+{% block main_title %}Alterar Status do ETP: <a href="{% url 'detalhar_etp' pk=etp.pk %}">{{ etp.titulo }}</a>{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="errorlist">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Renderiza apenas os campos 'status' e 'observacoes_analise' #}
+        <div class="form-group">
+            {{ form.status.label_tag }}
+            {{ form.status }}
+            {% if form.status.errors %}
+                <ul class="errorlist">
+                    {% for error in form.status.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if form.status.help_text %}
+                <span class="helptext">{{ form.status.help_text }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.observacoes_analise.label_tag }}
+            {{ form.observacoes_analise }}
+            {% if form.observacoes_analise.errors %}
+                <ul class="errorlist">
+                    {% for error in form.observacoes_analise.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if form.observacoes_analise.help_text %}
+                <span class="helptext">{{ form.observacoes_analise.help_text }}</span>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="button">Salvar Status</button>
+        <a href="{% url 'detalhar_etp' pk=etp.pk %}" class="button" style="background-color: #6c757d;">Cancelar</a>
+    </form>
+{% endblock %}

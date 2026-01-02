@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- CABEÇALHO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Contratado: {{ contrato.contratado.razao_social }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'contratacoes:listar_contratos' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>Voltar para a Lista
+            </a>
+            <a href="{% url 'contratacoes:editar_contrato' pk=contrato.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Editar
+            </a>
+            <a href="{% url 'contratacoes:gerar_contrato_pdf' pk=contrato.pk %}" class="btn btn-info">
+                <i class="fas fa-file-pdf me-2"></i>Gerar PDF
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna de Informações do Contrato -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header"><h5 class="mb-0">Informações do Contrato</h5></div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Objeto</dt><dd class="col-sm-8">{{ contrato.objeto|linebreaksbr }}</dd>
+                        <dt class="col-sm-4">Valor Total</dt><dd class="col-sm-8">R$ {{ contrato.valor_total|floatformat:2 }}</dd>
+                        <dt class="col-sm-4">Vigência</dt><dd class="col-sm-8">{{ contrato.data_inicio_vigencia|date:"d/m/Y" }} a {{ contrato.data_fim_vigencia|date:"d/m/Y" }}</dd>
+                        <dt class="col-sm-4">Data da Assinatura</dt><dd class="col-sm-8">{{ contrato.data_assinatura|date:"d/m/Y" }}</dd>
+                        <dt class="col-sm-4">Status</dt><dd class="col-sm-8"><span class="badge bg-success">{{ contrato.get_status_display }}</span></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna de Ações e Informações Financeiras -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header"><h5 class="mb-0">Financeiro</h5></div>
+                
+                <!-- Ações Financeiras -->
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'financeiro:criar_documento_fiscal' contrato_id=contrato.pk %}" class="btn btn-primary">
+                            <i class="fas fa-receipt me-2"></i>Registar Documento Fiscal
+                        </a>
+                        <a href="{% url 'financeiro:criar_empenho' contrato_id=contrato.pk %}" class="btn btn-info">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>Adicionar Empenho
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Lista de Empenhos -->
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item"><strong>Notas de Empenho:</strong></div>
+                    {% for empenho in notas_empenho %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            {{ empenho.numero_empenho }}/{{ empenho.ano_empenho }} - R$ {{ empenho.valor|floatformat:2 }}
+                        </a>
+                    {% empty %}
+                        <div class="list-group-item text-muted">Nenhum empenho registado.</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Lista de Documentos Fiscais -->
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item"><strong>Documentos Fiscais:</strong></div>
+                    {% for doc_fiscal in documentos_fiscais %}
+                         <a href="{% url 'financeiro:detalhar_documento_fiscal' pk=doc_fiscal.pk %}" class="list-group-item list-group-item-action">
+                            NF {{ doc_fiscal.documento_fiscal_numero }} - R$ {{ doc_fiscal.documento_fiscal_valor|floatformat:2 }}
+                        </a>
+                    {% empty %}
+                         <div class="list-group-item text-muted">Nenhum documento fiscal registado.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

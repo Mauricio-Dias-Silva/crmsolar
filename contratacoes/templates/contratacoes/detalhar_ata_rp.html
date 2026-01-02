@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Fornecedor: {{ ata.fornecedor_beneficiario.razao_social }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'contratacoes:listar_atas_rp' %}" class="btn btn-outline-secondary">Voltar</a>
+            <a href="{% url 'contratacoes:editar_ata_rp' pk=ata.pk %}" class="btn btn-warning">Editar</a>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">Informações da Ata</h5></div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Objeto</dt><dd class="col-sm-9">{{ ata.objeto|linebreaksbr }}</dd>
+                <dt class="col-sm-3">Valor Total Registado</dt><dd class="col-sm-9">R$ {{ ata.valor_total_registrado|floatformat:2 }}</dd>
+                <dt class="col-sm-3">Vigência</dt><dd class="col-sm-9">{{ ata.data_inicio_vigencia|date:"d/m/Y" }} a {{ ata.data_fim_vigencia|date:"d/m/Y" }}</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

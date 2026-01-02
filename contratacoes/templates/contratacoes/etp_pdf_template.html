@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ETP - {{ etp.titulo }}</title>
+    <style>
+        /* Estilos básicos para o documento PDF */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2cm; /* Margens padrão para impressão */
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #0056b3; /* Azul institucional */
+            font-size: 20pt;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 14pt;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #0056b3;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        h2 .section-number { /* Para numerar as seções */
+            display: inline-block;
+            width: 25px; /* Largura fixa para alinhamento */
+            text-align: right;
+            margin-right: 10px;
+            font-weight: normal;
+        }
+        p {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+        strong {
+            font-weight: bold;
+            color: #000;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 10pt;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #555;
+        }
+        /* Estilo para quebra de página */
+        .page-break {
+            page-break-before: always;
+        }
+        /* Rodapé fixo */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 8pt;
+            color: #777;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            background-color: #fff; /* Fundo branco para garantir visibilidade */
+        }
+        .footer-page-number::after {
+            content: counter(page);
+        }
+    </style>
+</head>
+<body>
+    <h1>ESTUDO TÉCNICO PRELIMINAR</h1>
+    <p><span class="info-label">Título:</span> {{ etp.titulo }}</p>
+    <p><span class="info-label">Número do Processo:</span> {{ etp.numero_processo }}</p>
+    <p><span class="info-label">Setor Demandante:</span> {{ etp.setor_demandante }}</p>
+    <p><span class="info-label">Elaborador:</span> {{ etp.autor.get_full_name|default:etp.autor.username }}</p>
+    <p><span class="info-label">Data de Criação:</span> {{ etp.data_criacao|date:"d/m/Y" }}</p>
+    <p><span class="info-label">Status:</span> {{ etp.get_status_display }}</p>
+    {% if etp.item_pca_vinculado %}
+    <p><span class="info-label">Item PCA Vinculado:</span> {{ etp.item_pca_vinculado.identificador_item }} - {{ etp.item_pca_vinculado.descricao_item }} (PCA {{ etp.item_pca_vinculado.pca.ano_vigencia }})</p>
+    {% endif %}
+
+    <hr style="border-top: 1px dashed #ccc; margin: 25px 0;"/>
+
+    <h2><span class="section-number">1.</span> Descrição da Necessidade</h2>
+    <p>{{ etp.descricao_necessidade|linebreaksbr }}</p>
+
+    <h2><span class="section-number">2.</span> Objetivo da Contratação</h2>
+    <p>{{ etp.objetivo_contratacao|linebreaksbr }}</p>
+
+    <h2><span class="section-number">3.</span> Requisitos da Contratação</h2>
+    <p>{{ etp.requisitos_contratacao|linebreaksbr }}</p>
+
+    <h2><span class="section-number">4.</span> Levantamento de Soluções de Mercado</h2>
+    <p>{{ etp.levantamento_solucoes_mercado|linebreaksbr }}</p>
+
+    <h2><span class="section-number">5.</span> Estimativa das Quantidades</h2>
+    <p>{{ etp.estimativa_quantidades|linebreaksbr }}</p>
+
+    <h2><span class="section-number">6.</span> Estimativa do Valor da Contratação</h2>
+    <p>R$ {{ etp.estimativa_valor|floatformat:2 }}</p>
+
+    <h2><span class="section-number">7.</span> Resultados Esperados</h2>
+    <p>{{ etp.resultados_esperados|linebreaksbr }}</p>
+
+    <h2><span class="section-number">8.</span> Viabilidade e Justificativa da Solução Escolhida</h2>
+    <p>{{ etp.viabilidade_justificativa_solucao|linebreaksbr }}</p>
+
+    {% if etp.contratacoes_correlatas %}
+    <h2><span class="section-number">9.</span> Contratações Correlatas e/ou Interdependentes</h2>
+    <p>{{ etp.contratacoes_correlatas|linebreaksbr }}</p>
+    {% endif %}
+
+    <h2><span class="section-number">10.</span> Alinhamento com o Planejamento Estratégico</h2>
+    <p>{{ etp.alinhamento_planejamento|linebreaksbr }}</p>
+
+    {# Seções para dados relacionados, como Pesquisas de Preço e Pareceres #}
+    {% if etp.pesquisas_preco.exists %}
+    <div class="page-break"></div> {# Força uma quebra de página aqui para nova seção, se quiser #}
+    <h2>Pesquisas de Preço</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Fornecedor</th>
+                <th>Valor Cotado</th>
+                <th>Data da Pesquisa</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for pesquisa in etp.pesquisas_preco.all %}
+        <tr>
+            <td>{{ pesquisa.fornecedor }}</td> {# <<< AJUSTE AQUI: Use 'pesquisa.fornecedor' ou o nome correto do campo no seu modelo PesquisaPreco #}
+            <td>R$ {{ pesquisa.valor_cotado|floatformat:2 }}</td>
+            <td>{{ pesquisa.data_pesquisa|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %} 
+        <tr>
+            <td colspan="3">Nenhuma pesquisa de preço adicionada.</td>
+        </tr>
+        {% endfor %}
+
+        {% if media_precos is not None %}
+        <tr>
+            <td colspan="2" style="text-align: right;"><strong>Média das Pesquisas:</strong></td>
+            <td><strong>R$ {{ media_precos|floatformat:2 }}</strong></td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if etp.pareceres.exists %} {# Assumindo uma relação ManyToOne ou OneToOne de ParecerTecnico para ETP #}
+    <div class="page-break"></div>
+    <h2>Parecer Técnico</h2>
+    {% for parecer in etp.pareceres.all %}
+        <p><span class="info-label">Analista:</span> {{ parecer.autor.get_full_name|default:parecer.autor.username }}</p>
+        <p><span class="info-label">Data:</span> {{ parecer.data_criacao|date:"d/m/Y H:i" }}</p>
+        <p>{{ parecer.conteudo|linebreaksbr }}</p>
+        {% if not forloop.last %}<hr style="border-top: 1px dashed #eee;"/>{% endif %}
+    {% endfor %}
+    {% endif %}
+
+    <div class="footer">
+        Gerado pelo ProGestor Público em {{ "now"|date:"d/m/Y H:i" }} | Página <span class="footer-page-number"></span>
+    </div>
+</body>
+</html>

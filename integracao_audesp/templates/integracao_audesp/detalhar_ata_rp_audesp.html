@@ -1,0 +1,51 @@
+{# SysGov_Project/integracao_audesp/templates/integracao_audesp/detalhar_ata_rp_audesp.html #}
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ titulo_pagina }}</h1>
+        <div>
+            <a href="{% url 'integracao_audesp:gerar_ata_rp_audesp_json' ata_rp_id=ata_rp.pk %}" class="btn btn-info" target="_blank">
+                <i class="fas fa-file-code"></i> Gerar JSON AUDESP (Ata RP)
+            </a>
+            {# Botão para editar #}
+            <a href="{% url 'integracao_audesp:editar_ata_rp_audesp' pk=ata_rp.pk %}" class="btn btn-warning me-2">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            {# Botão para voltar #}
+            <a href="{% url 'integracao_audesp:listar_submissoes_audesp' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm border-0 rounded-4">
+        <div class="card-header card-header-custom">
+            Detalhes da Ata
+        </div>
+        <div class="card-body">
+            <p><strong>Código da Ata (AUDESP):</strong> {{ ata_rp.codigo_ata_audesp }}</p>
+            <p><strong>Número da Ata de RP:</strong> {{ ata_rp.numero_ata_registro_preco }}</p>
+            <p><strong>Ano da Ata:</strong> {{ ata_rp.ano_ata }}</p>
+            <p><strong>Data de Assinatura:</strong> {{ ata_rp.data_assinatura|date:"d/m/Y" }}</p>
+            <p><strong>Vigência:</strong> {{ ata_rp.data_vigencia_inicio|date:"d/m/Y" }} a {{ ata_rp.data_vigencia_fim|date:"d/m/Y" }}</p>
+            <p><strong>Código do Edital (AUDESP):</strong> {{ ata_rp.codigo_edital_audesp|default:"N/A" }}</p>
+            <p><strong>Ano da Compra:</strong> {{ ata_rp.ano_compra }}</p>
+            <p><strong>É Retificação:</strong> {% if ata_rp.retificacao %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Município:</strong> {{ ata_rp.municipio }}</p>
+            <p><strong>Entidade:</strong> {{ ata_rp.entidade }}</p>
+            <p><strong>IDs dos Itens Licitados:</strong> {{ ata_rp.itens_licitados_ids|join:", "|default:"N/A" }}</p>
+
+            {% if ata_rp.processo_vinculado %}
+                <p><strong>Processo Principal:</strong> <a href="{% url 'detalhes_processo' processo_id=ata_rp.processo_vinculado.pk %}">{{ ata_rp.processo_vinculado }}</a></p>
+            {% endif %}
+            {% if ata_rp.edital_origem %}
+                <p><strong>Edital de Origem:</strong> <a href="{% url 'licitacoes:detalhar_edital' pk=ata_rp.edital_origem.pk %}">{{ ata_rp.edital_origem.numero_edital }} - {{ ata_rp.edital_origem.titulo|truncatechars:50 }}</a></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

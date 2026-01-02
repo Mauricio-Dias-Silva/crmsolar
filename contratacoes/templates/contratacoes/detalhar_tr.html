@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- CABEÇALHO COM TÍTULO E AÇÕES PRINCIPAIS -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Processo: {{ tr.numero_processo }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'contratacoes:listar_trs' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>Voltar para a Lista
+            </a>
+            <a href="{% url 'contratacoes:editar_tr' pk=tr.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Editar
+            </a>
+            <a href="{% url 'contratacoes:gerar_tr_pdf' pk=tr.pk %}" class="btn btn-info">
+                <i class="fas fa-file-pdf me-2"></i>Gerar PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- CARD DE INFORMAÇÕES GERAIS -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Detalhes do Termo de Referência</h5>
+        </div>
+        <div class="card-body">
+            <!-- DADOS PRINCIPAIS -->
+            <dl class="row">
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9"><span class="badge bg-primary fs-6 rounded-pill">{{ tr.get_status_display }}</span></dd>
+
+                <dt class="col-sm-3">ETP de Origem</dt>
+                <dd class="col-sm-9"><a href="{% url 'contratacoes:detalhar_etp' pk=tr.etp_origem.pk %}">{{ tr.etp_origem.titulo }}</a></dd>
+
+                <dt class="col-sm-3">Elaborador</dt>
+                <dd class="col-sm-9">{{ tr.autor.get_full_name|default:tr.autor.username }}</dd>
+
+                <dt class="col-sm-3">Data de Criação</dt>
+                <dd class="col-sm-9">{{ tr.data_criacao|date:"d/m/Y" }}</dd>
+            </dl>
+            <hr>
+            
+            <!-- CAMPOS DE TEXTO EXIBIDOS MANUALMENTE (CORREÇÃO) -->
+            <h6 class="mt-4 fw-bold">1. Objeto</h6>
+            <p class="text-muted">{{ tr.objeto|linebreaksbr }}</p>
+
+            <h6 class="mt-4 fw-bold">2. Justificativa</h6>
+            <p class="text-muted">{{ tr.justificativa|linebreaksbr }}</p>
+
+            <h6 class="mt-4 fw-bold">3. Especificações Técnicas do Objeto</h6>
+            <p class="text-muted">{{ tr.especificacoes_tecnicas|linebreaksbr }}</p>
+            
+            <h6 class="mt-4 fw-bold">4. Prazo de Execução/Entrega</h6>
+            <p class="text-muted">{{ tr.prazo_execucao_entrega|linebreaksbr }}</p>
+
+            <h6 class="mt-4 fw-bold">8. Critérios de Aceitação do Objeto</h6>
+            <p class="text-muted">{{ tr.criterios_aceitacao|linebreaksbr }}</p>
+
+            <h6 class="mt-4 fw-bold">10. Obrigações da Contratada e da Contratante</h6>
+            <p class="text-muted">{{ tr.obrigacoes_partes|linebreaksbr }}</p>
+
+            <h6 class="mt-4 fw-bold">11. Sanções Administrativas</h6>
+            <p class="text-muted">{{ tr.sancoes_administrativas|linebreaksbr }}</p>
+
+            <h6 class="mt-4 fw-bold">12. Fiscalização do Contrato</h6>
+            <p class="text-muted">{{ tr.fiscalizacao_contrato|linebreaksbr }}</p>
+
+            <h6 class="mt-4 fw-bold">13. Vigência do Contrato</h6>
+            <p class="text-muted">{{ tr.vigencia_contrato|linebreaksbr }}</p>
+        </div>
+    </div>
+</div>
+{% endblock content %}

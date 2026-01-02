@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title_suffix %}Criar PCA{% endblock title_suffix %}
+
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">Criar Plano de Contratações Anual</h1>
+        <p class="lead">Preencha o formulário para criar um novo Plano de Contratações Anual.</p>
+    </div>
+</section>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
+                            {{ field|add_class:"form-control" }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-file-earmark-plus"></i> Salvar PCA</button>
+                        <a href="{% url 'contratacoes:listar_pcas' %}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-circle"></i> Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,48 @@
+{# contratacoes/templates/contratacoes/criar_tr.html #}
+
+{% extends 'base.html' %}
+
+{% block title %}Gerar Termo de Referência{% endblock %}
+{% block main_title %}Gerar Termo de Referência para ETP: <a href="{% url 'detalhar_etp' pk=etp.pk %}">{{ etp.titulo }}</a>{% endblock %}
+
+{% block content %}
+    {# Usando uma classe CSS para o estilo embutido da mensagem #}
+    <div class="alert alert-info custom-prefilled-message"> {# Usando classes Bootstrap para alerta de info #}
+        <p>Este formulário foi **pré-preenchido** com base nas informações do ETP. Por favor, revise e detalhe os campos conforme necessário.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger"> {# Usando classes Bootstrap para erros gerais #}
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            {% if field.name == 'etp_origem' %}
+                {{ field.as_hidden }}
+            {% else %}
+                <div class="mb-3"> {# Usando mb-3 do Bootstrap para espaçamento #}
+                    <label class="form-label">{{ field.label }}</label> {# Usando form-label do Bootstrap #}
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger small"> {# Usando classes Bootstrap para erros de campo #}
+                            {% for error in field.errors %}
+                                <div>{{ error }}</div> {# Mudado de <li> para <div> para consistência com outros templates #}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div> {# Usando form-text do Bootstrap #}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary mt-3">Salvar Termo de Referência</button> {# Usando classes Bootstrap para o botão #}
+    </form>
+{% endblock content %}

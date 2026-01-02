@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_suffix %}Plano de Contratações Anual{% endblock title_suffix %}
+
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">Plano de Contratações Anual (PCA)</h1>
+        <p class="lead">Listagem de todos os Planos de Contratação Anual cadastrados no sistema.</p>
+    </div>
+</section>
+
+<div class="container my-4">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header card-header-custom p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Lista de PCAs</h5>
+            <a href="{% url 'contratacoes:criar_pca' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Novo PCA
+            </a>
+        </div>
+        <div class="card-body p-0">
+            {% if pcas %}
+                <ul class="list-group list-group-flush">
+                    {% for pca in pcas %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{% url 'contratacoes:detalhar_pca' pk=pca.pk %}">
+                                    <strong>{{ pca.ano_vigencia }}</strong>
+                                </a>
+                                <small class="text-muted d-block">Criado em: {{ pca.data_criacao|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">
+                                Itens: {{ pca.itens_pca.count }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-info mb-0 text-center">
+                    Nenhum PCA cadastrado ainda.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,38 @@
+```html
+{# SysGov_Project/core/templates/core/snippets/tr_detail_snippet.html #}
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header card-header-custom p-3">
+        <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i> Detalhes do Termo de Referência (TR)</h5>
+    </div>
+    <div class="card-body p-4">
+        {% if tr %}
+            <div class="row mb-2">
+                <div class="col-md-12"><strong>Título:</strong> <span class="text-muted">{{ tr.titulo }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Número Processo:</strong> <span class="text-muted">{{ tr.numero_processo }}</span></div>
+                <div class="col-md-6"><strong>Elaborador:</strong> <span class="text-muted">{{ tr.autor.username|default:"Não informado" }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Status:</strong> <span class="badge bg-primary">{{ tr.get_status_display }}</span></div>
+                <div class="col-md-6"><strong>Data Criação:</strong> <span class="text-muted">{{ tr.data_criacao|date:"d/m/Y H:i" }}</span></div>
+            </div>
+            <hr>
+            <h6 class="fw-bold">Objeto da Contratação:</h6>
+            <p class="text-muted">{{ tr.objeto|linebreaksbr }}</p>
+            <h6 class="fw-bold">Justificativa:</h6>
+            <p class="text-muted">{{ tr.justificativa|linebreaksbr }}</p>
+            <div class="text-end mt-3">
+                <a href="{% url 'contratacoes:detalhar_tr' pk=tr.pk %}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i> Abrir Página Completa
+                </a>
+                <a href="#" class="btn btn-sm btn-info disabled" aria-disabled="true">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">TR não encontrado ou não vinculado.</div>
+        {% endif %}
+    </div>
+</div>
+```

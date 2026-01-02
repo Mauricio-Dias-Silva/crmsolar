@@ -1,0 +1,62 @@
+```html
+{# SysGov_Project/core/templates/core/snippets/edital_detail_snippet.html #}
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header card-header-custom p-3">
+        <h5 class="mb-0"><i class="bi bi-journal-check me-2"></i> Detalhes do Edital de Licitação</h5>
+    </div>
+    <div class="card-body p-4">
+        {% if edital %}
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Número:</strong> <span class="text-muted">{{ edital.numero_edital }}</span></div>
+                <div class="col-md-6"><strong>Tipo:</strong> <span class="text-muted">{{ edital.get_tipo_licitacao_display }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-12"><strong>Objeto:</strong> <span class="text-muted">{{ edital.titulo }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Status:</strong> <span class="badge bg-primary">{{ edital.get_status_display }}</span></div>
+                <div class="col-md-6"><strong>Publicado em:</strong> <span class="text-muted">{{ edital.data_publicacao|date:"d/m/Y" }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Abertura Propostas:</strong> <span class="text-muted">{{ edital.data_abertura_propostas|date:"d/m/Y H:i" }}</span></div>
+                <div class="col-md-6"><strong>Valor Estimado:</strong> <span class="text-muted">R$ {{ edital.valor_estimado|floatformat:2|default:"Não informado" }}</span></div>
+            </div>
+            <hr>
+            <h6 class="fw-bold">Links e Resultados:</h6>
+            <div class="text-end mt-3">
+                <a href="{% url 'licitacoes:detalhar_edital' pk=edital.pk %}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i> Abrir Página Completa
+                </a>
+                {% if edital.link_edital_completo %}
+                    <a href="{{ edital.link_edital_completo }}" class="btn btn-sm btn-info" target="_blank">
+                        <i class="bi bi-file-earmark-pdf"></i> Link Edital
+                    </a>
+                {% else %}
+                    <a href="#" class="btn btn-sm btn-outline-info disabled" aria-disabled="true">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                    </a>
+                {% endif %}
+                
+                <hr class="my-3">
+                {% if edital.resultados.exists %}
+                    {% with resultado_principal=edital.resultados.first %}
+                        <h6 class="fw-bold mb-2">Resultado Principal:</h6>
+                        <p class="text-muted mb-1">Vencedor: {{ resultado_principal.fornecedor_vencedor }}</p>
+                        <p class="text-muted mb-1">Valor: R$ {{ resultado_principal.valor_homologado|floatformat:2 }}</p>
+                        <a href="{% url 'licitacoes:detalhar_resultado_licitacao' pk=resultado_principal.pk %}" class="btn btn-sm btn-success mt-2">
+                            <i class="bi bi-trophy"></i> Ver Resultado
+                        </a>
+                    {% endwith %}
+                {% else %}
+                    <p class="text-muted">Nenhum resultado registrado ainda.</p>
+                    <a href="{% url 'licitacoes:registrar_resultado_licitacao' edital_pk=edital.pk %}" class="btn btn-sm btn-success">
+                        <i class="bi bi-plus-circle"></i> Registrar Resultado
+                    </a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">Edital não encontrado ou não vinculado.</div>
+        {% endif %}
+    </div>
+</div>
+```

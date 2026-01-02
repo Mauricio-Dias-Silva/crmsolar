@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Gerador de TR com IA{% endblock %}
+{% block content %}
+    <h1>Gerador de Termo de Referência com IA</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_texto_tr" class="form-label">Insira o texto para gerar o TR:</label>
+            <textarea class="form-control" id="id_texto_tr" name="texto_tr" rows="10"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Gerar Rascunho</button>
+    </form>
+
+    {% if rascunho_gerado %}
+        <div class="mt-4 p-3 bg-light rounded">
+            <h3>Rascunho Gerado:</h3>
+            <pre>{{ rascunho_gerado }}</pre>
+        </div>
+    {% endif %}
+{% endblock %}

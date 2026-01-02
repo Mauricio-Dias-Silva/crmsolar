@@ -1,0 +1,90 @@
+{# SysGov_Project/licitacoes/templates/licitacoes/detalhar_resultado_licitacao.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title_suffix %}{{ titulo_pagina }}{% endblock title_suffix %}
+
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">{{ titulo_pagina }}</h1>
+        <p class="lead">Detalhes completos do resultado da licitação para o Edital **{{ resultado.edital.numero_edital }}**.</p>
+    </div>
+</section>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm mb-4 border-0 rounded-4">
+            <div class="card-header card-header-custom p-3">
+                <h5 class="mb-0">Informações do Resultado</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if resultado %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Edital Vinculado:</strong> 
+                            {% if resultado.edital %}
+                                <a href="{% url 'licitacoes:detalhar_edital' pk=resultado.edital.pk %}">
+                                    {{ resultado.edital.numero_edital }} - {{ resultado.edital.titulo|truncatechars:50 }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Não informado</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Data de Homologação:</strong> <span class="text-muted">{{ resultado.data_homologacao|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Fornecedor Vencedor:</strong> <span class="text-muted">{{ resultado.fornecedor_vencedor }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>CNPJ:</strong> <span class="text-muted">{{ resultado.cnpj_vencedor|default:"Não informado" }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Valor Homologado:</strong> <span class="text-muted">R$ {{ resultado.valor_homologado|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Valor Estimado Inicial:</strong> <span class="text-muted">R$ {{ resultado.valor_estimado_inicial|floatformat:2|default:"Não informado" }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <strong>Economia Gerada:</strong> 
+                            <span class="badge bg-success fs-6">R$ {{ resultado.economia_gerada|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <strong>Documento de Homologação:</strong> 
+                            {% if resultado.link_documento_homologacao %}
+                                <a href="{{ resultado.link_documento_homologacao }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="bi bi-box-arrow-up-right"></i> Acessar Link
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Nenhum link fornecido.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-end mt-3">
+                        <a href="{% url 'licitacoes:detalhar_edital' pk=resultado.edital.pk %}" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-arrow-left-circle"></i> Voltar para o Edital
+                        </a>
+                        <a href="{% url 'licitacoes:editar_resultado_licitacao' pk=resultado.pk %}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Editar Resultado
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center">Resultado da Licitação não encontrado.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

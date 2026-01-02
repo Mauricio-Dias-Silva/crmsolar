@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Lista de todos os documentos fiscais registados no sistema.</p>
+        </div>
+        <!-- BOTÃO CORRIGIDO: Agora guia o utilizador para o fluxo correto -->
+        <a href="{% url 'contratacoes:listar_contratos' %}" class="btn btn-primary" title="Um Documento Fiscal deve ser criado a partir de um Contrato existente.">
+            <i class="fas fa-plus me-2"></i>Novo Documento (a partir de Contrato)
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if documentos %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Número NF</th>
+                                <th scope="col">Fornecedor</th>
+                                <th scope="col">Valor (R$)</th>
+                                <th scope="col">Data Emissão</th>
+                                <th scope="col">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for documento in documentos %}
+                            <tr>
+                                <td>{{ documento.documento_fiscal_numero|default:"N/A" }}</td>
+                                <td>{{ documento.fornecedor.razao_social|default:"N/A" }}</td>
+                                <td>{{ documento.documento_fiscal_valor|floatformat:2 }}</td>
+                                <td>{{ documento.documento_fiscal_data_emissao|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'financeiro:detalhar_documento_fiscal' pk=documento.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i> Detalhes
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center mt-3 p-4 rounded-3" role="alert">
+                    <h4 class="alert-heading">Nenhum Documento Fiscal Registado!</h4>
+                    <p>Para registar um documento fiscal, primeiro aceda a um contrato existente.</p>
+                    <hr>
+                    <p class="mb-0">
+                        <a href="{% url 'contratacoes:listar_contratos' %}" class="btn btn-primary">
+                            Ir para a Lista de Contratos
+                        </a>
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

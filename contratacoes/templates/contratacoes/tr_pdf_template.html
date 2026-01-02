@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Termo de Referência - Processo {{ tr.numero_processo }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm 2cm; /* Margens superior/inferior e laterais */
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 10pt;
+                color: #555;
+            }
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            text-align: justify;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 40px;
+        }
+        .header .prefeitura-nome {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            page-break-after: avoid;
+        }
+        .section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        p {
+            margin: 0 0 10px 0;
+        }
+        .signature-block {
+            margin-top: 80px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 350px;
+            margin: 0 auto 5px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <p class="prefeitura-nome">PREFEITURA MUNICIPAL DE BARUERI</p>
+        <p>PROCESSO ADMINISTRATIVO Nº {{ tr.processo_vinculado.numero_protocolo }}</p>
+    </div>
+
+    <h1>TERMO DE REFERÊNCIA</h1>
+
+    <h2>1. OBJETO</h2>
+    <div class="section">
+        <p>{{ tr.objeto|linebreaksbr }}</p>
+    </div>
+
+    <h2>2. JUSTIFICATIVA E OBJETIVOS</h2>
+    <div class="section">
+        <p>{{ tr.justificativa|linebreaksbr }}</p>
+    </div>
+
+    <h2>3. ESPECIFICAÇÕES TÉCNICAS DO OBJETO</h2>
+    <div class="section">
+        <p>{{ tr.especificacoes_tecnicas|linebreaksbr }}</p>
+    </div>
+
+    {% if tr.metodologia_execucao %}
+    <h2>4. METODOLOGIA DE EXECUÇÃO</h2>
+    <div class="section">
+        <p>{{ tr.metodologia_execucao|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    <h2>5. PRAZO DE EXECUÇÃO E ENTREGA</h2>
+    <div class="section">
+        <p>{{ tr.prazo_execucao_entrega|linebreaksbr }}</p>
+    </div>
+
+    {% if tr.cronograma_fisico_financeiro %}
+    <h2>6. CRONOGRAMA FÍSICO-FINANCEIRO</h2>
+    <div class="section">
+        <p>{{ tr.cronograma_fisico_financeiro|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    <h2>7. CRITÉRIOS DE ACEITAÇÃO DO OBJETO</h2>
+    <div class="section">
+        <p>{{ tr.criterios_aceitacao|linebreaksbr }}</p>
+    </div>
+
+    <h2>8. OBRIGAÇÕES DA CONTRATADA E DA CONTRATANTE</h2>
+    <div class="section">
+        <p>{{ tr.obrigacoes_partes|linebreaksbr }}</p>
+    </div>
+    
+    <h2>9. SANÇÕES ADMINISTRATIVAS</h2>
+    <div class="section">
+        <p>{{ tr.sancoes_administrativas|linebreaksbr }}</p>
+    </div>
+
+    <h2>10. FISCALIZAÇÃO DO CONTRATO</h2>
+    <div class="section">
+        <p>{{ tr.fiscalizacao_contrato|linebreaksbr }}</p>
+    </div>
+
+    <h2>11. VIGÊNCIA DO CONTRATO</h2>
+    <div class="section">
+        <p>{{ tr.vigencia_contrato|linebreaksbr }}</p>
+    </div>
+
+    <h2>12. ESTIMATIVA DE PREÇO</h2>
+     <div class="section">
+        <p>O valor estimado para a presente contratação é de <strong>R$ {{ tr.estimativa_preco_tr|floatformat:2 }}</strong>, conforme apurado no Estudo Técnico Preliminar e nas pesquisas de preço associadas.</p>
+    </div>
+
+    <div class="signature-block">
+        <p>Barueri, {{ tr.data_criacao|date:"d \d\e F \d\e Y" }}.</p>
+    </div>
+
+    <div class="signature-block">
+        <div class="signature-line"></div>
+        <p><strong>{{ tr.autor.get_full_name|default:tr.autor.username }}</strong><br>
+        Elaborador</p>
+    </div>
+    
+</body>
+</html>
+

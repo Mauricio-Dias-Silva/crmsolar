@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title_suffix %}{{ titulo_pagina }}{% endblock title_suffix %}
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">{% block page_title %}{{ titulo_pagina }}{% endblock page_title %}</h1>
+        <p class="lead">Visão geral e gestão de Editais de Licitação.</p>
+    </div>
+</section>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card text-white bg-primary h-100 shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title fs-5 mb-3"><i class="bi bi-file-earmark-ruled"></i> Total de Editais</h5>
+                    <p class="card-text display-4 fw-bold">{{ total_editais }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card text-white bg-success h-100 shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title fs-5 mb-3"><i class="bi bi-check-circle"></i> Editais Publicados</h5>
+                    <p class="card-text display-4 fw-bold">{{ editais_publicados }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card text-white bg-warning h-100 shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title fs-5 mb-3"><i class="bi bi-pencil-square"></i> Em Elaboração</h5>
+                    <p class="card-text display-4 fw-bold">{{ editais_em_elaboracao }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card text-white bg-info h-100 shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title fs-5 mb-3"><i class="bi bi-trophy"></i> Editais Homologados</h5>
+                    <p class="card-text display-4 fw-bold">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header card-header-custom p-3">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Últimos Editais Recentes</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if editais_recentes %}
+                        <ul class="list-group list-group-flush">
+                            {% for edital in editais_recentes %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <a href="{% url 'licitacoes:detalhar_edital' pk=edital.pk %}" class="text-decoration-none text-primary fw-bold">
+                                            {{ edital.numero_edital }} - {{ edital.titulo|truncatechars:70 }}
+                                        </a>
+                                        <br><small class="text-muted">{{ edital.get_tipo_licitacao_display }}</small>
+                                    </span>
+                                    <span class="text-end">
+                                        <span class="badge bg-secondary">{{ edital.get_status_display }}</span><br>
+                                        <small class="text-muted">{{ edital.data_publicacao|date:"d/m/Y" }}</small>
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info text-center my-3" role="alert">
+                            Nenhum edital recente encontrado.
+                        </div>
+                    {% endif %}
+                    <div class="text-end mt-3">
+                        <a href="{% url 'licitacoes:criar_edital' %}" class="btn btn-sm btn-success me-2"><i class="bi bi-plus-circle"></i> Criar Novo Edital</a>
+                        <a href="{% url 'licitacoes:listar_editais' %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-list-ul"></i> Ver Todos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

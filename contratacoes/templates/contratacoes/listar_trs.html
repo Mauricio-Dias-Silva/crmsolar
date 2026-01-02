@@ -1,0 +1,40 @@
+{# contratacoes/templates/contratacoes/listar_trs.html #}
+
+{% extends 'base.html' %}
+
+{% block title %}Meus Termos de Referência{% endblock %}
+{% block main_title %}Meus Termos de Referência{% endblock %}
+
+{% block content %}
+    {# Não há um botão 'Novo TR' direto, pois o TR é gerado a partir do ETP #}
+    {% if trs %}
+        <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Título do TR</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Processo TR</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">ETP de Origem</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Status</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Data</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tr in trs %}
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ tr.titulo }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ tr.numero_processo }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><a href="{% url 'contratacoes:detalhar_etp' pk=tr.etp_origem.pk %}">{{ tr.etp_origem.numero_processo }}</a></td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ tr.get_status_display }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ tr.data_criacao|date:"d/m/Y" }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">
+                            <a href="{% url 'contratacoes:detalhar_tr' pk=tr.pk %}">Ver Detalhes</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nenhum Termo de Referência encontrado.</p>
+    {% endif %}
+{% endblock %}

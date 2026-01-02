@@ -1,0 +1,40 @@
+{# SysGov_Project/integracao_audesp/templates/integracao_audesp/detalhar_empenho_audesp.html #}
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ titulo_pagina }}</h1>
+        <div>
+            <a href="{% url 'integracao_audesp:gerar_empenho_audesp_json' empenho_id=empenho.pk %}" class="btn btn-info" target="_blank">
+                <i class="fas fa-file-code"></i> Gerar JSON AUDESP (Empenho)
+            </a>
+            {# Botão para voltar #}
+            <a href="{% url 'integracao_audesp:listar_submissoes_audesp' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Detalhes do Empenho
+        </div>
+        <div class="card-body">
+            <p><strong>Número do Empenho:</strong> {{ empenho.numero_empenho }}</p>
+            <p><strong>Ano do Empenho:</strong> {{ empenho.ano_empenho }}</p>
+            <p><strong>Data de Emissão:</strong> {{ empenho.data_emissao_empenho|date:"d/m/Y" }}</p>
+            <p><strong>Código do Contrato (AUDESP):</strong> {{ empenho.codigo_contrato_audesp }}</p>
+            <p><strong>É Retificação:</strong> {% if empenho.retificacao %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Município:</strong> {{ empenho.municipio }}</p>
+            <p><strong>Entidade:</strong> {{ empenho.entidade }}</p>
+            {% if empenho.processo_vinculado %}
+            <p><strong>Processo Vinculado:</strong> <a href="{% url 'detalhes_processo' processo_id=empenho.processo_vinculado.pk %}">{{ empenho.processo_vinculado }}</a></p>
+            {% endif %}
+            {# Você pode adicionar mais campos aqui conforme seu modelo AudespEmpenhoContrato #}
+        </div>
+    </div>
+</div>
+{% endblock content %}

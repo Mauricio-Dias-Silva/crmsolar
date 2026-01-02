@@ -1,0 +1,82 @@
+
+{% extends 'base.html' %}
+{% block title_suffix %}{{ titulo_pagina }}{% endblock title_suffix %}
+
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">{% block page_title %}{{ titulo_pagina }}{% endblock page_title %}</h1>
+        <p class="lead">Lista de todos os Editais de Licitação registrados no sistema.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold mb-0">Editais Registrados</h2>
+        <a href="{% url 'licitacoes:criar_edital' %}" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle"></i> Criar Novo Edital
+        </a>
+    </div>
+
+    {% if editais %}
+        <div class="table-responsive-lg">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Número Edital</th>
+                        <th scope="col">Objeto</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Data Publicação</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for edital in editais %}
+                    <tr>
+                        <td>{{ edital.numero_edital }}</td>
+                        <td>{{ edital.titulo|truncatechars:80 }}</td>
+                        <td>{{ edital.get_tipo_licitacao_display }}</td>
+                        <td>
+                            {% if edital.status == 'PUBLICADO' %}
+                                <span class="badge bg-primary fs-6">{{ edital.get_status_display }}</span>
+                            {% elif edital.status == 'ABERTO' %}
+                                <span class="badge bg-success fs-6">{{ edital.get_status_display }}</span>
+                            {% elif edital.status == 'EM_ELABORACAO' %}
+                                <span class="badge bg-warning text-dark fs-6">{{ edital.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">{{ edital.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ edital.data_publicacao|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'licitacoes:detalhar_edital' pk=edital.pk %}" class="btn btn-sm btn-info me-1">
+                                <i class="bi bi-eye-fill"></i> Detalhes
+                            </a>
+                            <a href="{% url 'licitacoes:editar_edital' pk=edital.pk %}" class="btn btn-sm btn-primary me-1">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            {% if edital.link_edital_completo %}
+                                <a href="{{ edital.link_edital_completo }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                                    <i class="bi bi-box-arrow-up-right"></i> Link
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center mt-5 p-4 rounded-3" role="alert">
+            <h4 class="alert-heading">Nenhum Edital de Licitação Encontrado!</h4>
+            <p>Não há editais registrados no sistema. Comece a criar novos editais.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{% url 'licitacoes:criar_edital' %}" class="btn btn-info text-white fw-bold">Criar Primeiro Edital</a>
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}
+```

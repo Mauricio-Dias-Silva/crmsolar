@@ -1,0 +1,68 @@
+{# SysGov_Project/integracao_audesp/templates/integracao_audesp/criar_ata_rp_audesp.html #}
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ titulo_pagina }}</h1>
+        <a href="{% url 'integracao_audesp:listar_submissoes_audesp' %}" class="btn btn-secondary">Voltar</a>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0 rounded-4">
+        <div class="card-header card-header-custom">
+            Preencha os dados da Ata de Registro de Preços
+        </div>
+        <div class="card-body">
+            {% if processo_ref or edital_ref %}
+            <div class="alert alert-info small mb-4">
+                Esta ata está sendo criada com referência a:
+                {% if processo_ref %}<strong>Processo:</strong> {{ processo_ref.numero_protocolo }} - {{ processo_ref.titulo }}{% endif %}
+                {% if edital_ref %}<br><strong>Edital:</strong> {{ edital_ref.numero_edital }} - {{ edital_ref.titulo }}{% endif %}
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            <div class="form-check form-switch">
+                                {{ field|add_class:"form-check-input" }}
+                            </div>
+                        {% elif field.field.choices %}
+                            {{ field|add_class:"form-select" }}
+                        {% elif field.field.widget.attrs.type == 'date' %}
+                            {{ field|add_class:"form-control" }}
+                        {% else %}
+                            {{ field|add_class:"form-control" }}
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary mt-3">Salvar Ata de Registro de Preços</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrato {{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm 2cm;
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 10pt;
+            }
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            text-align: justify;
+        }
+        h1, h2 {
+            text-align: center;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        h1 {
+            font-size: 16pt;
+            text-transform: uppercase;
+        }
+        h2 {
+            font-size: 14pt;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header .prefeitura-nome {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        .parties {
+            margin: 30px 0;
+        }
+        .party-block {
+            margin-bottom: 15px;
+        }
+        .clausula {
+            margin-bottom: 20px;
+        }
+        .clausula-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .signature-block {
+            margin-top: 80px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        .signature-line {
+            border-bottom: 1px solid #000;
+            width: 70%;
+            margin: 0 auto 5px auto;
+        }
+        p {
+            margin: 0 0 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <p class="prefeitura-nome">PREFEITURA MUNICIPAL DE BARUERI</p>
+        <p>[Secretaria Responsável]</p>
+    </div>
+
+    <h1>CONTRATO ADMINISTRATIVO Nº {{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</h1>
+    <h3>PROCESSO ADMINISTRATIVO Nº {{ contrato.processo_vinculado.numero_protocolo }}</h3>
+
+    <div class="parties">
+        <div class="party-block">
+            <p>Pelo presente instrumento, de um lado, a <strong>PREFEITURA MUNICIPAL DE BARUERI</strong>, pessoa jurídica de direito público, com sede em [Endereço da Prefeitura], inscrita no CNPJ sob o nº [CNPJ da Prefeitura], doravante denominada <strong>CONTRATANTE</strong>, neste ato representada por [Nome do Representante], [Cargo do Representante], e de outro lado,</p>
+        </div>
+        <div class="party-block">
+            <p>a empresa <strong>{{ contrato.contratado.razao_social|upper }}</strong>, com sede em {{ contrato.contratado.endereco|default:'[Endereço do Fornecedor]' }}, inscrita no CNPJ sob o nº {{ contrato.contratado.cnpj }}, doravante denominada <strong>CONTRATADA</strong>, têm entre si justo e contratado o que se segue, em conformidade com o Edital de Licitação nº {{ contrato.licitacao_origem.numero_edital }} e a Lei nº 14.133/2021.</p>
+        </div>
+    </div>
+
+    <div class="clausulas">
+        <h2>CLÁUSULA PRIMEIRA - DO OBJETO</h2>
+        <div class="clausula">
+            <p>1.1. O objeto do presente contrato é a {{ contrato.objeto|lower }}, em estrita conformidade com as especificações e condições estabelecidas no Termo de Referência, no Edital de Licitação nº {{ contrato.licitacao_origem.numero_edital }} e na proposta da CONTRATADA, que passam a fazer parte integrante deste instrumento para todos os fins.</p>
+        </div>
+
+        <h2>CLÁUSULA SEGUNDA - DO VALOR E DA DOTAÇÃO ORÇAMENTÁRIA</h2>
+        <div class="clausula">
+            <p>2.1. O valor total deste contrato é de <strong>R$ {{ contrato.valor_total|floatformat:2 }}</strong> ([Valor por Extenso]).</p>
+            <p>2.2. As despesas decorrentes deste contrato correrão por conta da dotação orçamentária nº [Número da Dotação], consignada no orçamento vigente.</p>
+            <p>2.3. O pagamento será efetuado em até 30 (trinta) dias após a apresentação e ateste do(s) documento(s) fiscal(is) correspondente(s), de acordo com as notas de empenho emitidas.</p>
+        </div>
+
+        <h2>CLÁUSULA TERCEIRA - DA VIGÊNCIA</h2>
+        <div class="clausula">
+            <p>3.1. O presente contrato terá vigência de <strong>{{ contrato.data_inicio_vigencia|date:"d/m/Y" }}</strong> a <strong>{{ contrato.data_fim_vigencia|date:"d/m/Y" }}</strong>, podendo ser prorrogado por interesse das partes, mediante termo aditivo.</p>
+        </div>
+        
+        <h2>CLÁUSULA QUARTA - DAS OBRIGAÇÕES</h2>
+        <div class="clausula">
+            <p>4.1. Compete à <strong>CONTRATADA</strong>: executar o objeto deste contrato com a qualidade e as especificações exigidas; alocar os recursos necessários para a perfeita execução dos serviços; manter, durante toda a execução do contrato, as condições de habilitação e qualificação exigidas na licitação.</p>
+            <p>4.2. Compete à <strong>CONTRATANTE</strong>: efetuar o pagamento nos prazos e condições estabelecidos; fornecer à CONTRATADA as informações e os meios necessários para a execução do contrato; fiscalizar a execução do contrato por meio de servidor especialmente designado.</p>
+        </div>
+
+        <h2>CLÁUSULA QUINTA - DAS SANÇÕES ADMINISTRATIVAS</h2>
+        <div class="clausula">
+            <p>5.1. Pela inexecução total ou parcial do contrato, a CONTRATANTE poderá, garantida a prévia defesa, aplicar à CONTRATADA as sanções previstas no art. 156 da Lei nº 14.133/2021, sem prejuízo das responsabilidades civil e criminal cabíveis.</p>
+        </div>
+    </div>
+
+    <div class="signature-block">
+        <p>E, por estarem assim justas e contratadas, assinam o presente instrumento em 2 (duas) vias de igual teor e forma, na presença das testemunhas abaixo.</p>
+        <p>Barueri, {{ contrato.data_assinatura|date:"d \d\e F \d\e Y" }}.</p>
+    </div>
+
+    <div class="signature-block">
+        <div class="signature-line"></div>
+        <p><strong>[Nome do Representante da Prefeitura]</strong><br>CONTRATANTE</p>
+    </div>
+
+    <div class="signature-block">
+        <div class="signature-line"></div>
+        <p><strong>{{ contrato.contratado.razao_social|upper }}</strong><br>CONTRATADA</p>
+    </div>
+
+</body>
+</html>
+

@@ -1,0 +1,39 @@
+
+
+```html
+{# SysGov_Project/core/templates/core/snippets/pagamento_detail_snippet.html #}
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header card-header-custom p-3">
+        <h5 class="mb-0"><i class="bi bi-currency-dollar me-2"></i> Detalhes do Pagamento</h5>
+    </div>
+    <div class="card-body p-4">
+        {% if pagamento %}
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Número NF:</strong> <span class="text-muted">{{ pagamento.documento_fiscal_numero }}</span></div>
+                <div class="col-md-6"><strong>Valor Pago:</strong> <span class="text-muted">R$ {{ pagamento.nota_fiscal_valor_pago|floatformat:2 }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Data Pagamento:</strong> <span class="text-muted">{{ pagamento.nota_fiscal_pagto_dt|date:"d/m/Y" }}</span></div>
+                <div class="col-md-6"><strong>UF Doc. Fiscal:</strong> <span class="text-muted">{{ pagamento.documento_fiscal_uf }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Número Empenho:</strong> <span class="text-muted">{{ pagamento.nota_empenho_numero }}</span></div>
+                <div class="col-md-6"><strong>Data Empenho:</strong> <span class="text-muted">{{ pagamento.nota_empenho_data_emissao|date:"d/m/Y" }}</span></div>
+            </div>
+            <hr>
+            <h6 class="fw-bold">Encargos Previdenciários:</h6>
+            <p class="text-muted">{{ pagamento.get_recolhido_encargos_previdenciario_display }}</p>
+            <div class="text-end mt-3">
+                <a href="{% url 'financeiro:detalhar_pagamento' pk=pagamento.pk %}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i> Abrir Página Completa
+                </a>
+                <a href="{% url 'financeiro:download_pg_xml' pk=pagamento.pk %}" class="btn btn-sm btn-info" target="_blank">
+                    <i class="bi bi-download"></i> XML
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">Pagamento não encontrado ou não vinculado.</div>
+        {% endif %}
+    </div>
+</div>
+```

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "SysGov_Project",
+			"path": ".."
+		},
+		{
+			"name": "financeiro",
+			"path": "../../modulo-pagamentos-audesp/financeiro"
+		}
+	],
+	"settings": {}
+}

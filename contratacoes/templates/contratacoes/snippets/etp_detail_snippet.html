@@ -1,0 +1,39 @@
+```html
+{# SysGov_Project/core/templates/core/snippets/etp_detail_snippet.html #}
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header card-header-custom p-3">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Detalhes do ETP</h5>
+    </div>
+    <div class="card-body p-4">
+        {% if etp %}
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Título:</strong> <span class="text-muted">{{ etp.titulo }}</span></div>
+                <div class="col-md-6"><strong>Número SEI:</strong> <span class="text-muted">{{ etp.numero_processo }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Setor Demandante:</strong> <span class="text-muted">{{ etp.setor_demandante }}</span></div>
+                <div class="col-md-6"><strong>Elaborador:</strong> <span class="text-muted">{{ etp.autor.username|default:"Não informado" }}</span></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Status:</strong> <span class="badge bg-primary">{{ etp.get_status_display }}</span></div>
+                <div class="col-md-6"><strong>Data Criação:</strong> <span class="text-muted">{{ etp.data_criacao|date:"d/m/Y H:i" }}</span></div>
+            </div>
+            <hr>
+            <h6 class="fw-bold">Justificativa da Necessidade:</h6>
+            <p class="text-muted">{{ etp.descricao_necessidade|linebreaksbr }}</p>
+            <h6 class="fw-bold">Estimativa de Custo:</h6>
+            <p class="text-muted">R$ {{ etp.estimativa_valor|floatformat:2|default:"Não informado" }}</p>
+            <div class="text-end mt-3">
+                <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i> Abrir Página Completa
+                </a>
+                <a href="{% url 'contratacoes:gerar_etp_pdf' pk=etp.pk %}" class="btn btn-sm btn-info" target="_blank">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">ETP não encontrado ou não vinculado.</div>
+        {% endif %}
+    </div>
+</div>
+```

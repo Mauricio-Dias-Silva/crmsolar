@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Criar ETP{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="display-5 fw-bold text-primary mb-4">Criar Novo Estudo Técnico Preliminar (ETP)</h1>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h5 class="mb-0">Dados Gerais</h5></div>
+            <div class="card-body">
+                {% for field in form %}{% if field.name in "titulo,numero_processo,setor_demandante,item_pca_vinculado" %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% render_field field class="form-control" %}
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h5 class="mb-0">Detalhamento do Estudo</h5></div>
+            <div class="card-body">
+                {% for field in form %}{% if field.name not in "titulo,numero_processo,setor_demandante,item_pca_vinculado" %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% render_field field class="form-control" rows="4" %}
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+        </div>
+
+        <h3 class="mt-5">Pesquisas de Preço</h3>
+        <hr>
+        {{ pesquisas_formset.management_form }}
+        <div id="pesquisa-formset-container">
+            {% for form in pesquisas_formset %}
+            <div class="card mb-3 formset-form">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-5 mb-2">{% render_field form.fornecedor class="form-control" placeholder="Fornecedor/Fonte" %}</div>
+                        <div class="col-md-3 mb-2">{% render_field form.valor_cotado class="form-control" placeholder="Valor Cotado" %}</div>
+                        <div class="col-md-3 mb-2">{% render_field form.data_pesquisa class="form-control" type="date" %}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="pesquisa-empty-form" class="d-none">
+            <div class="card mb-3 formset-form">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-5 mb-2">{% render_field pesquisas_formset.empty_form.fornecedor class="form-control" placeholder="Fornecedor/Fonte" %}</div>
+                        <div class="col-md-3 mb-2">{% render_field pesquisas_formset.empty_form.valor_cotado class="form-control" placeholder="Valor Cotado" %}</div>
+                        <div class="col-md-3 mb-2">{% render_field pesquisas_formset.empty_form.data_pesquisa class="form-control" type="date" %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary mb-4" id="add-pesquisa-btn">
+            <i class="fas fa-plus me-2"></i>Adicionar Pesquisa de Preço
+        </button>
+
+        <h3 class="mt-5">Pareceres Técnicos</h3>
+        <hr>
+        {{ pareceres_formset.management_form }}
+        <div id="parecer-formset-container">
+            {% for form in pareceres_formset %}
+            <div class="card mb-3 formset-form">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">{% render_field form.autor class="form-control" placeholder="Autor do Parecer" %}</div>
+                        <div class="col-md-8 mb-2">{% render_field form.conteudo class="form-control" placeholder="Conteúdo do Parecer" rows="2" %}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="parecer-empty-form" class="d-none">
+            <div class="card mb-3 formset-form">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">{% render_field pareceres_formset.empty_form.autor class="form-control" placeholder="Autor do Parecer" %}</div>
+                        <div class="col-md-8 mb-2">{% render_field pareceres_formset.empty_form.conteudo class="form-control" placeholder="Conteúdo do Parecer" rows="2" %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary mb-4" id="add-parecer-btn">
+            <i class="fas fa-plus me-2"></i>Adicionar Parecer Técnico
+        </button>
+
+
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Salvar ETP</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- LÓGICA PARA O FORMSET DE PESQUISAS DE PREÇO ---
+    const pesquisaContainer = document.getElementById('pesquisa-formset-container');
+    const addPesquisaButton = document.getElementById('add-pesquisa-btn');
+    const totalPesquisaFormsInput = document.getElementById('id_pesquisas-TOTAL_FORMS');
+    const emptyPesquisaFormTemplate = document.getElementById('pesquisa-empty-form').innerHTML;
+
+    if (addPesquisaButton) {
+        addPesquisaButton.addEventListener('click', function() {
+            let formIndex = parseInt(totalPesquisaFormsInput.value);
+            const newFormHTML = emptyPesquisaFormTemplate.replace(/__prefix__/g, formIndex);
+            pesquisaContainer.insertAdjacentHTML('beforeend', newFormHTML);
+            totalPesquisaFormsInput.value = formIndex + 1;
+        });
+    }
+
+    // --- NOVA LÓGICA PARA O FORMSET DE PARECERES TÉCNICOS ---
+    const parecerContainer = document.getElementById('parecer-formset-container');
+    const addParecerButton = document.getElementById('add-parecer-btn');
+    const totalParecerFormsInput = document.getElementById('id_pareceres-TOTAL_FORMS');
+    const emptyParecerFormTemplate = document.getElementById('parecer-empty-form').innerHTML;
+
+    if (addParecerButton) {
+        addParecerButton.addEventListener('click', function() {
+            let formIndex = parseInt(totalParecerFormsInput.value);
+            const newFormHTML = emptyParecerFormTemplate.replace(/__prefix__/g, formIndex);
+            parecerContainer.insertAdjacentHTML('beforeend', newFormHTML);
+            totalParecerFormsInput.value = formIndex + 1;
+        });
+    }
+});
+</script>
+{% endblock scripts %}

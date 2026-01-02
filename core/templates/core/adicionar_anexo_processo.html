@@ -1,0 +1,222 @@
+{# SysGov_Project/core/templates/core/adicionar_anexo_processo.html #}
+{% extends 'produtos/base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block title_suffix %}{{ titulo_pagina }}{% endblock title_suffix %}
+
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">{{ titulo_pagina }}</h1>
+        <p class="lead">Faça o upload de um novo arquivo para o processo **{{ processo.numero_protocolo|default:"N/A" }}**.</p>
+    </div>
+</section>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header card-header-custom p-3">
+                <h5 class="mb-0">Formulário de Anexo</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data"> {# <<< MUITO IMPORTANTE: enctype para upload de arquivos #}
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
+                            {{ field|add_class:"form-control" }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-upload"></i> Anexar Arquivo</button>
+                        <a href="{% url 'detalhes_processo' processo_id=processo.id %}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-circle"></i> Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{# --- Adicione esta parte no final do seu bloco content ou em um bloco extra_js se tiver um --- #}
+{% block extra_js %}
+<script type="module">
+    // Importa a biblioteca principal do PDF.js
+    // Certifique-se de que este caminho está correto para o seu projeto Django (static file)
+    import * as pdfjsLib from '{% static "core/pdfjs/pdf.mjs" %}';
+
+    // Se você usa o worker, importe-o também
+    // pdf.worker.mjs geralmente está na mesma pasta ou em uma subpasta 'build/pdf.worker.mjs'
+    // O PDF.js precisa saber onde encontrar o worker para processar o PDF em segundo plano.
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '{% static "core/pdfjs/pdf.worker.mjs" %}';
+
+    // --- Elementos HTML para renderizar o PDF ---
+    // Você vai precisar de um elemento canvas no seu HTML para renderizar o PDF.
+    // Exemplo: <canvas id="pdfViewer"></canvas>
+    // Se o seu objetivo é apenas UPLOAD, você não precisa renderizar aqui.
+    // Mas se você quer uma pré-visualização, este é o lugar.
+    const container = document.getElementById('pdf-viewer-container'); // Um div onde o canvas será inserido
+    let pdfDoc = null; // Guarda o documento PDF carregado
+    let pageNum = 1; // Página atual
+    let pageRendering = false;
+    let pageNumPending = null;
+    let scale = 1.0;
+    let canvas = null;
+    let ctx = null;
+
+    // Função para renderizar a página
+    function renderPage(num) {
+        pageRendering = true;
+        // Usa o PDF.js para obter a página
+        pdfDoc.getPage(num).then(function(page) {
+            const viewport = page.getViewport({ scale: scale });
+
+            // Se o canvas ainda não existe, cria um
+            if (!canvas) {
+                canvas = document.createElement('canvas');
+                container.appendChild(canvas);
+                ctx = canvas.getContext('2d');
+            }
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            // Renderiza a página no canvas
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport,
+            };
+            const renderTask = page.render(renderContext);
+
+            // Aguarda o término da renderização
+            renderTask.promise.then(function() {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    // Se houver uma nova requisição de página enquanto renderizava, renderiza-a
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+            });
+        });
+
+        // Atualiza o número da página exibida (se você tiver um elemento para isso)
+        // document.getElementById('page_num').textContent = num;
+    }
+
+    // Função para carregar o documento PDF
+    function loadPdf(pdfUrl) {
+        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+            pdfDoc = pdf;
+            // document.getElementById('page_count').textContent = pdf.numPages; // Se você tiver um contador de páginas
+            renderPage(pageNum);
+        }).catch(function(error) {
+            console.error('Erro ao carregar o documento:', error);
+            // Aqui você pode adicionar uma mensagem de erro na UI
+            alert('Não foi possível carregar o PDF. Verifique o console para mais detalhes.');
+        });
+    }
+
+    // --- Chamada para carregar o PDF (Exemplo) ---
+    // Você precisará de uma forma de obter a URL do PDF.
+    // Para teste, você pode usar uma URL estática ou passar uma URL dinâmica do seu backend.
+    // Exemplo: se você tem uma API para renderizar um anexo com ID 6, seria assim:
+    // **Importante:** Substitua esta URL pela URL REAL do seu arquivo PDF
+    const pdfUrl = '/api/arquivo_anexo/6/render-html/'; // Isso não é um PDF direto, é um HTML.
+                                                     // Você precisa da URL que serve o arquivo PDF em si.
+                                                     // Se sua API render-html está *exibindo* o PDF em um iframe
+                                                     // ou retornando o conteúdo do PDF, a lógica muda.
+
+    // Se sua URL '/api/arquivo_anexo/6/render-html/' de fato retorna o conteúdo binário de um PDF,
+    // então você precisaria fazer uma requisição fetch para obtê-lo e depois passá-lo para o PDF.js.
+    // Exemplo se a URL retorna o conteúdo do PDF:
+    // fetch(pdfUrl)
+    //     .then(response => response.blob()) // Pega o conteúdo como Blob
+    //     .then(blob => {
+    //         const url = URL.createObjectURL(blob); // Cria uma URL local para o Blob
+    //         loadPdf(url);
+    //     })
+    //     .catch(error => {
+    //         console.error('Erro ao buscar o PDF:', error);
+    //     });
+
+    // Se a sua URL `api/arquivo_anexo/6/render-html/` retorna o HTML que *contém* o PDF,
+    // o PDF.js não vai funcionar diretamente com essa URL. Você precisa da URL do arquivo PDF puro.
+    //
+    // O erro "Erro ao carregar o documento: ReferenceError: pdfjsLib is not defined" no seu console anterior
+    // indica que o problema principal era a não inicialização da biblioteca (por causa do 'type="module"').
+    // O erro "GET /api/arquivo_anexo/6/render-html/ HTTP/1.1" 200 3364
+    // indica que essa URL está retornando HTML (3364 bytes é um tamanho típico para HTML simples),
+    // e não um arquivo PDF puro.
+
+    // **AÇÃO NECESSÁRIA:** Você precisa de uma URL que sirva o arquivo PDF diretamente (ex: /media/uploads/meu_arquivo.pdf)
+    // ou uma view que retorne o PDF com o Content-Type correto (application/pdf).
+
+    // Por exemplo, se seu anexo 6 é um PDF e você tem uma URL que serve o arquivo real:
+    // loadPdf('/caminho/para/o/seu/anexo_6.pdf');
+
+    // Se você só está preocupado em fazer o UPLOAD de um arquivo PDF e não em visualizá-lo NESTA página,
+    // então todo o código do PDF.js acima é desnecessário neste template específico (`adicionar_anexo_processo.html`).
+    // Ele seria necessário na página onde você *visualiza* o PDF.
+
+    // Se o seu objetivo é uma PRÉ-VISUALIZAÇÃO do PDF ANTES do upload, a lógica é mais complexa,
+    // pois você precisaria ler o arquivo selecionado no campo de input (FileReader API)
+    // e passá-lo para o PDF.js.
+    // Exemplo básico para pré-visualização (se houver um input de arquivo com id="id_arquivo"):
+    /*
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('id_arquivo'); // Assumindo que o ID do seu campo de arquivo é 'id_arquivo'
+        const pdfViewerContainer = document.getElementById('pdf-viewer-container');
+
+        if (fileInput && pdfViewerContainer) {
+            fileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file && file.type === 'application/pdf') {
+                    const fileReader = new FileReader();
+                    fileReader.onload = function() {
+                        const typedarray = new Uint8Array(this.result);
+                        pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+                            pdfDoc = pdf;
+                            pageNum = 1;
+                            // Se já existe um canvas de visualização anterior, remove-o
+                            if (canvas && container.contains(canvas)) {
+                                container.removeChild(canvas);
+                                canvas = null;
+                            }
+                            renderPage(pageNum);
+                        }).catch(function(error) {
+                            console.error('Erro ao carregar o PDF para pré-visualização:', error);
+                            alert('Não foi possível pré-visualizar o PDF. Certifique-se de que é um arquivo PDF válido.');
+                        });
+                    };
+                    fileReader.readAsArrayBuffer(file);
+                } else {
+                    alert('Por favor, selecione um arquivo PDF.');
+                    // Limpar visualização se houver uma anterior
+                    if (canvas && container.contains(canvas)) {
+                        container.removeChild(canvas);
+                        canvas = null;
+                    }
+                }
+            });
+        }
+    });
+    */
+
+    // **Se seu objetivo é APENAS UPLOAD, e não pré-visualização ou visualização imediata nesta página,
+    // você não precisa de nenhum código PDF.js neste template. O código do PDF.js
+    // deve estar no template onde o PDF será exibido.**
+
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">Painel do Pregoeiro</h1>
+            <p class="lead">Edital: {{ pregao.edital.numero_edital }} - {{ pregao.edital.titulo }}</p>
+        </div>
+        <div><span class="badge bg-primary fs-6 rounded-pill">{{ pregao.get_status_display }}</span></div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna Esquerda -->
+        <div class="col-lg-4">
+            <!-- Card de Ações da Sessão (ATUALIZADO) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header"><h5 class="mb-0">Ações da Sessão</h5></div>
+                <div class="card-body">
+                    <p><strong>Pregoeiro:</strong> {{ pregao.pregoeiro.get_full_name|default:pregao.pregoeiro.username }}</p>
+                    <p><strong>Abertura:</strong> {{ pregao.data_abertura_sessao|date:"d/m/Y H:i" }}</p>
+                    <hr>
+                    
+                    <form method="post" class="d-grid gap-2">
+                        {% csrf_token %}
+                        {% if pregao.status == 'AGENDADO' or pregao.status == 'ABERTO_PARA_LANCES' %}{% if request.user == pregao.pregoeiro %}
+                            <button type="submit" name="acao_sessao" value="iniciar_disputa" class="btn btn-success"><i class="fas fa-play me-2"></i>Iniciar Disputa</button>
+                        {% endif %}{% endif %}
+                        {% if pregao.status == 'EM_DISPUTA' %}{% if request.user == pregao.pregoeiro %}
+                            <button type="submit" name="acao_sessao" value="encerrar_sessao" class="btn btn-danger"><i class="fas fa-stop-circle me-2"></i>Encerrar Sessão</button>
+                        {% endif %}{% endif %}
+                    </form>
+
+                    {% if pregao.status == 'FINALIZADO' %}
+                        <div class="alert alert-info mt-3">
+                            Sessão finalizada em {{ pregao.data_encerramento_sessao|date:"d/m/Y H:i" }}.
+                        </div>
+                        <!-- ::: BOTÃO NOVO ADICIONADO AQUI ::: -->
+                        <div class="d-grid">
+                            <a href="{% url 'licitacoes:gerar_ata_pregao_pdf' pregao_id=pregao.pk %}" class="btn btn-primary">
+                                <i class="fas fa-file-pdf me-2"></i>Gerar Ata da Sessão em PDF
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card de Participantes -->
+            <div class="card shadow-sm">
+                <div class="card-header"><h5 class="mb-0">Participantes Credenciados ({{ participantes.count }})</h5></div>
+                <div class="list-group list-group-flush">
+                    {% for p in participantes %}<div class="list-group-item">{{ p.fornecedor.razao_social }}</div>{% empty %}<div class="list-group-item text-muted">Nenhum.</div>{% endfor %}
+                </div>
+                {% if pregao.status == 'AGENDADO' or pregao.status == 'ABERTO_PARA_LANCES' %}
+                <div class="card-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            {% render_field form_participante.fornecedor class="form-select form-select-sm" %}
+                            <button type="submit" name="submit_participante" class="btn btn-sm btn-primary" title="Credenciar Fornecedor"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Coluna Direita -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header"><h5 class="mb-0">Itens em Disputa</h5></div>
+                <div class="card-body">
+                    {% for item in itens_edital %}
+                        <div class="card mb-3">
+                            <div class="card-header bg-light"><strong>Item: {{ item.descricao_item }}</strong></div>
+                            <div class="card-body">
+                                <table class="table table-sm table-striped">
+                                    <thead><tr><th>Licitante</th><th>Valor (R$)</th><th>Horário</th><th class="text-center">Ações</th></tr></thead>
+                                    <tbody>
+                                        {% for lance in item.lances.all %}
+                                        <tr class="{% if lance.aceito %}table-success fw-bold{% endif %}">
+                                            <td>{{ lance.participante.fornecedor.razao_social }}</td>
+                                            <td>{{ lance.valor_lance|floatformat:2 }}</td>
+                                            <td>{{ lance.data_lance|date:"H:i:s" }}</td>
+                                            <td class="text-center">
+                                                {% if pregao.status == 'EM_DISPUTA' and request.user == pregao.pregoeiro and not lance.aceito %}
+                                                <form method="post" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="lance_id" value="{{ lance.pk }}">
+                                                    <button type="submit" name="aceitar_lance" class="btn btn-sm btn-outline-success" title="Marcar como lance vencedor">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                {% elif lance.aceito %}
+                                                    <span class="badge bg-success"><i class="fas fa-trophy me-1"></i> Vencedor</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}<tr><td colspan="4" class="text-center text-muted">Nenhum lance.</td></tr>{% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if pregao.status == 'EM_DISPUTA' %}
+                            <div class="card-footer">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="item" value="{{ item.pk }}">
+                                    <div class="input-group">
+                                        {% render_field form_lance.participante class="form-select form-select-sm" %}
+                                        {% render_field form_lance.valor_lance class="form-control form-control-sm" placeholder="Valor do Lance" %}
+                                        <button type="submit" name="submit_lance" class="btn btn-sm btn-success">Lançar</button>
+                                    </div>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}<p class="text-muted">Nenhum item.</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

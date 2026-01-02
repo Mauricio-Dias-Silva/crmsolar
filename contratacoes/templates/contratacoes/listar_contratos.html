@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Visualize e gerencie todos os contratos firmados.</p>
+        </div>
+        <a href="{% url 'core:meus_processos' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Novo Contrato (a partir de um Processo)
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nº Contrato</th>
+                        <th>Contratado</th>
+                        <th>Valor Total (R$)</th>
+                        <th>Data da Assinatura</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contrato in contratos %}
+                    <tr>
+                        <td>{{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</td>
+                        <td>{{ contrato.contratado.razao_social }}</td>
+                        <td>{{ contrato.valor_total|floatformat:2 }}</td>
+                        <td>{{ contrato.data_assinatura|date:"d/m/Y" }}</td>
+                        <td><span class="badge bg-success">{{ contrato.get_status_display }}</span></td>
+                        <td>
+                            <a href="{% url 'contratacoes:detalhar_contrato' pk=contrato.pk %}" class="btn btn-sm btn-outline-primary">
+                                Detalhes
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">Nenhum contrato encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

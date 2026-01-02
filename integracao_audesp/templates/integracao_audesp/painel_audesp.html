@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">Documentos pendentes de geração de ficheiro para o TCE.</p>
+        </div>
+        <a href="{% url 'integracao_audesp:listar_submissoes_audesp' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-history me-2"></i>Ver Histórico de Submissões
+        </a>
+    </div>
+
+    <!-- CARD DE ETPs PENDENTES -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">ETPs Aprovados Pendentes</h5></div>
+        <div class="card-body">
+            {% if etps_pendentes %}
+                <table class="table table-hover">
+                    <thead><tr><th>Título do ETP</th><th>Processo</th><th class="text-end">Ação</th></tr></thead>
+                    <tbody>
+                        {% for etp in etps_pendentes %}
+                        <tr>
+                            <td>{{ etp.titulo }}</td>
+                            <td>{{ etp.numero_processo }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'integracao_audesp:gerar_etp_audesp_json' etp_id=etp.pk %}" target="_blank" class="btn btn-sm btn-info"><i class="fas fa-code me-1"></i> Gerar JSON</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-success mb-0">🎉 Nenhum ETP pendente. Tudo em dia!</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CARD DE EDITAIS PENDENTES -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">Editais Publicados Pendentes</h5></div>
+        <div class="card-body">
+            {% if editais_pendentes %}
+                 <table class="table table-hover">
+                    <thead><tr><th>Número do Edital</th><th>Objeto</th><th class="text-end">Ação</th></tr></thead>
+                    <tbody>
+                        {% for edital in editais_pendentes %}
+                        <tr>
+                            <td>{{ edital.numero_edital }}</td>
+                            <td>{{ edital.titulo }}</td>
+                            <td class="text-end">
+                                <a href="#" class="btn btn-sm btn-primary disabled" title="Funcionalidade em desenvolvimento">
+                                    <i class="fas fa-arrow-right me-1"></i> Conferir e Enviar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-success mb-0">🎉 Nenhum edital pendente. Tudo em dia!</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- CARD DE CONTRATOS PENDENTES -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">Contratos Vigentes Pendentes</h5></div>
+        <div class="card-body">
+           {% if contratos_pendentes %}
+                 <table class="table table-hover">
+                    <thead><tr><th>Número do Contrato</th><th>Contratado</th><th class="text-end">Ação</th></tr></thead>
+                    <tbody>
+                        {% for contrato in contratos_pendentes %}
+                        <tr>
+                            <td>{{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</td>
+                            <td>{{ contrato.contratado.razao_social }}</td>
+                            <td class="text-end">
+                                <a href="#" class="btn btn-sm btn-primary disabled" title="Funcionalidade em desenvolvimento">
+                                    <i class="fas fa-arrow-right me-1"></i> Conferir e Enviar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-success mb-0">🎉 Nenhum contrato pendente. Tudo em dia!</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CARD PARA DOCUMENTOS FISCAIS PENDENTES (ADICIONADO) -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">Documentos Fiscais Pendentes</h5></div>
+        <div class="card-body">
+            {% if documentos_fiscais_pendentes %}
+                <table class="table table-hover">
+                    <thead><tr><th>Número da NF</th><th>Contrato</th><th class="text-end">Ação</th></tr></thead>
+                    <tbody>
+                        {% for doc in documentos_fiscais_pendentes %}
+                        <tr>
+                            <td>{{ doc.documento_fiscal_numero }}</td>
+                            <td>{{ doc.contrato_vinculado.numero_contrato }}/{{ doc.contrato_vinculado.ano_contrato }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'financeiro:download_df_xml' pk=doc.pk %}" target="_blank" class="btn btn-sm btn-warning"><i class="fas fa-file-code me-1"></i>Gerar XML</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-success mb-0">🎉 Nenhum Documento Fiscal pendente.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CARD PARA PAGAMENTOS PENDENTES (ADICIONADO) -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><h5 class="mb-0">Pagamentos Pendentes</h5></div>
+        <div class="card-body">
+            {% if pagamentos_pendentes %}
+                 <table class="table table-hover">
+                    <thead><tr><th>NF Associada</th><th>Valor Pago</th><th class="text-end">Ação</th></tr></thead>
+                    <tbody>
+                        {% for pg in pagamentos_pendentes %}
+                        <tr>
+                            <td>{{ pg.documento_fiscal.documento_fiscal_numero }}</td>
+                            <td>R$ {{ pg.nota_fiscal_valor_pago|floatformat:2 }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'financeiro:download_pg_xml' pk=pg.pk %}" target="_blank" class="btn btn-sm btn-warning"><i class="fas fa-file-code me-1"></i>Gerar XML</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-success mb-0">🎉 Nenhum pagamento pendente.</div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

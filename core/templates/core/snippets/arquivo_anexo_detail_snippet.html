@@ -1,0 +1,55 @@
+{# SysGov_Project/core/templates/core/snippets/arquivo_anexo_detail_snippet.html #}
+{% load static %} 
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header card-header-custom p-3">
+        <h5 class="mb-0"><i class="bi bi-paperclip me-2"></i> Detalhes do Anexo: {{ anexo.titulo }}</h5>
+    </div>
+    <div class="card-body p-4">
+        {% if anexo %}
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Nome do Arquivo:</strong> <span class="text-muted">{{ anexo.arquivo.name }}</span></div>
+                <div class="col-md-6"><strong>Tipo:</strong> <span class="text-muted">{{ anexo.get_file_extension|upper }}</span></div> {# Mostra a extensão em maiúsculas #}
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6"><strong>Upload em:</strong> <span class="text-muted">{{ anexo.data_upload|date:"d/m/Y H:i" }}</span></div>
+                <div class="col-md-6"><strong>Enviado por:</strong> <span class="text-muted">{{ anexo.uploaded_by.username|default:"Não informado" }}</span></div>
+            </div>
+            <hr>
+            <div class="text-center my-3">
+                {# REMOVIDA A LÓGICA DE PDF.JS AQUI. ELA SERÁ TRATADA PELO JAVASCRIPT PRINCIPAL DO detalhes_processo.html #}
+                
+                {% if anexo.is_image %}
+                    <h6 class="fw-bold mb-3">Visualização da Imagem:</h6>
+                    <img src="{{ anexo.arquivo.url }}" class="img-fluid rounded border" alt="{{ anexo.titulo }}" style="max-height: 500px;">
+                {% elif anexo.is_xml %}
+                    <h6 class="fw-bold mb-3">Conteúdo do XML:</h6>
+                    {# A linha anexo.arquivo.read() pode ser problemática para arquivos grandes. #}
+                    {# Considere ler o conteúdo da view Django e passá-lo para o contexto se for muito grande. #}
+                    {# Ou, se o arquivo.read() for viável e não causar problemas de memória/desempenho: #}
+                    <pre style="white-space: pre-wrap; text-align: left; background-color: #f0f0f0; padding: 10px; border-radius: 5px; max-height: 400px; overflow-y: auto; font-size: 0.9em;">{{ anexo.arquivo.read|safe }}</pre>
+                {% else %}
+                    {# Esta mensagem aparecerá para PDFs se algo der errado, ou para outros tipos de arquivo que não sejam imagem/xml #}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle me-2"></i> Não há visualização embutida para este tipo de arquivo ({{ anexo.get_file_extension|upper }}).
+                        <br>Por favor, use o botão de download para visualizá-lo.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="text-end mt-3">
+                {# Link de download sempre disponível para qualquer anexo #}
+                <a href="{{ anexo.arquivo.url }}" class="btn btn-sm btn-success me-2" target="_blank" download>
+                    <i class="bi bi-download"></i> Baixar Arquivo
+                </a>
+                <a href="{{ anexo.arquivo.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i> Abrir em Nova Aba
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">Anexo não encontrado.</div>
+        {% endif %}
+    </div>
+</div>
+
+{# REMOVIDO: O bloco de script {% if anexo.is_pdf %} ... {% endif %} foi removido. #}
+{# A lógica de visualização de PDF agora está centralizada no detalhes_processo.html. #}

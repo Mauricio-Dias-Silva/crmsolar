@@ -1,0 +1,46 @@
+{# SysGov_Project/contratacoes/templates/contratacoes/criar_item_catalogo.html #}
+{% extends 'base.html' %} {# Estende o template base principal #}
+{% load static %}
+{% load widget_tweaks %} {# Para estilizar o formulário #}
+
+{% block title %}{{ titulo_pagina }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ titulo_pagina }}</h1>
+        <a href="{% url 'contratacoes:listar_catalogo_itens' %}" class="btn btn-secondary">Voltar para o Catálogo</a>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0 rounded-4">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary mt-3">Salvar Item</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

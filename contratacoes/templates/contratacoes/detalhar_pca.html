@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_suffix %}Detalhes do PCA{% endblock title_suffix %}
+
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">Detalhes do PCA - {{ pca.ano_vigencia }}</h1>
+        <p class="lead">Informações detalhadas sobre o Plano de Contratações Anual.</p>
+    </div>
+</section>
+
+<div class="container my-4">
+    <div class="card shadow-sm mb-4 border-0 rounded-4">
+        <div class="card-header card-header-custom p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Informações do PCA</h5>
+            <a href="{% url 'contratacoes:editar_pca' pk=pca.pk %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-pencil"></i> Editar PCA
+            </a>
+        </div>
+        <div class="card-body p-4">
+            <div class="row mb-3">
+                <div class="col-md-6"><strong>Ano de Vigência:</strong> <span class="text-muted">{{ pca.ano_vigencia }}</span></div>
+                <div class="col-md-6"><strong>Autor:</strong> <span class="text-muted">{{ pca.autor.username }}</span></div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12"><strong>Data de Criação:</strong> <span class="text-muted">{{ pca.data_criacao|date:"d/m/Y H:i" }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0 rounded-4">
+        <div class="card-header card-header-custom p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Itens do Plano</h5>
+            <a href="{% url 'contratacoes:adicionar_item_pca' pca_pk=pca.pk %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Adicionar Item
+            </a>
+        </div>
+        <div class="card-body p-0">
+            {% if pca.itens_pca.all %}
+                <ul class="list-group list-group-flush">
+                    {% for item in pca.itens_pca.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ item.item_catalogo.nome_padronizado }}</strong>
+                                <small class="text-muted d-block">Quantidade: {{ item.quantidade }}</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">
+                                R$ {{ item.valor_estimado_total|floatformat:2 }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-info mb-0 text-center">
+                    Nenhum item adicionado a este PCA ainda.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'contratacoes:listar_pca' %}" class="btn btn-outline-secondary me-2 btn-lg">
+            <i class="bi bi-arrow-left-circle"></i> Voltar para a Lista
+        </a>
+    </div>
+</div>
+{% endblock content %}

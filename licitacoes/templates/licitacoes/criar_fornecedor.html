@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="display-5 fw-bold text-primary mb-4">{{ titulo_pagina }}</h1>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.razao_social.label }}</label>
+                        {% render_field form.razao_social class="form-control" %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.nome_fantasia.label }}</label>
+                        {% render_field form.nome_fantasia class="form-control" %}
+                    </div>
+                </div>
+                <div class="row">
+                     <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.cnpj.label }}</label>
+                        {% render_field form.cnpj class="form-control" %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.telefone.label }}</label>
+                        {% render_field form.telefone class="form-control" %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.email.label }}</label>
+                        {% render_field form.email class="form-control" %}
+                    </div>
+                </div>
+                <!-- Adicione o resto dos campos aqui se quiser organizar em colunas -->
+                <div class="mb-3">
+                    <label class="form-label">{{ form.endereco.label }}</label>
+                    {% render_field form.endereco class="form-control" %}
+                </div>
+                 <div class="mb-3">
+                    <label class="form-label">{{ form.dados_bancarios.label }}</label>
+                    {% render_field form.dados_bancarios class="form-control" rows="3" %}
+                </div>
+
+                 <div class="mt-4 text-end">
+                    <!-- BOTÃO CORRIGIDO AQUI -->
+                    <a href="{% url 'core:listar_fornecedores' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Salvar Fornecedor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary mb-0">{{ titulo_pagina }}</h1>
+            <p class="lead">{{ processo.titulo }}</p>
+        </div>
+        <div>
+            <a href="{% url 'core:meus_processos' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>Voltar para a Lista
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Documentos e Ações do Processo</h5>
+        </div>
+        <div class="list-group list-group-flush">
+            
+            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-1">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>
+                        Estudo Técnico Preliminar (ETP)
+                    </h6>
+                    {% if etp %}
+                        <p class="mb-1 text-muted">{{ etp.titulo }} - <span class="badge bg-info">{{ etp.get_status_display }}</span></p>
+                    {% else %}
+                        <p class="mb-1 text-muted">Nenhum ETP criado para este processo.</p>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if etp %}
+                        <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="btn btn-sm btn-outline-secondary">Ver Detalhes</a>
+                    {% else %}
+                        <a href="{% url 'contratacoes:criar_etp' processo_id=processo.pk %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i> Criar ETP
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-1">
+                        <i class="fas fa-file-signature me-2 text-primary"></i>
+                        Termo de Referência (TR)
+                    </h6>
+                    {% if tr %}
+                        <p class="mb-1 text-muted">{{ tr.titulo }} - <span class="badge bg-info">{{ tr.get_status_display }}</span></p>
+                    {% else %}
+                        <p class="mb-1 text-muted">Nenhum TR criado para este processo.</p>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if tr %}
+                         <a href="{% url 'contratacoes:detalhar_tr' pk=tr.pk %}" class="btn btn-sm btn-outline-secondary">Ver Detalhes</a>
+                    {% elif etp and etp.status == 'APROVADO' %}
+                        <a href="{% url 'contratacoes:gerar_tr_a_partir_etp' pk=etp.pk %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i> Gerar TR
+                        </a>
+                    {% else %}
+                        <button class="btn btn-sm btn-primary" disabled title="É necessário um ETP Aprovado para gerar o TR.">
+                            <i class="fas fa-plus me-1"></i> Gerar TR
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h6 class="mb-1">
+                            <i class="fas fa-file-contract me-2 text-primary"></i>
+                            Contratos
+                        </h6>
+                    </div>
+                    <div>
+                        {% if etp.status == 'APROVADO' %}
+                            <a href="{% url 'contratacoes:criar_contrato' processo_id=processo.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-1"></i> Adicionar Contrato
+                            </a>
+                        {% else %}
+                            <button class="btn btn-sm btn-primary" disabled title="É necessário um ETP Aprovado para adicionar um contrato.">
+                                <i class="fas fa-plus me-1"></i> Adicionar Contrato
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if contratos %}
+                    <ul class="list-unstyled mt-2 mb-0">
+                    {% for contrato in contratos %}
+                        <li class="ps-4">- {{ contrato }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="mb-1 mt-2 text-muted ps-4">Nenhum contrato adicionado a este processo.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

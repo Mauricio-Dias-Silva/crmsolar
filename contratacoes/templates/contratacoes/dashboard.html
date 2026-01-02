@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title_suffix %}{{ titulo_pagina }}{% endblock title_suffix %}
+
+{% block content %}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">{% block page_title %}{{ titulo_pagina }}{% endblock page_title %}</h1>
+        <p class="lead">Visão geral e estatísticas dos Estudos Técnicos Preliminares (ETPs) no sistema.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold mb-0">Visão Geral dos ETPs</h2>
+        <a href="{% url 'contratacoes:criar_etp' %}" class="btn btn-success btn-lg"><i class="bi bi-plus-circle"></i> Novo ETP</a>
+    </div>
+
+    {# Cards de Estatísticas no topo do Dashboard #}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
+        {# Card Total de ETPs #}
+        <div class="col">
+            <div class="card text-center h-100 bg-primary text-white shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-white">Total de ETPs</h5>
+                    <p class="card-text display-4 fw-bold">{{ total_etps|default:0 }}</p>
+                    <a href="{% url 'contratacoes:listar_etps' %}" class="btn btn-sm btn-light mt-2">Ver Todos</a>
+                </div>
+            </div>
+        </div>
+
+        {# Card ETPs em Elaboração #}
+        <div class="col">
+            <div class="card text-center h-100 bg-warning text-white shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-white">Em Elaboração</h5>
+                    <p class="card-text display-4 fw-bold">{{ total_em_elaboracao|default:0 }}</p>
+                    <a href="{% url 'contratacoes:listar_etps' %}?status=EM_ELABORACAO" class="btn btn-sm btn-light mt-2">Ver todos</a>
+                </div>
+            </div>
+        </div>
+
+        {# Card ETPs em Análise / Revisão #}
+        <div class="col">
+            <div class="card text-center h-100 bg-info text-white shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-white">Em Análise / Revisão</h5>
+                    <p class="card-text display-4 fw-bold">{{ etps_com_pendencias_count|default:0 }}</p>
+                    <a href="{% url 'contratacoes:listar_etps' %}?status=EM_ANALISE" class="btn btn-sm btn-light mt-2">Ver pendências</a>
+                </div>
+            </div>
+        </div>
+        
+        {# Card ETPs Aprovados #}
+        <div class="col">
+            <div class="card text-center h-100 bg-success text-white shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-white">Aprovados</h5>
+                    <p class="card-text display-4 fw-bold">{{ total_aprovados|default:0 }}</p>
+                    <a href="{% url 'contratacoes:listar_etps' %}?status=APROVADO" class="btn btn-sm btn-light mt-2">Ver todos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Seção de ETPs Recentes e com Pendências #}
+    <div class="row">
+        {# Card de Últimos ETPs Em Elaboração #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header card-header-custom p-3">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Últimos ETPs em Elaboração</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if etps_em_elaboracao %}
+                        <ul class="list-group list-group-flush">
+                            {% for etp in etps_em_elaboracao %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="text-decoration-none text-primary fw-bold">{{ etp.titulo|truncatechars:60 }}</a>
+                                    <span class="badge bg-warning text-dark">{{ etp.get_status_display }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info text-center my-3" role="alert">Nenhum ETP em elaboração.</div>
+                    {% endif %}
+                    <div class="text-end mt-3">
+                        <a href="{% url 'contratacoes:listar_etps' %}?status=EM_ELABORACAO" class="btn btn-sm btn-outline-info">Ver todos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {# Card de ETPs com Pendências #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header card-header-custom p-3">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> ETPs com Pendências de Análise</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if etps_com_pendencias %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Título</th>
+                                        <th scope="col">Processo</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col" style="width: 100px;">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for etp in etps_com_pendencias %}
+                                    <tr>
+                                        <td><a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}">{{ etp.titulo|truncatechars:40 }}</a></td>
+                                        <td>{{ etp.numero_processo }}</td>
+                                        <td>
+                                            {% if etp.status == 'EM_ANALISE' %}
+                                                <span class="badge bg-warning text-dark">{{ etp.get_status_display }}</span>
+                                            {% elif etp.status == 'AGUARDANDO_REVISAO' %}
+                                                <span class="badge bg-danger">{{ etp.get_status_display }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ etp.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="btn btn-sm btn-info">Analisar</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success text-center my-3" role="alert">
+                            Nenhum ETP com pendências de análise.
+                        </div>
+                    {% endif %}
+                    <div class="text-end mt-3">
+                        <a href="{% url 'contratacoes:listar_etps' %}?status=EM_ANALISE" class="btn btn-sm btn-outline-info">Ver todos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    {# Seção de Outros Documentos (TRs e PCAs) #}
+    <div class="row">
+        {# Card Últimos TRs #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header card-header-custom p-3">
+                    <h5 class="mb-0"><i class="bi bi-journal-text"></i> Últimos Termos de Referência (TRs)</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if trs_recentes %}
+                        <ul class="list-group list-group-flush">
+                            {% for tr in trs_recentes %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'contratacoes:detalhar_tr' pk=tr.pk %}" class="text-decoration-none text-primary fw-bold">{{ tr.titulo|truncatechars:60 }}</a>
+                                    <span class="badge bg-success">{{ tr.get_status_display }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info text-center my-3" role="alert">Nenhum TR registrado.</div>
+                    {% endif %}
+                    <div class="text-end mt-3">
+                        <a href="{% url 'contratacoes:listar_trs' %}" class="btn btn-sm btn-outline-primary">Ver todos os TRs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Card Últimos PCAs #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header card-header-custom p-3">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Planos de Contratação Anual (PCAs)</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if pcas_recentes %}
+                        <ul class="list-group list-group-flush">
+                            {% for pca in pcas_recentes %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'contratacoes:detalhar_pca' pk=pca.pk %}" class="text-decoration-none text-primary fw-bold">PCA {{ pca.ano_vigencia }}</a>
+                                    <span class="badge bg-success">Aprovado</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info text-center my-3" role="alert">Nenhum PCA registrado.</div>
+                    {% endif %}
+                    <div class="text-end mt-3">
+                        <a href="{% url 'contratacoes:listar_pca' %}" class="btn btn-sm btn-outline-primary">Ver todos os PCAs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

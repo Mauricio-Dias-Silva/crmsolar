@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+{% block main_title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+    <p>Bem-vindo ao sistema de gerenciamento de ETPs e TRs!</p>
+
+    <div class="row">
+        <div class="col-md-6 d-grid gap-2"> {# Usar d-grid gap-2 para botões de largura total no Bootstrap 5 #}
+            <a href="{% url 'listar_etps' %}" class="btn btn-primary btn-lg">Ver ETPs</a>
+        </div>
+        <div class="col-md-6 d-grid gap-2"> {# Usar d-grid gap-2 para botões de largura total no Bootstrap 5 #}
+            <a href="{% url 'listar_trs' %}" class="btn btn-success btn-lg">Ver TRs</a>
+        </div>
+    </div>
+{% endblock content %}

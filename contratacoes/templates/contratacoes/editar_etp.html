@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Editar ETP - {{ etp.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="display-5 fw-bold text-primary mb-2">Editar Estudo Técnico Preliminar</h1>
+    <p class="lead mb-4">Ajuste as informações do ETP: "{{ etp.titulo }}"</p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h5 class="mb-0">Dados Gerais</h5></div>
+            <div class="card-body">
+                {% for field in form %}{% if field.name in "titulo,numero_processo,setor_demandante,item_pca_vinculado" %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% render_field field class="form-control" %}
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h5 class="mb-0">Detalhamento do Estudo</h5></div>
+            <div class="card-body">
+                {% for field in form %}{% if field.name not in "titulo,numero_processo,setor_demandante,item_pca_vinculado" %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% render_field field class="form-control" rows="4" %}
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+        </div>
+
+        <h3 class="mt-5">Pesquisas de Preço</h3>
+        <hr>
+        {{ pesquisas_formset.management_form }}
+        <div id="pesquisa-formset-container">
+            {% for p_form in pesquisas_formset %}
+    <div class="card mb-3 p-2 formset-form {% if p_form.DELETE.value %}bg-danger-subtle border-danger{% endif %}">
+        
+            {{ p_form.hidden_fields }}  {# <<< É ESTA LINHA QUE ADICIONA O CAMPO 'id' INVISÍVEL #}
+
+                    <div class="row align-items-center">
+                        <div class="col-md-5 mb-2">{% render_field p_form.fornecedor class="form-control" placeholder="Fornecedor/Fonte" %}</div>
+                        <div class="col-md-3 mb-2">{% render_field p_form.valor_cotado class="form-control" placeholder="Valor Cotado" %}</div>
+                        <div class="col-md-3 mb-2">{% render_field p_form.data_pesquisa class="form-control" type="date" %}</div>
+                        <div class="col-md-1 mb-2">
+                            {% if p_form.instance.pk %}
+                            <div class="form-check form-switch mt-2">
+                                {% render_field p_form.DELETE class="form-check-input" %}
+                                <label class="form-check-label" for="{{ p_form.DELETE.id_for_label }}">Remover</label>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div id="pesquisa-empty-form" class="d-none">
+            <div class="card mb-3 p-2 formset-form">
+                <div class="row align-items-center">
+                    <div class="col-md-5 mb-2">{% render_field pesquisas_formset.empty_form.fornecedor class="form-control" placeholder="Fornecedor/Fonte" %}</div>
+                    <div class="col-md-3 mb-2">{% render_field pesquisas_formset.empty_form.valor_cotado class="form-control" placeholder="Valor Cotado" %}</div>
+                    <div class="col-md-3 mb-2">{% render_field pesquisas_formset.empty_form.data_pesquisa class="form-control" type="date" %}</div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary mb-4" id="add-pesquisa-btn">
+            <i class="fas fa-plus me-2"></i>Adicionar Pesquisa
+        </button>
+
+        <div class="d-grid gap-2 mt-4">
+            <a href="{% url 'contratacoes:detalhar_etp' pk=etp.pk %}" class="btn btn-secondary btn-lg">Cancelar</a>
+            <button type="submit" class="btn btn-primary btn-lg">Salvar Alterações</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Lógica para Pesquisas de Preço
+    const pesquisaContainer = document.getElementById('pesquisa-formset-container');
+    const addPesquisaButton = document.getElementById('add-pesquisa-btn');
+    const totalPesquisaFormsInput = document.getElementById('id_pesquisas-TOTAL_FORMS');
+    const emptyPesquisaFormTemplate = document.getElementById('pesquisa-empty-form').innerHTML;
+
+    if (addPesquisaButton) {
+        addPesquisaButton.addEventListener('click', function() {
+            let formIndex = parseInt(totalPesquisaFormsInput.value);
+            const newFormHTML = emptyPesquisaFormTemplate.replace(/__prefix__/g, formIndex);
+            pesquisaContainer.insertAdjacentHTML('beforeend', newFormHTML);
+            totalPesquisaFormsInput.value = formIndex + 1;
+        });
+    }
+
+    if (pesquisaContainer) {
+        pesquisaContainer.addEventListener('change', function(event) {
+            if (event.target.matches('input[type="checkbox"][name$="-DELETE"]')) {
+                const formCard = event.target.closest('.formset-form');
+                if (event.target.checked) {
+                    formCard.classList.add('bg-danger-subtle', 'border-danger');
+                } else {
+                    formCard.classList.remove('bg-danger-subtle', 'border-danger');
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock scripts %}

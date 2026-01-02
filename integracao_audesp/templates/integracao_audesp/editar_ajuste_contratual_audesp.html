@@ -1,0 +1,67 @@
+{# SysGov_Project/integracao_audesp/templates/integracao_audesp/editar_ajuste_contratual_audesp.html #}
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ titulo_pagina }}</h1>
+        <div>
+            <a href="{% url 'integracao_audesp:detalhar_ajuste_contratual_audesp' pk=ajuste.pk %}" class="btn btn-info me-2">Ver Detalhes</a>
+            <a href="{% url 'integracao_audesp:listar_submissoes_audesp' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0 rounded-4">
+        <div class="card-header card-header-custom">
+            Edite os dados do Ajuste Contratual
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            <div class="form-check form-switch">
+                                {{ field|add_class:"form-check-input" }}
+                            </div>
+                        {% elif field.field.choices %}
+                            {{ field|add_class:"form-select" }}
+                        {% elif field.field.widget.attrs.type == 'date' %}
+                            {{ field|add_class:"form-control" }}
+                        {% elif field.field.widget.attrs.type == 'datetime-local' %}
+                            {{ field|add_class:"form-control" }}
+                        {% elif field.field.widget.input_type == 'number' and 'step' in field.field.widget.attrs %}
+                            {{ field|add_class:"form-control" }}
+                        {% else %}
+                            {{ field|add_class:"form-control" }}
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary mt-3">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

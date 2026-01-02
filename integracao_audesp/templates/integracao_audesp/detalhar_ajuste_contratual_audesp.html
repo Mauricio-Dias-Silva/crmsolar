@@ -1,0 +1,69 @@
+{# SysGov_Project/integracao_audesp/templates/integracao_audesp/detalhar_ajuste_contratual_audesp.html #}
+{% extends 'base.html' %} {# Altere para o seu template base principal, se for diferente #}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ titulo_pagina }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ titulo_pagina }}</h1>
+        <div>
+            <a href="{% url 'integracao_audesp:gerar_ajuste_contratual_audesp_json' ajuste_id=ajuste.pk %}" class="btn btn-info" target="_blank">
+                <i class="fas fa-file-code"></i> Gerar JSON AUDESP (Ata)
+            </a>
+            {# Botão para voltar, se precisar #}
+            <a href="{% url 'integracao_audesp:listar_submissoes_audesp' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Detalhes Principais
+        </div>
+        <div class="card-body">
+            <p><strong>Código Ajuste AUDESP:</strong> {{ ajuste.codigo_contrato_audesp }}</p>
+            <p><strong>Objeto do Contrato:</strong> {{ ajuste.objeto_contrato }}</p>
+            <p><strong>Fornecedor:</strong> {{ ajuste.nome_razao_social_fornecedor }} ({{ ajuste.get_tipo_pessoa_fornecedor_display }})</p>
+            <p><strong>NI do Fornecedor:</strong> {{ ajuste.ni_fornecedor }}</p>
+            <p><strong>Valor Global:</strong> R$ {{ ajuste.valor_global|floatformat:4 }}</p>
+            <p><strong>Data de Assinatura:</strong> {{ ajuste.data_assinatura|date:"d/m/Y" }}</p>
+            <p><strong>Vigência:</strong> {{ ajuste.data_vigencia_inicio|date:"d/m/Y" }} a {{ ajuste.data_vigencia_fim|date:"d/m/Y" }}</p>
+            <p><strong>Tipo de Contrato:</strong> {{ ajuste.get_tipo_contrato_id_display }}</p>
+            <p><strong>Processo Sistema Origem:</strong> {{ ajuste.processo_sistema_origem }}</p>
+            <p><strong>Categoria do Processo:</strong> {{ ajuste.get_categoria_processo_id_display }}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Detalhes do Descritor AUDESP
+        </div>
+        <div class="card-body">
+            <p><strong>Município:</strong> {{ ajuste.municipio_gerenciador|default_if_none:"N/A" }}</p>
+            <p><strong>Entidade:</strong> {{ ajuste.entidade_gerenciadora|default_if_none:"N/A" }}</p>
+            <p><strong>Adesão/Participação:</strong> {% if ajuste.adesao_participacao %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Gerenciadora Jurisdicionada:</strong> {% if ajuste.gerenciadora_jurisdicionada %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>CNPJ Gerenciadora:</strong> {{ ajuste.cnpj_gerenciadora|default:"N/A" }}</p>
+            <p><strong>Código Edital (AUDESP):</strong> {{ ajuste.codigo_edital_audesp|default:"N/A" }}</p>
+            <p><strong>Código Ata RP (AUDESP):</strong> {{ ajuste.codigo_ata_rp_audesp|default:"N/A" }}</p>
+            <p><strong>É Retificação:</strong> {% if ajuste.retificacao %}Sim{% else %}Não{% endif %}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Recursos e Itens
+        </div>
+        <div class="card-body">
+            <p><strong>Fontes de Recursos:</strong> {{ ajuste.fonte_recursos_contratacao|join:", "|default:"N/A" }}</p>
+            <p><strong>IDs dos Itens Contratados:</strong> {{ ajuste.itens_contratados_ids|join:", "|default:"N/A" }}</p>
+            <p><strong>Classificações de Despesa:</strong> {{ ajuste.despesas_classificacao|join:", "|default:"N/A" }}</p>
+        </div>
+    </div>
+
+    {# Você pode adicionar mais seções para informações complementares, subcontratados, etc. #}
+
+</div>
+{% endblock content %}

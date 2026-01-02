@@ -1,0 +1,31 @@
+{# SysGov_Project/financeiro/templates/financeiro/dashboard.html #}
+
+{% extends 'base.html' %} {# <<< ESTENDE O TEMPLATE BASE PRINCIPAL #}
+
+{% block title_suffix %}{{ titulo_pagina }}{% endblock title_suffix %}
+
+{% block content %} {# Todo o conteúdo do dashboard vai dentro deste bloco #}
+<section class="header-section mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">{% block page_title %}{{ titulo_pagina }}{% endblock page_title %}</h1>
+        <p class="lead">Visão geral e estatísticas dos documentos fiscais e pagamentos.</p>
+    </div>
+</section>
+
+{# ... (o restante do código do dashboard) ... #}
+
+{% endblock content %}
+{% extends 'core/base.html' %}
+
+{% block title %}Bem-vindo ao Gerador AUDESP XML{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">Bem-vindo ao Gerador AUDESP XML</h1>
+        <p class="lead">Ferramenta para auxiliar a Prefeitura de Barueri na geração de arquivos XML para os módulos de Documento Fiscal e Pagamento da Fase IV do AUDESP.</p>
+        <hr class="my-4">
+        <p>Use os links na navegação acima ou os botões abaixo para começar a gerar os arquivos.</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'gerar_df' %}" role="button">Gerar Documento Fiscal</a>
+        <a class="btn btn-secondary btn-lg ml-2" href="{% url 'gerar_pg' %}" role="button">Gerar Pagamento</a>
+    </div>
+{% endblock %}
