@@ -1,0 +1,45 @@
+{% extends 'base_site.html' %} {# ⚠️ Ou o nome do seu template base do site público #}
+{% load static %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 500px;">
+        <div class="card-body text-center">
+            <h2 class="card-title mb-3">Acompanhe seu Projeto Solar</h2>
+            <p class="card-text text-muted mb-4">Insira o número da proposta que você recebeu e o CPF/CNPJ para verificar o status em tempo real.</p>
+
+            <form method="POST" action="{% url 'crm:rastrear_proposta' %}">
+                {% csrf_token %}
+                <div class="mb-3 text-start">
+                    <label for="numero_proposta" class="form-label"><strong>Número da Proposta:</strong></label>
+                    <input type="text" class="form-control" id="numero_proposta" name="numero_proposta" value="{{ numero_proposta_pesquisado }}" placeholder="Ex: 2025-1" required>
+                </div>
+                <div class="mb-4 text-start">
+                    <label for="cpf_cnpj" class="form-label"><strong>CPF ou CNPJ:</strong></label>
+                    <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" placeholder="Somente números" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 py-2">
+                    <i class="fas fa-search"></i> Rastrear
+                </button>
+            </form>
+
+            <hr class="my-4">
+
+            {% if erro %}
+                <div class="alert alert-danger">
+                    {{ erro }}
+                </div>
+            {% endif %}
+
+            {% if proposta %}
+                <div class="alert alert-success text-start">
+                    <h4 class="alert-heading">Proposta Encontrada!</h4>
+                    <p><strong>Cliente:</strong> {{ proposta.cliente_nome }}</p>
+                    <p><strong>Status Atual:</strong> {{ proposta.get_status_crm_display }}</p>
+                    <p class="mb-0">Em breve, mais detalhes sobre o andamento do seu projeto aparecerão aqui.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
