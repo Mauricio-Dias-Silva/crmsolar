@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 # Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -154,6 +155,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -162,8 +164,12 @@ CSRF_TRUSTED_ORIGINS = [
     'https://solarhub.com.br',
     'https://www.solarhub.com.br',
     'https://loja.solarhub.com.br',
-    'https://f08e3a9c8b36.ngrok-free.app' ,
+    'https://*.run.app',
+    'https://*.pythonjet.app',
 ]
+
+ALLOWED_HOSTS = ['*'] # PythonJet handles security via firewall/load balancer rules if needed, but '*' prevents host header attacks issues in dynamic cloud run URLs
+
 # URL pública do ngrok (para testes Mercado Pago)
 NGROK_URL = 'f08e3a9c8b36.ngrok-free.app'
 
