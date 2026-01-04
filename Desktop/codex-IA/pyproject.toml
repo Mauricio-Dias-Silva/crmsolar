@@ -1,0 +1,24 @@
+
+[project]
+name = "codex-ia"
+version = "0.1.0"
+description = "AI Coding Assistant powered by Gemini 3"
+authors = [
+    {name = "Mauricio Dias Silva", email = "mauricio@pythonjet.com"},
+]
+dependencies = [
+    "google-genai",
+    "typer",
+    "rich",
+    "python-dotenv",
+    "gitpython",
+    "numpy",  # For future embeddings
+]
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+codex = "codex_ia.main:app"
