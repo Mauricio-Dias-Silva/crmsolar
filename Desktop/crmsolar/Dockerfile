@@ -32,5 +32,9 @@ COPY . /app/
 # Expor a porta que o Gunicorn vai rodar (embora o Cloud Run injete a PORT)
 EXPOSE 8080
 
-# Comando para iniciar a aplicação usando Gunicorn
-CMD ["gunicorn", "energia_solar.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "2", "--threads", "4", "--timeout", "0"]
+# Copiar e configurar script de entrada
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+# Executar via entrypoint
+CMD ["/app/entrypoint.sh"]
